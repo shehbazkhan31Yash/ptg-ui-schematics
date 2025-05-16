@@ -1,0 +1,15 @@
+export const msalConfig: any = {
+    auth: {
+        clientId: "YOUR_CLIENT_ID", // Replace with your client ID
+        authority: "YOUR_AUTHORITY", // Replace with your authority URL
+        redirectUri: "YOUR_REDIRECT_URI", // Replace with your redirect URI
+    },
+    cache: {
+      cacheLocation: 'sessionStorage',
+      storeAuthStateInCookie: true,
+    },
+  };
+
+  export const loginRequest = {
+    scopes: ['user.read', 'https://management.azure.com/user_impersonation'],
+  };
