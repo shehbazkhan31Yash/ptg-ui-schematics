@@ -7,7 +7,9 @@ import { useTranslation } from 'react-i18next';
 import './translations/i18n';
 <% } %>
 import './styles.css';
+<% if(redux){ %>
 import DashboardComponent from './components/Dashboard';
+<% } %>
 <% if(auth === 'okta'){ %>
 import OktaAuth, { toRelativeUrl } from '@okta/okta-auth-js';
 import { LoginCallback, Security } from '@okta/okta-react';
@@ -32,7 +34,7 @@ export function App() {
   const { instance } = useMsal();
   <% } %>
   <% if (i18n) { %>
-  const { i18n } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [langValue, setLangValue] = useState('en');
 
   const changeLanguage = (e: any) => {
@@ -90,8 +92,8 @@ export function App() {
               </Link>
             </div>
             <% } %>
-             <% if (i18n) { %>
             <div className="actionContainer">
+             <% if (i18n) { %>
               <div className="selectDropdown">
                 <img
                   src="assets/images/language_2x.jpg"
@@ -139,6 +141,35 @@ export function App() {
           </nav>
         </section>
       </div>
+       <% if (!redux) { %>
+      <div className="loginContainer">
+        <div className='innerContainer'>
+          <section className="sectionContainer">
+            <div className="outerRow">
+              <div className="columnLeft">
+                <h1>
+                  {t("welcomeTest")} <br />
+                  {t("welcome")}
+                </h1>
+                <p>
+                The CLI is a powerful tool for creating, modifying, and maintaining any software project, and is particularly useful for customizing our UI projects. We can use this CLI to enforce architectural rules and conventions, making our projects consistent and inter-operative.
+                </p>
+
+
+              </div>
+                <div className='loginImgContainer '>
+                  <div className="floatEnd" ><img src="assets/images/illustration 1.png" alt="" /></div>
+                </div>
+
+            </div>
+          </section>
+        </div>
+      </div>
+      <% } %>
+       <% if (redux && !routing) { %>
+       <DashboardComponent/> 
+       <% } %>
+
       <% if (routing) { %>
       <Routes>
         <Route path="/" element={<DashboardComponent />} />

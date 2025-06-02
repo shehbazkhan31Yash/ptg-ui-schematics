@@ -27,22 +27,25 @@ ReactDOM.render(
  <Provider store={store}>
     <% if (routing) { %>
       <BrowserRouter>
-          <% if (auth === 'msal') { %>
-        <MsalProvider instance={msalInstance}>
-          <App />
-        </MsalProvider>
+        <% if (auth === 'msal') { %>
+          <MsalProvider instance={msalInstance}>
+            <App />
+          </MsalProvider>
         <% } %>
-        <% if (auth !== 'msal') { %><App /><% } %>
-        </BrowserRouter>
+        <% if (auth !== 'msal') { %>
+            <App />
+        <% } %>
+     </BrowserRouter>
     <% } %>
-
-    <% if (auth === 'msal' && !routing) { %>
-      <MsalProvider instance={msalInstance}>
-        <App />
-      </MsalProvider>
-      <% } %>
-      <% if (auth !== 'msal') { %>
-      <App />
+    <% if (!routing) { %>
+        <% if (auth === 'msal') { %>
+          <MsalProvider instance={msalInstance}>
+            <App />
+          </MsalProvider>
+        <% } %>
+        <% if (auth !== 'msal') { %>
+            <App />
+        <% } %>
     <% } %>
 </Provider>
 <% } %>
@@ -54,19 +57,22 @@ ReactDOM.render(
           <App />
         </MsalProvider>
         <% } %>
-        <% if (auth !== 'msal') { %><App /><% } %>
-        </BrowserRouter>
+        <% if (auth !== 'msal') { %>
+          <App />
+        <% } %>
+     </BrowserRouter>
     <% } %>
-
-    <% if (auth === 'msal' && !routing) { %>
-      <MsalProvider instance={msalInstance}>
-        <App />
-      </MsalProvider>
-      <% } %>
-      <% if (auth !== 'msal') { %>
-      <App />
+     <% if (!routing) { %>
+        <% if (auth === 'msal') { %>
+        <MsalProvider instance={msalInstance}>
+          <App />
+        </MsalProvider>
+        <% } %>
+        <% if (auth !== 'msal') { %>
+          <App />
+        <% } %>
     <% } %>
 <% } %>
-  </StrictMode>,
-  document.getElementById('root')
+</StrictMode>,
+document.getElementById('root')
 );
