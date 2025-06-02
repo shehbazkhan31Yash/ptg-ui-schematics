@@ -1,6 +1,6 @@
 {
   "name": "@ptg-ui/cli",
-  "version": "0.0.4",
+  "version": "1.0.4",
   "description": "A cli",
   "main": "dist/index.js",
   "publishConfig": {
@@ -38,7 +38,7 @@
     "@nrwl/tao": "13.2.0",
     "@types/flat": "^5.0.1",
     "@types/inquirer": "^7.3.1",
-    "@types/node": "^12.11.1",
+    "@types/node": "^12.20.55",
     "@types/tmp": "^0.2.0",
     "@types/yargs": "^15.0.5",
     "flat": "^5.0.2"
