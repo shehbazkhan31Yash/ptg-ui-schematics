@@ -22,7 +22,7 @@ Run `nx serve my-app` or `npm start` for a dev server. Navigate to http://localh
   - Redirect URI: Set it to `http://localhost:4200` (or another URL based on your environment).
 - Click **Register**
 
-> After registering your application in Azure AD, make sure to copy the Client ID, Tenant ID, and redirect URI. Then, paste these values into the `msalConfig.js` located at **src>app>login>msalConfig.js** or add them directly in `environment file` located at **src>environments>environment.ts** and restart the application.
+> After registering your application in Azure AD, make sure to copy the Client ID, Tenant ID, and redirect URI. Then, paste these values into the `msalConfig.js` located at **src>app>config>msalConfig.js** or add them directly in `environment file` located at **src>environments>environment.ts** and restart the application.
 
 ### Further help
 

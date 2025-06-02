@@ -60,7 +60,7 @@ export default function (options: any): Rule {
       setFramework(originalOptionsObject, isRootApp),
       setReduxTpPackageJson(originalOptionsObject),
       setI18nToPackageJson(originalOptionsObject),
-      originalOptionsObject.redux
+      (originalOptionsObject.redux)
         ? addDashboardToProject(originalOptionsObject, isRootApp)
         : noop,
       // The mergeWith() rule merge two trees; one that's coming from a Source (a Tree with no
