@@ -42,7 +42,7 @@ export default function (options: any): Rule {
       : join(normalize(newProjectRoot), strings.dasherize(options.name));
     options.appDir = appDir;
     let originalOptionsObject = JSON.parse(JSON.stringify(options));
-    // The chain rule allows us to chain multiple rules and apply them one after the other.
+  // The chain rule allows us to chain multiple rules and apply them one after the other.
 
     return chain([
       (_tree: Tree, context: SchematicContext) => {
@@ -60,7 +60,7 @@ export default function (options: any): Rule {
       setFramework(originalOptionsObject, isRootApp),
       setReduxTpPackageJson(originalOptionsObject),
       setI18nToPackageJson(originalOptionsObject),
-      originalOptionsObject.redux
+      (originalOptionsObject.redux)
         ? addDashboardToProject(originalOptionsObject, isRootApp)
         : noop,
       // The mergeWith() rule merge two trees; one that's coming from a Source (a Tree with no
@@ -92,142 +92,63 @@ export default function (options: any): Rule {
         ]),
         MergeStrategy.Overwrite
       ),
-      originalOptionsObject.routing &&
-      originalOptionsObject.redux &&
+      mergeWith(
+        apply(url("./common/"), [
+          applyTemplates({
+            utils: strings,
+            ...originalOptionsObject,
+            appName: originalOptionsObject.name,
+            isRootApp,
+          }),
+          move(`apps/${options.name}/src/`),
+        ]),
+        MergeStrategy.Overwrite
+      ),
       originalOptionsObject.i18n
         ? mergeWith(
-            apply(url("./files-route+redux+i18n"), [
-              applyTemplates({
-                utils: strings,
-                ...originalOptionsObject,
-                appName: originalOptionsObject.name,
-                isRootApp,
-              }),
-              move(`apps/${options.name}`),
-            ]),
-            MergeStrategy.Overwrite
-          )
+          apply(url("./i18n/"), [
+            applyTemplates({
+              utils: strings,
+              ...originalOptionsObject,
+              appName: originalOptionsObject.name,
+              isRootApp,
+            }),
+            move(`apps/${options.name}/src/app/`),
+          ]),
+          MergeStrategy.Overwrite
+        )
         : noop,
-      originalOptionsObject.routing &&
-      !originalOptionsObject.redux &&
-      !originalOptionsObject.i18n
+      originalOptionsObject.redux
         ? mergeWith(
-            apply(url("./files-route"), [
-              applyTemplates({
-                utils: strings,
-                ...originalOptionsObject,
-                appName: originalOptionsObject.name,
-                isRootApp,
-              }),
-              move(`apps/${options.name}`),
-            ]),
-            MergeStrategy.Overwrite
-          )
-        : noop,
-      !originalOptionsObject.routing &&
-      originalOptionsObject.redux &&
-      !originalOptionsObject.i18n
-        ? mergeWith(
-            apply(url("./files-redux"), [
-              applyTemplates({
-                utils: strings,
-                ...originalOptionsObject,
-                appName: originalOptionsObject.name,
-                isRootApp,
-              }),
-              move(`apps/${options.name}`),
-            ]),
-            MergeStrategy.Overwrite
-          )
-        : noop,
-      !originalOptionsObject.routing &&
-      !originalOptionsObject.redux &&
-      originalOptionsObject.i18n
-        ? mergeWith(
-            apply(url("./files-i18n"), [
-              applyTemplates({
-                utils: strings,
-                ...originalOptionsObject,
-                appName: originalOptionsObject.name,
-                isRootApp,
-              }),
-              move(`apps/${options.name}`),
-            ]),
-            MergeStrategy.Overwrite
-          )
-        : noop,
-      originalOptionsObject.routing &&
-      originalOptionsObject.redux &&
-      !originalOptionsObject.i18n
-        ? mergeWith(
-            apply(url("./files-route+redux"), [
-              applyTemplates({
-                utils: strings,
-                ...originalOptionsObject,
-                appName: originalOptionsObject.name,
-                isRootApp,
-              }),
-              move(`apps/${options.name}`),
-            ]),
-            MergeStrategy.Overwrite
-          )
-        : noop,
-      originalOptionsObject.routing &&
-      !originalOptionsObject.redux &&
-      originalOptionsObject.i18n
-        ? mergeWith(
-            apply(url("./files-route+i18n"), [
-              applyTemplates({
-                utils: strings,
-                ...originalOptionsObject,
-                appName: originalOptionsObject.name,
-                isRootApp,
-              }),
-              move(`apps/${options.name}`),
-            ]),
-            MergeStrategy.Overwrite
-          )
-        : noop,
-      !originalOptionsObject.routing &&
-      originalOptionsObject.redux &&
-      originalOptionsObject.i18n
-        ? mergeWith(
-            apply(url("./files-redux+i18n"), [
-              applyTemplates({
-                utils: strings,
-                ...originalOptionsObject,
-                appName: originalOptionsObject.name,
-                isRootApp,
-              }),
-              move(`apps/${options.name}`),
-            ]),
-            MergeStrategy.Overwrite
-          )
-        : noop,
-      !originalOptionsObject.routing &&
-      !originalOptionsObject.redux &&
-      !originalOptionsObject.i18n
-        ? mergeWith(
-            apply(url("./files-route"), [
-              applyTemplates({
-                utils: strings,
-                ...originalOptionsObject,
-                appName: originalOptionsObject.name,
-                isRootApp,
-              }),
-              move(`apps/${options.name}`),
-            ]),
-            MergeStrategy.Overwrite
-          )
+          apply(url("./redux/"), [
+            applyTemplates({
+              utils: strings,
+              ...originalOptionsObject,
+              appName: originalOptionsObject.name,
+              isRootApp,
+            }),
+            move(`apps/${options.name}/src/app/`),
+          ]),
+          MergeStrategy.Overwrite
+        )
         : noop,
       originalOptionsObject.auth === "okta"
         ? mergeWith(
-            apply(url("./okta/"), [
-              applyTemplates({}),
-              move(`apps/${options.name}/src/app/okta/`),
-            ]),
-            MergeStrategy.Overwrite
-          )
+          apply(url("./okta/"), [
+            applyTemplates({}),
+            move(`apps/${options.name}/src/app/okta/`),
+          ]),
+          MergeStrategy.Overwrite
+        )
+        : noop,
+      originalOptionsObject.auth === "msal"
+        ? mergeWith(
+          apply(url("./config/"), [
+            applyTemplates({}),
+            move(`apps/${options.name}/src/app/config/`),
+          ]),
+          MergeStrategy.Overwrite
+        )
         : noop,
       mergeWith(
         apply(url("./environments/"), [
@@ -260,7 +181,7 @@ export function setFramework(options: any, isRootApp: boolean) {
       addLoginToProject(
         options,
         isRootApp,
-        "./msal/",
+        "./config/",
         `apps/${options.name}/src/app/config/`
       )
     );
@@ -298,8 +219,7 @@ export function setI18nToPackageJson(options: any): Rule {
     addDepsToPackageJson(
       {
         i18next: i18nextVersion,
-        "i18next-browser-languagedetector":
-          i18nextBrowserLanguagedetectorVersion,
+        "i18next-browser-languagedetector": i18nextBrowserLanguagedetectorVersion,
         "react-i18next": reactI18nextVersion,
       },
       {},
