@@ -47,7 +47,7 @@ function getArgs() {
     .prompt([
       {
         name: "ApplicationType",
-        message: `Select Application Type test`,
+        message: `Select Application Type`,
         type: "list",
         default: "angular",
         choices: options,
