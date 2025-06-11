@@ -77,7 +77,7 @@ export default function (options: any): Rule {
       // The schematic Rule calls the schematic from the same collection, with the options
       // passed in. Please note that if the schematic has a schema, the options will be
       // validated and could throw, e.g. if a required option is missing.
-      externalSchematic("@nrwl/react", "application", {
+      externalSchematic("@nx/react", "application", {
         ...options,
       }),
       //schematic('my-other-schematic', { option: true }),
