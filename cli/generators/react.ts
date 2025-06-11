@@ -155,7 +155,6 @@ function getArgs() {
 
 function addVSCodeExtensions() {
   const extensionsList = [
-    "tabnine.tabnine-vscode",
     "mrmlnc.vscode-scss",
     "esbenp.prettier-vscode",
     "ms-vscode.vscode-typescript-tslint-plugin",
