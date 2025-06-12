@@ -85,7 +85,6 @@ function addVSCodeExtensions() {
   const extensionsList = [
     "simontest.simontest",
     "nrwl.angular-console",
-    "tabnine.tabnine-vscode",
     "mrmlnc.vscode-scss",
     "esbenp.prettier-vscode",
     "ms-vscode.vscode-typescript-tslint-plugin",
