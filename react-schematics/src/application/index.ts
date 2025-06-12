@@ -12,8 +12,8 @@ import {
   SchematicContext,
   Tree,
   url,
+  SchematicsException
 } from "@angular-devkit/schematics";
-import { addDepsToPackageJson, getWorkspace } from "@nrwl/workspace";
 import { join, normalize } from "path";
 import {
   reactReduxVersion,
@@ -28,12 +28,36 @@ import {
   bootstrapVersion,
   reactBootstrapVersion,
 } from "../utils/version";
+import { workspaces, virtualFs } from '@angular-devkit/core';
 
 // Instead of `any`, it would make sense here to get a schema-to-dts package and output the
 // interfaces so you get type-safe options.
+
+function createHost(tree: Tree): workspaces.WorkspaceHost {
+  return {
+    async readFile(path: string): Promise<string> {
+      const data = tree.read(path);
+      if (!data) {
+        throw new SchematicsException('File not found.');
+      }
+      return virtualFs.fileBufferToString(data);
+    },
+    async writeFile(path: string, data: string): Promise<void> {
+      return tree.overwrite(path, data);
+    },
+    async isDirectory(path: string): Promise<boolean> {
+      return !tree.exists(path) && tree.getDir(path).subfiles.length > 0;
+    },
+    async isFile(path: string): Promise<boolean> {
+      return tree.exists(path);
+    },
+  };
+}
+
 export default function (options: any): Rule {
   return async (host: Tree, _context: SchematicContext) => {
-    const workspace = await getWorkspace(host);
+    const host1 = createHost(host);
+    const { workspace } = await workspaces.readWorkspace('/', host1);
     const newProjectRoot =
       (workspace.extensions.newProjectRoot as string | undefined) ?? "";
     const isRootApp = options.projectRoot !== undefined;
@@ -53,7 +77,7 @@ export default function (options: any): Rule {
       // The schematic Rule calls the schematic from the same collection, with the options
       // passed in. Please note that if the schematic has a schema, the options will be
       // validated and could throw, e.g. if a required option is missing.
-      externalSchematic("@nrwl/react", "application", {
+      externalSchematic("@nx/react", "application", {
         ...options,
       }),
       //schematic('my-other-schematic', { option: true }),
@@ -160,6 +184,25 @@ export default function (options: any): Rule {
     ]);
   };
 }
+
+type PackageJson = {
+  dependencies?: { [key: string]: string };
+  [key: string]: any;
+};
+
+function addPackageToPackageJson(host: Tree, pkg: string, version: string): Tree {
+  if (host.exists("package.json")) {
+    const sourceText = host.read("package.json")!.toString("utf-8");
+    const json = JSON.parse(sourceText) as PackageJson;
+    json.dependencies ??= {};
+    if (!json.dependencies[pkg]) {
+      json.dependencies[pkg] = version;
+      json.dependencies = sortObjectByKeys(json.dependencies);
+    }
+    host.overwrite("package.json", JSON.stringify(json, null, 2));
+  }
+  return host;
+}
 export function setFramework(options: any, isRootApp: boolean) {
   const tasks = [];
   if (options.framework === "material") {
@@ -200,14 +243,11 @@ export function setReduxTpPackageJson(options: any): Rule {
     return noop;
   }
   return chain([
-    addDepsToPackageJson(
-      {
-        "react-redux": reactReduxVersion,
-        redux: reduxVersion,
-      },
-      {},
-      false
-    ),
+    (tree: Tree) => {
+      tree = addPackageToPackageJson(tree, "react-redux", reactReduxVersion);
+      tree = addPackageToPackageJson(tree, "redux", reduxVersion);
+      return tree;
+    },
   ]);
 }
 
@@ -216,15 +256,9 @@ export function setI18nToPackageJson(options: any): Rule {
     return noop;
   }
   return chain([
-    addDepsToPackageJson(
-      {
-        i18next: i18nextVersion,
-        "i18next-browser-languagedetector": i18nextBrowserLanguagedetectorVersion,
-        "react-i18next": reactI18nextVersion,
-      },
-      {},
-      false
-    ),
+    (tree: Tree) => addPackageToPackageJson(tree, "i18next", i18nextVersion),
+    (tree: Tree) => addPackageToPackageJson(tree, "i18next-browser-languagedetector", i18nextBrowserLanguagedetectorVersion),
+    (tree: Tree) => addPackageToPackageJson(tree, "react-i18next", reactI18nextVersion),
   ]);
 }
 
@@ -283,27 +317,25 @@ export function addAuthServiceToProject(
 }
 
 export function addMaterialToPackageJson(): Rule {
-  return addDepsToPackageJson(
-    {
-      "@material-ui/core": materialUICoreVersion,
-      "@mui/material": muiMaterialVersion,
-      "@emotion/react": emotionReactVersion,
-      "@emotion/styled": emotionStyledVersion,
+  return chain([
+    (tree: Tree) => {
+      tree = addPackageToPackageJson(tree, "@material-ui/core", materialUICoreVersion);
+      tree = addPackageToPackageJson(tree, "@mui/material", muiMaterialVersion);
+      tree = addPackageToPackageJson(tree, "@emotion/react", emotionReactVersion);
+      tree = addPackageToPackageJson(tree, "@emotion/styled", emotionStyledVersion);
+      return tree;
     },
-    {},
-    false
-  );
+  ]);
 }
 
 export function addBootstrapToPackageJson(): Rule {
-  return addDepsToPackageJson(
-    {
-      bootstrap: bootstrapVersion,
-      "react-bootstrap": reactBootstrapVersion,
+  return chain([
+    (tree: Tree) => {
+      tree = addPackageToPackageJson(tree, "bootstrap", bootstrapVersion);
+      tree = addPackageToPackageJson(tree, "react-bootstrap", reactBootstrapVersion);
+      return tree;
     },
-    {},
-    false
-  );
+  ]);
 }
 
 export function updateStyles(options: any) {
@@ -316,3 +348,13 @@ export function updateStyles(options: any) {
     return host;
   };
 }
+function sortObjectByKeys(dependencies: { [key: string]: string; }): { [key: string]: string; } {
+  return Object.keys(dependencies)
+    .sort()
+    .reduce((acc, key) => {
+      acc[key] = dependencies[key];
+      return acc;
+    }, {} as { [key: string]: string });
+}
+
+

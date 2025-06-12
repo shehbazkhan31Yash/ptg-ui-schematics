@@ -11,7 +11,7 @@ export function reactAppGenerator() {
       }
     );
     execSync(
-      `npm install @angular-devkit/core@12.2.9 @angular-devkit/schematics@12.2.9 --force`,
+      `npm install @angular-devkit/core@20.0.2 @angular-devkit/schematics@20.0.2 --force`,
       {
         cwd: `${process.cwd()}/${a.workspace}`,
         stdio: [0, 1, 2],
@@ -155,7 +155,6 @@ function getArgs() {
 
 function addVSCodeExtensions() {
   const extensionsList = [
-    "tabnine.tabnine-vscode",
     "mrmlnc.vscode-scss",
     "esbenp.prettier-vscode",
     "ms-vscode.vscode-typescript-tslint-plugin",
