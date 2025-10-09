@@ -28,7 +28,7 @@ import {
   bootstrapVersion,
   reactBootstrapVersion,
 } from "../utils/version";
-import { workspaces, virtualFs } from '@angular-devkit/core';
+import { workspaces } from '@angular-devkit/core';
 
 // Instead of `any`, it would make sense here to get a schema-to-dts package and output the
 // interfaces so you get type-safe options.
@@ -40,7 +40,7 @@ function createHost(tree: Tree): workspaces.WorkspaceHost {
       if (!data) {
         throw new SchematicsException('File not found.');
       }
-      return virtualFs.fileBufferToString(data);
+      return data.toString('utf-8');
     },
     async writeFile(path: string, data: string): Promise<void> {
       return tree.overwrite(path, data);

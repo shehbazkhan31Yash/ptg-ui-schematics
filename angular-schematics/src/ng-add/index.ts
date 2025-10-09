@@ -13,7 +13,8 @@ import {
   Tree,
   url,
 } from "@angular-devkit/schematics";
-import { addDepsToPackageJson, getWorkspace } from "@nrwl/workspace";
+
+import { getWorkspace } from "@schematics/angular/utility/workspace";
 import { join, normalize } from "path";
 
 // You don't have to export the function as default. You can also have more than one rule factory
@@ -75,14 +76,14 @@ export function setNGRX(_options: any): Rule {
   }
   return chain([
     // addNrwlToPackageJson(),
-    externalSchematic("@nrwl/angular", "ngrx", {
+    externalSchematic("@nx/angular", "ngrx", {
       name: "app",
       module: "src/app/app.module.ts",
       facade: true,
       root: true,
       syntax: "classes",
     }),
-    externalSchematic("@nrwl/angular", "ngrx", {
+    externalSchematic("@nx/angular", "ngrx", {
       name: "app",
       module: "src/app/core/core.module.ts",
       facade: true,
@@ -93,33 +94,15 @@ export function setNGRX(_options: any): Rule {
 }
 
 export function addMaterialToPackageJson(): Rule {
-  return addDepsToPackageJson(
-    {
-      "@angular/material": "latest",
-      "@angular/cdk": "latest",
-    },
-    {}
-  );
+  return noop;
 }
 
 export function addBootstrapToPackageJson(): Rule {
-  return addDepsToPackageJson(
-    {
-      bootstrap: "latest",
-      "@angular/cdk": "latest",
-    },
-    {}
-  );
+  return noop;
 }
 
 export function addNrwlToPackageJson(): Rule {
-  return addDepsToPackageJson(
-    {
-      "@nrwl/angular": "11.3.2",
-      "@nrwl/workspace": "11.3.2",
-    },
-    {}
-  );
+  return noop;
 }
 
 export function updateStyles(options: any) {

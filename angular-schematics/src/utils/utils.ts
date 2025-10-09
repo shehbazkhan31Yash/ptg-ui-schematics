@@ -1,9 +1,31 @@
 import { Rule, SchematicsException, Tree } from "@angular-devkit/schematics";
-import { applyChangesToString, ChangeType } from "@nrwl/devkit";
-import { insert } from "@nrwl/workspace";
-import { insertImport } from "@nrwl/workspace/src/utils/ast-utils";
+import { applyChangesToString, ChangeType } from "@nx/devkit";
+import * as ts from "typescript";
+
+// Local implementation of insert function
+function insert(host: any, path: string, changes: any[]) {
+  const content = host.read(path)?.toString() || '';
+  let updatedContent = content;
+  
+  // Apply changes in reverse order to maintain positions
+  changes.sort((a, b) => b.pos - a.pos).forEach(change => {
+    if (change.toAdd) {
+      updatedContent = updatedContent.slice(0, change.pos) + change.toAdd + updatedContent.slice(change.pos);
+    }
+  });
+  
+  host.overwrite(path, updatedContent);
+}
+
+// Local implementation of insertImport
+function insertImport(sourceFile: ts.SourceFile, filePath: string, symbolName: string, fileName: string) {
+  const importStatement = `import { ${symbolName} } from '${fileName}';\n`;
+  return {
+    pos: 0,
+    toAdd: importStatement
+  };
+}
 import { addImportToModule } from "./ast-utils";
-import ts = require("typescript");
 
 export function addImportToAppModule(
   moduleName: string,
