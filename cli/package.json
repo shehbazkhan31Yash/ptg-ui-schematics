@@ -1,6 +1,6 @@
 {
  "name": "@ptg-ui/cli",
- "version": "2.0.0",
+ "version": "2.0.8",
  "description": "A cli",
  "main": "dist/index.js",
  "publishConfig": {
