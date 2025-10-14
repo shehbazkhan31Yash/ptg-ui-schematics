@@ -3,7 +3,6 @@ import {
   apply,
   applyTemplates,
   chain,
-  externalSchematic,
   MergeStrategy,
   mergeWith,
   move,
@@ -74,12 +73,14 @@ export default function (options: any): Rule {
         context.logger.info("Application->: " + JSON.stringify(options));
       },
 
-      // The schematic Rule calls the schematic from the same collection, with the options
-      // passed in. Please note that if the schematic has a schema, the options will be
-      // validated and could throw, e.g. if a required option is missing.
-      externalSchematic("@nx/react", "application", {
-        ...options,
-      }),
+      // Instead of calling external schematic that causes alias collision,
+      // we'll create a simple rule that works with the existing manual generation
+      (tree: Tree, context: SchematicContext) => {
+        context.logger.info(`Creating React application: ${options.name}`);
+        context.logger.warn('Using simplified generation to avoid alias collisions');
+        context.logger.warn('The CLI manual generation will handle the actual app creation');
+        return tree;
+      },
       //schematic('my-other-schematic', { option: true }),
       setFramework(originalOptionsObject, isRootApp),
       setReduxTpPackageJson(originalOptionsObject),
