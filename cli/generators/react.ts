@@ -23,6 +23,7 @@ export function reactAppGenerator() {
         execSync(
           `npx create-nx-workspace@latest ${a.workspace} --preset empty --nx-cloud=skip --package-manager=npm --skip-git --skip-nx-cache`,
           {
+
             cwd: process.cwd(),
             stdio: "inherit",
           }
@@ -372,78 +373,25 @@ export function reactAppGenerator() {
       // Step 5: Generate React application
       console.log("\n🚀 Step 6/7: Generating React application...\n");
 
-      // Clear Nx cache to avoid conflicts
-      try {
-        execSync(`npx nx reset`, {
-          cwd: workspacePath,
-          stdio: "pipe", // Don't show output
-        });
-      } catch (resetErr) {
-        // Ignore reset errors
-      }
-
-      // Debug: List available generators to identify conflicts
-      try {
-        console.log("🔍 Checking available schematics...");
-        execSync(`npx nx list`, {
-          cwd: workspacePath,
-          stdio: "pipe", // Don't show full output
-        });
-      } catch (listErr) {
-        // Ignore list errors
-      }
+      // Due to persistent alias collision issues, skip schematic and use direct manual generation
+      console.log("🔄 Using direct manual generation to avoid alias collisions...\n");
 
       try {
-        // Use fully qualified command to avoid alias conflicts
-        console.log(
-          `\n🎯 Running: nx generate @ptg-ui/react-schematics:application --name=${a.name}`
-        );
-        execSync(
-          `npx nx generate @ptg-ui/react-schematics:application --name=${a.name} --style=${a.style} --framework=${a.framework} --routing=${a.routing} --redux=${a.redux} --i18n=${a.i18n} --auth=${a.auth} --no-interactive --verbose`,
-          {
-            cwd: workspacePath,
-            stdio: [0, 1, 2],
-          }
-        );
-      } catch (err) {
-        console.log(
-          "\n⚠️  Standard generation failed, trying with local package path...\n"
-        );
-        try {
-          // Re-link the schematic package if needed
-          execSync(`npm link @ptg-ui/react-schematics --force`, {
-            cwd: workspacePath,
-            stdio: "pipe",
-          });
+        // Create React app manually
+        console.log("Creating React application structure manually...");
 
-          // Try again with the linked package
-          execSync(
-            `npx nx generate @ptg-ui/react-schematics:application --name=${a.name} --style=${a.style} --framework=${a.framework} --routing=${a.routing} --redux=${a.redux} --i18n=${a.i18n} --auth=${a.auth} --no-interactive`,
-            {
-              cwd: workspacePath,
-              stdio: [0, 1, 2],
-            }
-          );
-        } catch (err2) {
-          console.log(
-            "\n⚠️  Package linking failed, trying manual React app creation...\n"
-          );
-          try {
-            // Since the schematic has alias conflicts, let's create the React app manually
-            console.log("Creating React application structure manually...");
+        // Create app directory structure
+        const appPath = path.join(workspacePath, "apps", a.name);
+        const srcPath = path.join(appPath, "src");
+        const appSrcPath = path.join(srcPath, "app");
 
-            // Create app directory structure
-            const appPath = path.join(workspacePath, "apps", a.name);
-            const srcPath = path.join(appPath, "src");
-            const appSrcPath = path.join(srcPath, "app");
+        // Create directories
+        fs.mkdirSync(appPath, { recursive: true });
+        fs.mkdirSync(srcPath, { recursive: true });
+        fs.mkdirSync(appSrcPath, { recursive: true });
 
-            // Create directories
-            fs.mkdirSync(appPath, { recursive: true });
-            fs.mkdirSync(srcPath, { recursive: true });
-            fs.mkdirSync(appSrcPath, { recursive: true });
-
-            // Create basic React files
-            const indexHtml = `<!DOCTYPE html>
+        // Create basic React files
+        const indexHtml = `<!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="utf-8" />
@@ -454,17 +402,21 @@ export function reactAppGenerator() {
   </head>
   <body>
     <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>`;
 
-            const mainTsx = `import { createRoot } from 'react-dom/client';
+        const mainTsx = `import { createRoot } from 'react-dom/client';
 import App from './app/app';
 
 const container = document.getElementById('root');
-const root = createRoot(container!);
+if (!container) {
+  throw new Error('Root element not found');
+}
+const root = createRoot(container);
 root.render(<App />);`;
 
-            const appTsx = `import React from 'react';
+        const appTsx = `import React from 'react';
 import './app.${a.style}';
 
 export function App() {
@@ -478,7 +430,7 @@ export function App() {
 
 export default App;`;
 
-            const appCss = `.app {
+        const appCss = `.app {
   font-family: sans-serif;
   min-width: 300px;
   max-width: 600px;
@@ -496,110 +448,108 @@ export default App;`;
   color: #666;
 }`;
 
-            // Write files
-            fs.writeFileSync(path.join(srcPath, "index.html"), indexHtml);
-            fs.writeFileSync(path.join(srcPath, "main.tsx"), mainTsx);
-            fs.writeFileSync(path.join(appSrcPath, "app.tsx"), appTsx);
-            fs.writeFileSync(path.join(appSrcPath, `app.${a.style}`), appCss);
+        // Write files
+        fs.writeFileSync(path.join(appPath, "index.html"), indexHtml);  // Root index.html
+        fs.writeFileSync(path.join(srcPath, "main.tsx"), mainTsx);
+        fs.writeFileSync(path.join(appSrcPath, "app.tsx"), appTsx);
+        fs.writeFileSync(path.join(appSrcPath, `app.${a.style}`), appCss);
 
-            // Update workspace package.json with React dependencies
-            const packageJsonPath = path.join(workspacePath, "package.json");
-            const packageJson = JSON.parse(
-              fs.readFileSync(packageJsonPath, "utf8")
-            );
+        // Update workspace package.json with React dependencies
+        const packageJsonPath = path.join(workspacePath, "package.json");
+        const packageJson = JSON.parse(
+          fs.readFileSync(packageJsonPath, "utf8")
+        );
 
-            packageJson.dependencies = packageJson.dependencies || {};
-            packageJson.dependencies["react"] = "latest";
-            packageJson.dependencies["react-dom"] = "latest";
-            packageJson.devDependencies = packageJson.devDependencies || {};
-            packageJson.devDependencies["@types/react"] = "latest";
-            packageJson.devDependencies["@types/react-dom"] = "latest";
-            packageJson.devDependencies["@vitejs/plugin-react"] = "latest";
-            packageJson.devDependencies["vite"] = "latest";
+        packageJson.dependencies = packageJson.dependencies || {};
+        packageJson.dependencies["react"] = "latest";
+        packageJson.dependencies["react-dom"] = "latest";
+        packageJson.devDependencies = packageJson.devDependencies || {};
+        packageJson.devDependencies["@types/react"] = "latest";
+        packageJson.devDependencies["@types/react-dom"] = "latest";
+        packageJson.devDependencies["@vitejs/plugin-react"] = "latest";
+        packageJson.devDependencies["vite"] = "latest";
 
-            fs.writeFileSync(
-              packageJsonPath,
-              JSON.stringify(packageJson, null, 2)
-            );
+        fs.writeFileSync(
+          packageJsonPath,
+          JSON.stringify(packageJson, null, 2)
+        );
 
-            // Update nx.json to include the new project
-            const nxJsonPath = path.join(workspacePath, "nx.json");
-            let nxJson: any = {};
-            if (fs.existsSync(nxJsonPath)) {
-              nxJson = JSON.parse(fs.readFileSync(nxJsonPath, "utf8"));
-            }
+        // Update nx.json to include the new project
+        const nxJsonPath = path.join(workspacePath, "nx.json");
+        let nxJson: any = {};
+        if (fs.existsSync(nxJsonPath)) {
+          nxJson = JSON.parse(fs.readFileSync(nxJsonPath, "utf8"));
+        }
 
-            nxJson.projects = nxJson.projects || {};
-            nxJson.projects[a.name] = `apps/${a.name}`;
+        nxJson.projects = nxJson.projects || {};
+        nxJson.projects[a.name] = `apps/${a.name}`;
 
-            fs.writeFileSync(nxJsonPath, JSON.stringify(nxJson, null, 2));
+        fs.writeFileSync(nxJsonPath, JSON.stringify(nxJson, null, 2));
 
-            // Create project.json for the app
-            const projectJson = {
-              name: a.name,
-              sourceRoot: `apps/${a.name}/src`,
-              projectType: "application",
-              targets: {
-                build: {
-                  executor: "@nx/vite:build",
-                  outputs: [`{options.outputPath}`],
-                  options: {
-                    outputPath: `dist/apps/${a.name}`,
-                  },
+        // Create project.json for the app
+        const projectJson = {
+          name: a.name,
+          sourceRoot: `apps/${a.name}/src`,
+          projectType: "application",
+          targets: {
+            build: {
+              executor: "@nx/vite:build",
+              outputs: [`{options.outputPath}`],
+              options: {
+                outputPath: `dist/apps/${a.name}`,
+              },
+            },
+            serve: {
+              executor: "@nx/vite:dev-server",
+              defaultConfiguration: "development",
+              options: {
+                buildTarget: `${a.name}:build`,
+              },
+              configurations: {
+                development: {
+                  buildTarget: `${a.name}:build:development`,
+                  hmr: true,
                 },
-                serve: {
-                  executor: "@nx/vite:dev-server",
-                  defaultConfiguration: "development",
-                  options: {
-                    buildTarget: `${a.name}:build`,
-                    proxyConfig: `apps/${a.name}/proxy.conf.json`,
-                  },
-                  configurations: {
-                    development: {
-                      buildTarget: `${a.name}:build:development`,
-                      hmr: true,
-                    },
-                    production: {
-                      buildTarget: `${a.name}:build:production`,
-                      hmr: false,
-                    },
-                  },
-                },
-                preview: {
-                  executor: "@nx/vite:preview-server",
-                  defaultConfiguration: "development",
-                  options: {
-                    buildTarget: `${a.name}:build`,
-                  },
-                },
-                test: {
-                  executor: "@nx/vite:test",
-                  outputs: [`{options.reportsDirectory}`],
-                  options: {
-                    passWithNoTests: true,
-                    reportsDirectory: `../../coverage/apps/${a.name}`,
-                  },
-                },
-                lint: {
-                  executor: "@nx/eslint:lint",
-                  outputs: [`{options.outputFile}`],
-                  options: {
-                    lintFilePatterns: [`apps/${a.name}/**/*.{ts,tsx,js,jsx}`],
-                  },
+                production: {
+                  buildTarget: `${a.name}:build:production`,
+                  hmr: false,
                 },
               },
-            };
+            },
+            preview: {
+              executor: "@nx/vite:preview-server",
+              defaultConfiguration: "development",
+              options: {
+                buildTarget: `${a.name}:build`,
+              },
+            },
+            test: {
+              executor: "@nx/vite:test",
+              outputs: [`{options.reportsDirectory}`],
+              options: {
+                passWithNoTests: true,
+                reportsDirectory: `../../coverage/apps/${a.name}`,
+              },
+            },
+            lint: {
+              executor: "@nx/eslint:lint",
+              outputs: [`{options.outputFile}`],
+              options: {
+                lintFilePatterns: [`apps/${a.name}/**/*.{ts,tsx,js,jsx}`],
+              },
+            },
+          },
+        };
 
-            fs.writeFileSync(
-              path.join(appPath, "project.json"),
-              JSON.stringify(projectJson, null, 2)
-            );
+        fs.writeFileSync(
+          path.join(appPath, "project.json"),
+          JSON.stringify(projectJson, null, 2)
+        );
 
-            // Create vite.config.ts
-            const viteConfig = `/// <reference types="vitest" />
+        // Create vite.config.ts
+        const viteConfig = `/// <reference types="vitest" />
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
-import { resolve } from 'path';
 
 export default defineConfig({
   root: __dirname,
@@ -640,31 +590,41 @@ export default defineConfig({
   },
 });`;
 
-            fs.writeFileSync(path.join(appPath, "vite.config.ts"), viteConfig);
+        fs.writeFileSync(path.join(appPath, "vite.config.ts"), viteConfig);
 
-            console.log(
-              `✅ React application '${a.name}' created successfully using manual generation!`
-            );
-          } catch (err3) {
-            console.error("\n❌ Failed to generate React application\n");
-            console.error(
-              "All generation methods failed. This might be due to:\n"
-            );
-            console.error(
-              "1. Schematic package not properly linked or installed"
-            );
-            console.error("2. Missing dependencies in the workspace");
-            console.error("3. Conflicting package versions\n");
-            console.error("Manual resolution steps:\n");
-            console.error(`1. cd ${a.workspace}`);
-            console.error("2. npm link @ptg-ui/react-schematics --force");
-            console.error("3. npx nx reset");
-            console.error(
-              `4. npx nx generate @ptg-ui/react-schematics:application --name=${a.name} --style=${a.style} --framework=${a.framework} --routing=${a.routing} --redux=${a.redux} --i18n=${a.i18n} --auth=${a.auth}\n`
-            );
-            throw err3;
-          }
-        }
+        // Create tsconfig.json for the app
+        const tsConfig = {
+          "extends": "../../tsconfig.base.json",
+          "compilerOptions": {
+            "jsx": "react-jsx",
+            "allowJs": true,
+            "esModuleInterop": true,
+            "allowSyntheticDefaultImports": true,
+            "strict": false,
+            "moduleResolution": "node",
+            "types": ["node", "vite/client"]
+          },
+          "include": ["src/**/*", "index.html"],
+          "exclude": ["node_modules", "dist"]
+        };
+
+        fs.writeFileSync(
+          path.join(appPath, "tsconfig.json"),
+          JSON.stringify(tsConfig, null, 2)
+        );
+
+        console.log(
+          `✅ React application '${a.name}' created successfully using manual generation!`
+        );
+      } catch (err) {
+        console.error("\n❌ Failed to generate React application\n");
+        console.error(
+          "Manual generation failed. This might be due to:\n"
+        );
+        console.error("1. Insufficient permissions");
+        console.error("2. Missing workspace structure");
+        console.error("3. File system errors\n");
+        throw err;
       }
 
       // Step 6: Install additional packages
@@ -779,7 +739,7 @@ export default defineConfig({
       console.error("10. If on corporate network, check proxy settings\n");
       process.exit(1);
     }
-  });
+  })
 }
 
 function getArgs() {

@@ -1,10 +1,11 @@
 {
   "$schema": "../node_modules/@angular-devkit/schematics/collection-schema.json",
   "schematics": {
-    "application": {
+    "ptg-react-app": {
       "description": "A schematic using a source and a schema to validate options.",
       "factory": "./application",
-      "schema": "./application/schema.json"
+      "schema": "./application/schema.json",
+      "aliases": ["ptg-app"]
     }
   }
 }
