@@ -18,7 +18,8 @@ async function createSandbox() {
    JSON.stringify({
     dependencies: {
      "@angular/cli": "^18.2.12",
-     "@nx/angular": "^20.2.2",
+     "@schematics/angular": "^18.2.12",
+     "@nx/angular": "^20.2.2", 
      "@nx/workspace": "^20.2.2",
      typescript: "^5.7.2",
     },
@@ -41,7 +42,7 @@ async function createSandbox() {
  }
 
  try {
-  execSync(`npm install @ptg-ui/angular-schematics`, {
+  execSync(`npm link @ptg-ui/angular-schematics --force`, {
    cwd: tmpDir,
    stdio: [0, 1, 2],
   });
@@ -82,22 +83,28 @@ async function createApp(tmpDir: string) {
 }
 
 function addVSCodeExtensions() {
- const extensionsList = [
-  "simontest.simontest",
-  "nrwl.angular-console",
-  "mrmlnc.vscode-scss",
-  "esbenp.prettier-vscode",
-  "ms-vscode.vscode-typescript-tslint-plugin",
-  "vscode-icons-team.vscode-icons",
-  "Angular.ng-template",
- ];
- const extensions = extensionsList
-  .map((ext) => `--install-extension ${ext}`)
-  .join(" ");
- execSync(`code ${extensions}`, {
-  // stdio: [0, 1, 2],
-  cwd: process.cwd(),
- });
+ try {
+  const extensionsList = [
+   "simontest.simontest", 
+   "nrwl.angular-console",
+   "mrmlnc.vscode-scss",
+   "esbenp.prettier-vscode",
+   "ms-vscode.vscode-typescript-tslint-plugin",
+   "vscode-icons-team.vscode-icons",
+   "Angular.ng-template",
+  ];
+  const extensions = extensionsList
+   .map((ext) => `--install-extension ${ext}`)
+   .join(" ");
+  execSync(`code ${extensions}`, {
+   // stdio: [0, 1, 2],
+   cwd: process.cwd(),
+  });
+  console.log("VS Code extensions installed successfully");
+ } catch (error) {
+  console.warn("Warning: Could not install VS Code extensions:", error.message);
+  // Continue execution even if extension installation fails
+ }
 }
 
 //cleanup function

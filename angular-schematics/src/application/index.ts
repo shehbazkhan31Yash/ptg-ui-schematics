@@ -42,6 +42,7 @@ export function application(options: any): Rule {
     style: "scss",
     skipInstall: true,
     strict: true,
+    standalone: false, // Force NgModule-based application since our schematic expects app.module.ts
    }),
    addImportToAppModule("SharedModule", "./shared/shared.module"),
    addImportToAppModule("CoreModule", "./core/core.module"),
