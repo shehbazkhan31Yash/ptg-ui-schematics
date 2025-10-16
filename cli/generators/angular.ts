@@ -129,5 +129,5 @@ function cleanup(dirPath: string) {
 export async function invokeAngularGenerator() {
  const temp = await createSandbox();
  createApp(temp);
- addVSCodeExtensions();
+//  addVSCodeExtensions();
 }
