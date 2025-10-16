@@ -1,6 +1,26 @@
 import { Rule, SchematicsException, Tree } from "@angular-devkit/schematics";
-import { applyChangesToString, ChangeType } from "@nx/devkit";
 import * as ts from "typescript";
+
+// Local implementation of ChangeType (replaces @nx/devkit)
+enum ChangeType {
+  Insert = 'insert',
+  Remove = 'remove',
+  Replace = 'replace'
+}
+
+// Local implementation of applyChangesToString (replaces @nx/devkit)
+function applyChangesToString(content: string, changes: Array<{type: ChangeType, index: number, text: string}>): string {
+  let result = content;
+  // Sort changes by index in descending order to avoid position shifts
+  const sortedChanges = changes.sort((a, b) => b.index - a.index);
+  
+  for (const change of sortedChanges) {
+    if (change.type === ChangeType.Insert) {
+      result = result.slice(0, change.index) + change.text + result.slice(change.index);
+    }
+  }
+  return result;
+}
 
 // Local implementation of insert function
 function insert(host: any, path: string, changes: any[]) {

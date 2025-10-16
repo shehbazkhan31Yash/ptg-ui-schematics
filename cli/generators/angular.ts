@@ -19,8 +19,7 @@ async function createSandbox() {
     dependencies: {
      "@angular/cli": "^18.2.12",
      "@schematics/angular": "^18.2.12",
-     "@nx/angular": "^20.2.2", 
-     "@nx/workspace": "^20.2.2",
+     "@ngrx/schematics": "^18.1.1",
      typescript: "^5.7.2",
     },
     license: "MIT",

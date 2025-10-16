@@ -1,6 +1,15 @@
 import { SchematicsException, Tree } from "@angular-devkit/schematics";
-import { names } from "@nx/devkit";
 import * as ts from "typescript";
+
+// Local utility function to convert names (replaces @nx/devkit names)
+function names(name: string) {
+  return {
+    fileName: name.replace(/([A-Z])/g, '-$1').toLowerCase().replace(/^-/, ''),
+    className: name.charAt(0).toUpperCase() + name.slice(1),
+    propertyName: name.charAt(0).toLowerCase() + name.slice(1),
+    constantName: name.toUpperCase().replace(/[^A-Z0-9]/g, '_')
+  };
+}
 
 // Define the Change interfaces locally since they're not exported from @nx
 interface Change {

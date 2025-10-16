@@ -18,6 +18,46 @@ import { getWorkspace } from "@schematics/angular/utility/workspace";
 import { join, normalize } from "path";
 import { addImportToAppModule, insertStatement } from "../utils/utils";
 
+// Local implementation of addDepsToPackageJson (replaces @nx/workspace)
+function addDepsToPackageJson(
+  dependencies: { [key: string]: string },
+  devDependencies: { [key: string]: string } = {},
+  overwrite: boolean = true
+): Rule {
+  return (tree: Tree) => {
+    const packageJsonPath = "package.json";
+    if (!tree.exists(packageJsonPath)) {
+      return tree;
+    }
+
+    const packageJsonContent = tree.read(packageJsonPath)!.toString();
+    const packageJson = JSON.parse(packageJsonContent);
+
+    // Add dependencies
+    if (Object.keys(dependencies).length > 0) {
+      packageJson.dependencies = packageJson.dependencies || {};
+      Object.keys(dependencies).forEach(pkg => {
+        if (overwrite || !packageJson.dependencies[pkg]) {
+          packageJson.dependencies[pkg] = dependencies[pkg];
+        }
+      });
+    }
+
+    // Add devDependencies
+    if (Object.keys(devDependencies).length > 0) {
+      packageJson.devDependencies = packageJson.devDependencies || {};
+      Object.keys(devDependencies).forEach(pkg => {
+        if (overwrite || !packageJson.devDependencies[pkg]) {
+          packageJson.devDependencies[pkg] = devDependencies[pkg];
+        }
+      });
+    }
+
+    tree.overwrite(packageJsonPath, JSON.stringify(packageJson, null, 2));
+    return tree;
+  };
+}
+
 // You don't have to export the function as default. You can also have more than one rule factory
 // per file.
 export function application(options: any): Rule {
@@ -120,32 +160,59 @@ export function setNGRX(_options: any): Rule {
  if (!_options.ngrx) {
   return noop;
  }
+ 
+ // For now, just add the dependencies to package.json
+ // NgRx setup will be done manually after project creation
  return chain([
-  externalSchematic("@nx/angular", "ngrx", {
-   name: "app",
-   module: "src/app/app.module.ts",
-   facade: true,
-   root: true,
+  addDepsToPackageJson({
+   "@ngrx/store": "^18.1.1",
+   "@ngrx/effects": "^18.1.1",
+   "@ngrx/entity": "^18.1.1",
+   "@ngrx/store-devtools": "^18.1.1",
   }),
-  externalSchematic("@nx/angular", "ngrx", {
-   name: "app",
-   module: "src/app/core/core.module.ts",
-   facade: true,
-   root: false,
-  }),
-  noop,
+  // Log instructions for manual NgRx setup
+  (tree: Tree, context: SchematicContext) => {
+   context.logger.info('\n🎯 NgRx dependencies added to package.json');
+   context.logger.info('📝 To set up NgRx, run these commands after project creation:');
+   context.logger.info(`   cd ${_options.name}`);
+   context.logger.info('   ng add @ngrx/store');
+   context.logger.info('   ng add @ngrx/effects');
+   context.logger.info('   ng add @ngrx/store-devtools');
+   return tree;
+  },
  ]);
 }
 
 export function addMaterialToPackageJson(): Rule {
- return noop;
+ return addDepsToPackageJson(
+  {
+   "@angular/material": "^18.2.13",
+   "@angular/cdk": "^18.2.13",
+  },
+  {},
+  false
+ );
 }
 
 export function addBootstrapToPackageJson(): Rule {
- return noop;
+ return addDepsToPackageJson(
+  {
+   bootstrap: "^5.3.0",
+  },
+  {},
+  false
+ );
 }
 export function addTailwindToPackageJson(): Rule {
- return noop;
+ return addDepsToPackageJson(
+  {
+   tailwindcss: "^3.4.0",
+   autoprefixer: "^10.4.0",
+   postcss: "^8.4.0",
+  },
+  {},
+  false
+ );
 }
 
 export function updateStyles(options: any) {
@@ -213,6 +280,10 @@ export function createTailwindConfig(
 
 export function addI18n(): Rule {
  return chain([
+  addDepsToPackageJson({
+   "@ngx-translate/core": "^15.0.0",
+   "@ngx-translate/http-loader": "^8.0.0",
+  }),
   addImportToAppModule(
    `
          TranslateModule,
