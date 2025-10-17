@@ -57,3 +57,4 @@ function getArgs() {
    return a.ApplicationType;
   });
 }
+
