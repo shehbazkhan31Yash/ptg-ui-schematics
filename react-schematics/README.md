@@ -1,49 +1,215 @@
-# Getting Started With Schematics
+# PTG UI React Schematics
 
-This repository is a basic Schematic implementation that serves as a starting point to create and publish Schematics to NPM.
+A powerful schematic collection for generating modern React applications with PTG UI's best practices and enterprise-ready configurations. This tool is part of the PTG UI Schematics suite and provides a seamless way to scaffold React applications with various features and configurations.
 
-### Testing
+## 🚀 Quick Start
 
-To test locally, install `@angular-devkit/schematics-cli` globally and use the `schematics` command line tool. That tool acts the same as the `generate` command of the Angular CLI, but also has a debug mode.
+### Installation
 
-Check the documentation with
-
+1. **Install the PTG UI CLI globally:**
 ```bash
-schematics --help
+npm install -g @ptg-ui/schematics-cli
 ```
 
-### Unit Testing
-
-`npm run test` will run the unit tests, using Jasmine as a runner and test framework.
-
-### Okta Integration
-
-1. Answer the following question with okta while running
-
+2. **Generate a new application:**
 ```bash
 ptg-ui-cli
 ```
 
-`Would you like to add Authentication to this application?` => `okta`
-
-2. Configure Okta Client, here all changes related to will automatically get added following config in `okta.config.ts` file.
-
-   1. yourOktaDomain - okta domain
-   2. clientId - clientId from okta application
-
-Example: `okta.config.ts`
-const ISSUER=https://{yourOktaDomain}/oauth2/default
-const CLIENT_ID={clientId}
-
-3. After serving application click on login it will redirect you to okta login page if configuration are valid
-
-### Publishing
-
-To publish, simply do:
-
+3. **Follow the CLI prompts:**
 ```bash
-npm run build
-npm publish
+? Select Application Type › 
+❯ React    Generate a new React application
+  Angular  Generate a new Angular application
+  Vue      Generate a new Vue application
 ```
 
-That's it!
+4. **Select 'React' and continue with the configuration prompts**
+
+The CLI will guide you through the setup process with interactive prompts for all configuration options.
+
+## ⚙️ Features
+
+### Core Features
+- Modern React 18+ setup with TypeScript
+- Nx workspace architecture for scalability
+- Configurable UI frameworks (Material-UI, Bootstrap)
+- Multiple authentication options (Custom, MSAL, Okta)
+- Flexible styling options (CSS, SCSS, LESS, Stylus)
+
+### Build & Development Tools
+- **Bundler Options**:
+  - Vite (recommended) - Lightning-fast dev server
+  - Webpack - Traditional bundling
+  - esbuild - Ultra-fast builds
+
+- **Testing Infrastructure**:
+  - Unit Testing: Vitest or Jest
+  - E2E Testing: Cypress or Playwright
+  - Coverage reporting
+
+- **Code Quality**:
+  - ESLint configuration
+  - Prettier formatting
+  - TypeScript strict mode
+
+### Optional Features
+- React Router for navigation
+- Redux Toolkit for state management
+- i18n support for internationalization
+- Authentication integrations
+
+## 🔧 Configuration Options
+
+After selecting "React" as your application type, you'll be prompted to configure:
+
+1. **Project Structure**
+   - Workspace name
+   - Application name
+
+2. **UI Framework**
+   - None (plain React)
+   - Material-UI
+   - Bootstrap
+
+3. **Authentication**
+   - Custom implementation
+   - MSAL (Microsoft Authentication)
+   - Okta
+
+4. **Styling**
+   - CSS
+   - SCSS
+   - LESS
+   - Stylus
+
+5. **Build Tools**
+   - Choice of bundler
+   - Testing frameworks
+   - Code quality tools
+
+### Example Configuration Flow
+```bash
+$ ptg-ui-cli
+
+? Select Application Type › 
+❯ React    Generate a new React application
+  Angular  Generate a new Angular application
+  Vue      Generate a new Vue application
+
+? Workspace name (e.g., org name) › my-company
+? What name would you like to use for the application? › dashboard
+? Which framework would you like to use? › Material
+? Which Authentication you would like to add to this Application? › MSAL
+? Which stylesheet format would you like to use? › SCSS
+? Would you like to add React Router to this application? › Yes
+? Would you like to add Redux to this application? › Yes
+? Would you like to add i18n to this project? › Yes
+? Which bundler would you like to use? › Vite (Recommended)
+? Which unit test runner would you like to use? › Vitest (Recommended)
+? Which test runner would you like to use for end to end tests? › Cypress
+? Would you like to use ESLint for linting? › Yes
+? Would you like to use Prettier for code formatting? › Yes
+```
+
+## 🔐 Authentication Setup
+
+### Okta Integration
+1. Select 'okta' when prompted for authentication
+2. Configure in `okta.config.ts`:
+   ```typescript
+   const ISSUER = 'https://{yourOktaDomain}/oauth2/default';
+   const CLIENT_ID = '{clientId}';
+   ```
+
+### MSAL Integration
+1. Select 'msal' when prompted for authentication
+2. Configure in `msal.config.ts`:
+   ```typescript
+   const config = {
+     auth: {
+       clientId: '{your-client-id}',
+       authority: '{your-authority-url}'
+     }
+   };
+   ```
+
+## 🛠️ Development
+
+### Local Testing
+1. Clone the repository
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
+3. Build the schematics:
+   ```bash
+   npm run build
+   ```
+4. Link for local testing:
+   ```bash
+   npm link
+   ```
+5. Run tests:
+   ```bash
+   npm test
+   ```
+
+### Running Generated Applications
+```bash
+# Start development server
+npm start
+
+# Build for production
+npm run build
+
+# Run tests
+npm test
+```
+
+## 📦 Publishing
+
+1. **Update version in package.json**
+
+2. **Build the project:**
+```bash
+npm run build
+```
+
+3. **Publish to NPM:**
+```bash
+npm publish --access public
+```
+
+## 🔄 Workspace Structure
+
+Generated applications follow this structure:
+```
+my-workspace/
+├── apps/
+│   └── my-app/
+│       ├── src/
+│       │   ├── app/
+│       │   │   ├── app.tsx
+│       │   │   ├── app.[style]
+│       │   │   └── components/
+│       │   ├── assets/
+│       │   └── main.tsx
+│       ├── project.json
+│       └── tsconfig.json
+├── libs/
+├── nx.json
+└── package.json
+```
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create your feature branch
+3. Commit your changes
+4. Push to the branch
+5. Create a Pull Request
+
+## 📝 License
+
+This project is licensed under the MIT License - see the LICENSE file for details.
