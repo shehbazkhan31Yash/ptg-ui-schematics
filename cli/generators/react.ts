@@ -438,6 +438,19 @@ export function reactAppGenerator() {
       if (fs.existsSync(appPath) || fs.existsSync(standaloneAppPath)) {
         console.log("✅ React application already created by Nx preset!");
 
+        // If using SCSS, ensure SASS is installed
+        if (a.style === 'scss') {
+          console.log("📦 Installing SASS support...");
+          try {
+            execSync('npm install --save-dev sass', {
+              cwd: workspacePath,
+              stdio: [0, 1, 2],
+            });
+          } catch (error) {
+            console.warn("⚠️ Failed to install SASS. You may need to install it manually: npm install --save-dev sass");
+          }
+        }
+
         // Apply PTG customizations to the preset-generated app
         console.log(
           "🎨 Applying PTG customizations to preset-generated app..."
@@ -533,6 +546,7 @@ export function reactAppGenerator() {
         "prettier@latest",
         "@typescript-eslint/eslint-plugin@latest",
         "@typescript-eslint/parser@latest",
+        ...(a.style === 'scss' ? ["sass@latest"] : []),
       ];
 
       if (a.auth) {
@@ -1174,15 +1188,12 @@ export default App;`;
     }
 
     // Add enhanced styling
-    const possibleStylePaths = [
-      path.join(appSrcPath, `app.${a.style}`),
-      path.join(srcPath, `app.${a.style}`),
-      path.join(srcPath, `styles.${a.style}`),
-      path.join(srcPath, `index.${a.style}`),
-    ];
+    // Ensure the app source directory exists
+    fs.mkdirSync(appSrcPath, { recursive: true });
 
-    const stylePath =
-      possibleStylePaths.find((p) => fs.existsSync(p)) || possibleStylePaths[0];
+    // For SCSS and other styles, we want to explicitly set the path and create it
+    const stylePath = path.join(appSrcPath, `app.${a.style}`);
+    console.log(`🎨 Creating style file at: ${stylePath}`);
 
     console.log(`🎨 Updating styles at ${path.basename(stylePath)}...`);
 
@@ -1294,8 +1305,20 @@ export default App;`;
 }`;
     }
 
-    fs.writeFileSync(stylePath, styleContent);
-    console.log("✅ Enhanced styling applied");
+    try {
+      fs.writeFileSync(stylePath, styleContent);
+      console.log("✅ Enhanced styling applied to:", stylePath);
+    } catch (error) {
+      console.error("❌ Failed to create style file:", error.message);
+      // Try to create the file in the src directory as fallback
+      const fallbackPath = path.join(srcPath, `app.${a.style}`);
+      try {
+        fs.writeFileSync(fallbackPath, styleContent);
+        console.log("✅ Enhanced styling applied to fallback location:", fallbackPath);
+      } catch (fallbackError) {
+        console.error("❌ Failed to create style file in fallback location:", fallbackError.message);
+      }
+    }
 
     console.log("✅ PTG customizations applied successfully!");
   } catch (error) {

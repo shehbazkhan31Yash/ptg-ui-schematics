@@ -222,6 +222,7 @@ export function updateStyles(options: any) {
 
     @include app-theme();
 
+
   `;
   if (options.framework === "material") {
    content = `
@@ -233,6 +234,7 @@ export function updateStyles(options: any) {
       margin: 0;
       font-family: Roboto, "Helvetica Neue", sans-serif;
     }
+    ${content}
     ${content}
     `;
   }
@@ -322,3 +324,4 @@ function deleteKeys(inputObj: any, keysToDelete: string[]): any {
  keysToDelete.forEach((key) => delete inputObj[key]);
  return inputObj;
 }
+
