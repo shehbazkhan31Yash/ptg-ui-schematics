@@ -20,45 +20,100 @@ export function reactAppGenerator() {
       // Step 1: Create Nx workspace
       console.log("\n🚀 Step 1/7: Creating Nx workspace...\n");
       try {
-        // Try with --skip-nx-cache flag and retry logic
+        // For Nx v21+, use a supported preset
         execSync(
-          `npx create-nx-workspace@latest ${a.workspace} --preset empty --nx-cloud=skip --package-manager=npm --skip-git --skip-nx-cache`,
+          `npx create-nx-workspace@latest ${a.workspace} --preset react-standalone --appName ${a.name} --style ${a.style} --nx-cloud skip --packageManager npm --routing ${a.routing} --bundler ${a.bundler} --unitTestRunner ${a.unitTestRunner} --e2eTestRunner ${a.e2eTestRunner}`,
           {
-
             cwd: process.cwd(),
             stdio: "inherit",
           }
         );
+
+        // If we get here, the workspace was created successfully
+        console.log("✅ Nx workspace created successfully!");
+
+        // We can skip the manual app generation since it's already created
+        console.log("\n📱 React application created by Nx preset");
       } catch (err) {
         console.log(
-          "\n⚠️  First attempt failed, trying alternative approach...\n"
+          "\n⚠️  Nx preset failed, trying alternative approaches...\n"
         );
+
+        // Clean up any partial directory
+        if (fs.existsSync(workspacePath)) {
+          console.log("🧹 Cleaning up partial workspace...");
+          fs.rmSync(workspacePath, { recursive: true, force: true });
+        }
+
         try {
-          // Alternative: Create workspace without automatic dependency installation
+          // Try with node preset instead
           execSync(
-            `npx create-nx-workspace@latest ${a.workspace} --preset empty --nx-cloud=skip --package-manager=npm --skip-git --skip-install`,
+            `npx create-nx-workspace@latest ${a.workspace} --preset node --nx-cloud skip --packageManager npm`,
             {
               cwd: process.cwd(),
               stdio: "inherit",
             }
           );
         } catch (err2) {
-          console.error("\n❌ Failed to create Nx workspace\n");
-          console.error("Error details:", err2.message);
-          console.error("\nTrying manual workspace creation...\n");
+          console.log(
+            "\n⚠️  All Nx presets failed, creating minimal workspace manually...\n"
+          );
+
+          // Clean up again
+          if (fs.existsSync(workspacePath)) {
+            fs.rmSync(workspacePath, { recursive: true, force: true });
+          }
 
           // Manual workspace creation as fallback
           try {
             fs.mkdirSync(workspacePath, { recursive: true });
 
-            // Create basic nx.json
+            // Create basic nx.json for modern Nx
             const nxConfig = {
-              extends: "nx/presets/npm.json",
               $schema: "./node_modules/nx/schemas/nx-schema.json",
+              namedInputs: {
+                default: ["{projectRoot}/**/*", "sharedGlobals"],
+                production: [
+                  "default",
+                  "!{projectRoot}/**/?(*.)+(spec|test).[jt]s?(x)?(.snap)",
+                  "!{projectRoot}/tsconfig.spec.json",
+                  "!{projectRoot}/jest.config.[jt]s",
+                  "!{projectRoot}/.eslintrc.json",
+                  "!{projectRoot}/src/test-setup.[jt]s",
+                  "!{projectRoot}/test-setup.[jt]s",
+                ],
+                sharedGlobals: [],
+              },
               targetDefaults: {
                 build: {
                   dependsOn: ["^build"],
                   inputs: ["production", "^production"],
+                },
+                test: {
+                  inputs: [
+                    "default",
+                    "^production",
+                    "{workspaceRoot}/jest.preset.js",
+                  ],
+                },
+                lint: {
+                  inputs: ["default", "{workspaceRoot}/.eslintrc.json"],
+                },
+              },
+              generators: {
+                "@nx/react": {
+                  application: {
+                    style: "css",
+                    linter: "eslint",
+                    bundler: "vite",
+                  },
+                  component: {
+                    style: "css",
+                  },
+                  library: {
+                    style: "css",
+                    linter: "eslint",
+                  },
                 },
               },
             };
@@ -71,17 +126,19 @@ export function reactAppGenerator() {
               scripts: {
                 build: "nx build",
                 test: "nx test",
+                start: "nx serve",
               },
               private: true,
               dependencies: {},
               devDependencies: {
-                nx: "latest",
-                typescript: "latest",
-                "@nx/react": "latest",
-                "@nx/js": "latest",
-                "@nx/eslint": "latest",
-                "@nx/webpack": "latest",
-                "@nx/vite": "latest",
+                nx: "^21.6.5",
+                typescript: "^5.5.0",
+                "@nx/react": "^21.6.5",
+                "@nx/js": "^21.6.5",
+                "@nx/eslint": "^21.6.5",
+                "@nx/webpack": "^21.6.5",
+                "@nx/vite": "^21.6.5",
+                "@nx/workspace": "^21.6.5",
               },
             };
 
@@ -374,258 +431,90 @@ export function reactAppGenerator() {
       // Step 5: Generate React application
       console.log("\n🚀 Step 6/7: Generating React application...\n");
 
-      // Due to persistent alias collision issues, skip schematic and use direct manual generation
-      console.log("🔄 Using direct manual generation to avoid alias collisions...\n");
+      // Check if app was already created by the preset
+      const appPath = path.join(workspacePath, "apps", a.name);
+      const standaloneAppPath = path.join(workspacePath, "src");
 
-      try {
-        // Create React app manually
-        console.log("Creating React application structure manually...");
+      if (fs.existsSync(appPath) || fs.existsSync(standaloneAppPath)) {
+        console.log("✅ React application already created by Nx preset!");
 
-        // Create app directory structure
-        const appPath = path.join(workspacePath, "apps", a.name);
-        const srcPath = path.join(appPath, "src");
-        const appSrcPath = path.join(srcPath, "app");
-
-        // Create directories
-        fs.mkdirSync(appPath, { recursive: true });
-        fs.mkdirSync(srcPath, { recursive: true });
-        fs.mkdirSync(appSrcPath, { recursive: true });
-
-        // Create basic React files
-        const indexHtml = `<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <title>${a.name}</title>
-    <base href="/" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <link rel="icon" type="image/x-icon" href="favicon.ico" />
-  </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
-  </body>
-</html>`;
-
-        const mainTsx = `import { createRoot } from 'react-dom/client';
-import App from './app/app';
-
-const container = document.getElementById('root');
-if (!container) {
-  throw new Error('Root element not found');
-}
-const root = createRoot(container);
-root.render(<App />);`;
-
-        const appTsx = `import React from 'react';
-import './app.${a.style}';
-
-export function App() {
-  return (
-    <div className="app">
-      <h1>Welcome to ${a.name}!</h1>
-      <p>This is a React application generated by PTG UI Schematics.</p>
-    </div>
-  );
-}
-
-export default App;`;
-
-        const appCss = `.app {
-  font-family: sans-serif;
-  min-width: 300px;
-  max-width: 600px;
-  margin: 50px auto;
-}
-
-.app h1 {
-  text-align: center;
-  margin-bottom: 20px;
-  color: #333;
-}
-
-.app p {
-  text-align: center;
-  color: #666;
-}`;
-
-        // Write files
-        fs.writeFileSync(path.join(appPath, "index.html"), indexHtml);  // Root index.html
-        fs.writeFileSync(path.join(srcPath, "main.tsx"), mainTsx);
-        fs.writeFileSync(path.join(appSrcPath, "app.tsx"), appTsx);
-        fs.writeFileSync(path.join(appSrcPath, `app.${a.style}`), appCss);
-
-        // Update workspace package.json with React dependencies
-        const packageJsonPath = path.join(workspacePath, "package.json");
-        const packageJson = JSON.parse(
-          fs.readFileSync(packageJsonPath, "utf8")
-        );
-
-        packageJson.dependencies = packageJson.dependencies || {};
-        packageJson.dependencies["react"] = "latest";
-        packageJson.dependencies["react-dom"] = "latest";
-        packageJson.devDependencies = packageJson.devDependencies || {};
-        packageJson.devDependencies["@types/react"] = "latest";
-        packageJson.devDependencies["@types/react-dom"] = "latest";
-        packageJson.devDependencies["@vitejs/plugin-react"] = "latest";
-        packageJson.devDependencies["vite"] = "latest";
-
-        fs.writeFileSync(
-          packageJsonPath,
-          JSON.stringify(packageJson, null, 2)
-        );
-
-        // Update nx.json to include the new project
-        const nxJsonPath = path.join(workspacePath, "nx.json");
-        let nxJson: any = {};
-        if (fs.existsSync(nxJsonPath)) {
-          nxJson = JSON.parse(fs.readFileSync(nxJsonPath, "utf8"));
-        }
-
-        nxJson.projects = nxJson.projects || {};
-        nxJson.projects[a.name] = `apps/${a.name}`;
-
-        fs.writeFileSync(nxJsonPath, JSON.stringify(nxJson, null, 2));
-
-        // Create project.json for the app
-        const projectJson = {
-          name: a.name,
-          sourceRoot: `apps/${a.name}/src`,
-          projectType: "application",
-          targets: {
-            build: {
-              executor: "@nx/vite:build",
-              outputs: [`{options.outputPath}`],
-              options: {
-                outputPath: `dist/apps/${a.name}`,
-              },
-            },
-            serve: {
-              executor: "@nx/vite:dev-server",
-              defaultConfiguration: "development",
-              options: {
-                buildTarget: `${a.name}:build`,
-              },
-              configurations: {
-                development: {
-                  buildTarget: `${a.name}:build:development`,
-                  hmr: true,
-                },
-                production: {
-                  buildTarget: `${a.name}:build:production`,
-                  hmr: false,
-                },
-              },
-            },
-            preview: {
-              executor: "@nx/vite:preview-server",
-              defaultConfiguration: "development",
-              options: {
-                buildTarget: `${a.name}:build`,
-              },
-            },
-            test: {
-              executor: "@nx/vite:test",
-              outputs: [`{options.reportsDirectory}`],
-              options: {
-                passWithNoTests: true,
-                reportsDirectory: `../../coverage/apps/${a.name}`,
-              },
-            },
-            lint: {
-              executor: "@nx/eslint:lint",
-              outputs: [`{options.outputFile}`],
-              options: {
-                lintFilePatterns: [`apps/${a.name}/**/*.{ts,tsx,js,jsx}`],
-              },
-            },
-          },
-        };
-
-        fs.writeFileSync(
-          path.join(appPath, "project.json"),
-          JSON.stringify(projectJson, null, 2)
-        );
-
-        // Create vite.config.ts
-        const viteConfig = `/// <reference types="vitest" />
-import { defineConfig } from 'vite';
-import react from '@vitejs/plugin-react';
-
-export default defineConfig({
-  root: __dirname,
-  cacheDir: '../../node_modules/.vite/${a.name}',
-  
-  server: {
-    port: 4200,
-    host: 'localhost',
-    open: true,
-    fs: {
-      allow: ['../..']
-    }
-  },
-
-  preview: {
-    port: 4300,
-    host: 'localhost',
-  },
-
-  plugins: [react()],
-
-  build: {
-    outDir: '../../dist/apps/${a.name}',
-    reportCompressedSize: true,
-    commonjsOptions: {
-      transformMixedEsModules: true,
-    },
-    target: 'esnext',
-    minify: 'esbuild',
-  },
-
-  optimizeDeps: {
-    include: ['react', 'react-dom'],
-  },
-
-  define: {
-    global: 'globalThis',
-  },
-});`;
-
-        fs.writeFileSync(path.join(appPath, "vite.config.ts"), viteConfig);
-
-        // Create tsconfig.json for the app
-        const tsConfig = {
-          "extends": "../../tsconfig.base.json",
-          "compilerOptions": {
-            "jsx": "react-jsx",
-            "allowJs": true,
-            "esModuleInterop": true,
-            "allowSyntheticDefaultImports": true,
-            "strict": false,
-            "moduleResolution": "node",
-            "types": ["node", "vite/client"]
-          },
-          "include": ["src/**/*", "index.html"],
-          "exclude": ["node_modules", "dist"]
-        };
-
-        fs.writeFileSync(
-          path.join(appPath, "tsconfig.json"),
-          JSON.stringify(tsConfig, null, 2)
-        );
-
+        // Apply PTG customizations to the preset-generated app
         console.log(
-          `✅ React application '${a.name}' created successfully using manual generation!`
+          "🎨 Applying PTG customizations to preset-generated app..."
         );
-      } catch (err) {
-        console.error("\n❌ Failed to generate React application\n");
-        console.error(
-          "Manual generation failed. This might be due to:\n"
-        );
-        console.error("1. Insufficient permissions");
-        console.error("2. Missing workspace structure");
-        console.error("3. File system errors\n");
-        throw err;
+        applyPTGCustomizations(workspacePath, a);
+      } else {
+        console.log("🚀 Creating React application using Nx generator...");
+
+        try {
+          // Use Nx React generator to create the application
+          execSync(
+            `npx nx generate @nx/react:application ${a.name} --style=${a.style} --routing=${a.routing} --bundler=${a.bundler} --unitTestRunner=${a.unitTestRunner} --e2eTestRunner=${a.e2eTestRunner} --linter=${a.linter ? 'eslint' : 'none'} --skipFormat=true`,
+            {
+              cwd: workspacePath,
+              stdio: [0, 1, 2],
+            }
+          );
+          console.log(
+            `✅ React application '${a.name}' created successfully using Nx generator!`
+          );
+
+          // Apply PTG customizations to the generated app
+          console.log("🎨 Applying PTG customizations...");
+          applyPTGCustomizations(workspacePath, a);
+        } catch (err) {
+          console.log(
+            "\n⚠️  Nx React generator failed, trying alternative approach...\n"
+          );
+
+          try {
+            // Try without some optional parameters
+            execSync(
+              `npx nx generate @nx/react:app ${a.name} --style=${a.style} --routing=${a.routing}`,
+              {
+                cwd: workspacePath,
+                stdio: [0, 1, 2],
+              }
+            );
+            console.log(
+              `✅ React application '${a.name}' created successfully with fallback command!`
+            );
+
+            // Apply PTG customizations to the generated app
+            console.log("🎨 Applying PTG customizations...");
+            applyPTGCustomizations(workspacePath, a);
+          } catch (err2) {
+            console.log(
+              "\n⚠️  Standard Nx generators failed, trying PTG React Schematics...\n"
+            );
+
+            try {
+              // Try using the custom PTG React schematic
+              execSync(
+                `npx nx generate @ptg-ui/react-schematics:application ${a.name} --style=${a.style} --routing=${a.routing} --framework=${a.framework} --auth=${a.auth} --redux=${a.redux} --i18n=${a.i18n}`,
+                {
+                  cwd: workspacePath,
+                  stdio: [0, 1, 2],
+                }
+              );
+              console.log(
+                `✅ React application '${a.name}' created successfully using PTG React Schematics!`
+              );
+
+              // PTG schematics should already include customizations, but apply any additional ones
+              console.log("🎨 Applying additional PTG customizations...");
+              applyPTGCustomizations(workspacePath, a);
+            } catch (err3) {
+              console.error("\n❌ All React generation methods failed\n");
+              console.error("Nx generator error:", err2.message);
+              console.error("PTG schematic error:", err3.message);
+              console.error("\nFalling back to manual creation...\n");
+
+              // Manual creation as last resort
+              createManualReactApp(workspacePath, a);
+            }
+          }
+        }
       }
 
       // Step 6: Install additional packages
@@ -740,7 +629,7 @@ export default defineConfig({
       console.error("10. If on corporate network, check proxy settings\n");
       process.exit(1);
     }
-  })
+  });
 }
 
 function getArgs() {
@@ -788,6 +677,48 @@ function getArgs() {
     {
       value: "okta",
       label: "Okta",
+    },
+  ];
+  const bundlerOptions: { value: string; label: string }[] = [
+    {
+      value: "vite",
+      label: "Vite (Recommended)",
+    },
+    {
+      value: "webpack",
+      label: "Webpack",
+    },
+    {
+      value: "esbuild",
+      label: "esbuild",
+    },
+  ];
+  const unitTestOptions: { value: string; label: string }[] = [
+    {
+      value: "vitest",
+      label: "Vitest (Recommended)",
+    },
+    {
+      value: "jest",
+      label: "Jest",
+    },
+    {
+      value: "none",
+      label: "None",
+    },
+  ];
+  const e2eTestOptions: { value: string; label: string }[] = [
+    {
+      value: "cypress",
+      label: "Cypress",
+    },
+    {
+      value: "playwright",
+      label: "Playwright",
+    },
+    {
+      value: "none",
+      label: "None",
     },
   ];
   return (inquirer as any)
@@ -838,10 +769,538 @@ function getArgs() {
         message: "would you like to Adds i18n in project?",
         type: "confirm",
       },
+      {
+        name: "bundler",
+        message: "Which bundler would you like to use?",
+        type: "list",
+        default: "vite",
+        choices: bundlerOptions,
+      },
+      {
+        name: "unitTestRunner",
+        message: "Which unit test runner would you like to use?",
+        type: "list",
+        default: "vitest",
+        choices: unitTestOptions,
+      },
+      {
+        name: "e2eTestRunner",
+        message: "Which test runner would you like to use for end to end tests?",
+        type: "list",
+        default: "none",
+        choices: e2eTestOptions,
+      },
+      {
+        name: "linter",
+        message: "Would you like to use ESLint for linting?",
+        type: "confirm",
+        default: true,
+      },
+      {
+        name: "prettier",
+        message: "Would you like to use Prettier for code formatting?",
+        type: "confirm",
+        default: true,
+      },
     ])
     .then((a: any) => {
       return a;
     });
+}
+
+function createManualReactApp(workspacePath: string, a: any) {
+  console.log("📁 Creating React application structure manually...");
+
+  // Create app directory structure
+  const appPath = path.join(workspacePath, "apps", a.name);
+  const srcPath = path.join(appPath, "src");
+  const appSrcPath = path.join(srcPath, "app");
+
+  // Create directories
+  fs.mkdirSync(appPath, { recursive: true });
+  fs.mkdirSync(srcPath, { recursive: true });
+  fs.mkdirSync(appSrcPath, { recursive: true });
+
+  // Create basic React files
+  const indexHtml = `<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>${a.name}</title>
+    <base href="/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="icon" type="image/x-icon" href="favicon.ico" />
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>`;
+
+  const mainTsx = `import { createRoot } from 'react-dom/client';
+import App from './app/app';
+
+const container = document.getElementById('root');
+if (!container) {
+  throw new Error('Root element not found');
+}
+const root = createRoot(container);
+root.render(<App />);`;
+
+  const appTsx = `import React from 'react';
+import './app.${a.style}';
+
+export function App() {
+  return (
+    <div className="app">
+      <h1>Welcome to ${a.name}!</h1>
+      <p>This is a React application generated by PTG UI Schematics.</p>
+      <p>Generated with manual fallback method.</p>
+    </div>
+  );
+}
+
+export default App;`;
+
+  const appCss = `.app {
+  font-family: sans-serif;
+  min-width: 300px;
+  max-width: 600px;
+  margin: 50px auto;
+}
+
+.app h1 {
+  text-align: center;
+  margin-bottom: 20px;
+  color: #333;
+}
+
+.app p {
+  text-align: center;
+  color: #666;
+}`;
+
+  // Write files
+  fs.writeFileSync(path.join(appPath, "index.html"), indexHtml);
+  fs.writeFileSync(path.join(srcPath, "main.tsx"), mainTsx);
+  fs.writeFileSync(path.join(appSrcPath, "app.tsx"), appTsx);
+  fs.writeFileSync(path.join(appSrcPath, `app.${a.style}`), appCss);
+
+  // Update workspace package.json with React dependencies
+  const packageJsonPath = path.join(workspacePath, "package.json");
+  const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, "utf8"));
+
+  packageJson.dependencies = packageJson.dependencies || {};
+  packageJson.dependencies["react"] = "latest";
+  packageJson.dependencies["react-dom"] = "latest";
+  packageJson.devDependencies = packageJson.devDependencies || {};
+  packageJson.devDependencies["@types/react"] = "latest";
+  packageJson.devDependencies["@types/react-dom"] = "latest";
+  packageJson.devDependencies["@vitejs/plugin-react"] = "latest";
+  packageJson.devDependencies["vite"] = "latest";
+
+  fs.writeFileSync(packageJsonPath, JSON.stringify(packageJson, null, 2));
+
+  // Update nx.json to include the new project
+  const nxJsonPath = path.join(workspacePath, "nx.json");
+  let nxJson: any = {};
+  if (fs.existsSync(nxJsonPath)) {
+    nxJson = JSON.parse(fs.readFileSync(nxJsonPath, "utf8"));
+  }
+
+  nxJson.projects = nxJson.projects || {};
+  nxJson.projects[a.name] = `apps/${a.name}`;
+
+  fs.writeFileSync(nxJsonPath, JSON.stringify(nxJson, null, 2));
+
+  // Create project.json for the app
+  const projectJson = {
+    name: a.name,
+    sourceRoot: `apps/${a.name}/src`,
+    projectType: "application",
+    targets: {
+      build: {
+        executor: "@nx/vite:build",
+        outputs: [`{options.outputPath}`],
+        options: {
+          outputPath: `dist/apps/${a.name}`,
+        },
+      },
+      serve: {
+        executor: "@nx/vite:dev-server",
+        defaultConfiguration: "development",
+        options: {
+          buildTarget: `${a.name}:build`,
+        },
+        configurations: {
+          development: {
+            buildTarget: `${a.name}:build:development`,
+            hmr: true,
+          },
+          production: {
+            buildTarget: `${a.name}:build:production`,
+            hmr: false,
+          },
+        },
+      },
+      preview: {
+        executor: "@nx/vite:preview-server",
+        defaultConfiguration: "development",
+        options: {
+          buildTarget: `${a.name}:build`,
+        },
+      },
+      test: {
+        executor: "@nx/vite:test",
+        outputs: [`{options.reportsDirectory}`],
+        options: {
+          passWithNoTests: true,
+          reportsDirectory: `../../coverage/apps/${a.name}`,
+        },
+      },
+      lint: {
+        executor: "@nx/eslint:lint",
+        outputs: [`{options.outputFile}`],
+        options: {
+          lintFilePatterns: [`apps/${a.name}/**/*.{ts,tsx,js,jsx}`],
+        },
+      },
+    },
+  };
+
+  fs.writeFileSync(
+    path.join(appPath, "project.json"),
+    JSON.stringify(projectJson, null, 2)
+  );
+
+  // Create vite.config.ts
+  const viteConfig = `/// <reference types="vitest" />
+import { defineConfig } from 'vite';
+import react from '@vitejs/plugin-react';
+
+export default defineConfig({
+  root: __dirname,
+  cacheDir: '../../node_modules/.vite/${a.name}',
+  
+  server: {
+    port: 4200,
+    host: 'localhost',
+    open: true,
+    fs: {
+      allow: ['../..']
+    }
+  },
+
+  preview: {
+    port: 4300,
+    host: 'localhost',
+  },
+
+  plugins: [react()],
+
+  build: {
+    outDir: '../../dist/apps/${a.name}',
+    reportCompressedSize: true,
+    commonjsOptions: {
+      transformMixedEsModules: true,
+    },
+    target: 'esnext',
+    minify: 'esbuild',
+  },
+
+  optimizeDeps: {
+    include: ['react', 'react-dom'],
+  },
+
+  define: {
+    global: 'globalThis',
+  },
+});`;
+
+  fs.writeFileSync(path.join(appPath, "vite.config.ts"), viteConfig);
+
+  // Create tsconfig.json for the app
+  const tsConfig = {
+    extends: "../../tsconfig.base.json",
+    compilerOptions: {
+      jsx: "react-jsx",
+      allowJs: true,
+      esModuleInterop: true,
+      allowSyntheticDefaultImports: true,
+      strict: false,
+      moduleResolution: "node",
+      types: ["node", "vite/client"],
+    },
+    include: ["src/**/*", "index.html"],
+    exclude: ["node_modules", "dist"],
+  };
+
+  fs.writeFileSync(
+    path.join(appPath, "tsconfig.json"),
+    JSON.stringify(tsConfig, null, 2)
+  );
+
+  console.log(
+    `✅ React application '${a.name}' created successfully using manual fallback!`
+  );
+}
+
+function applyPTGCustomizations(workspacePath: string, a: any) {
+  try {
+    console.log("🔧 Applying framework-specific customizations...");
+
+    // Detect if it's a standalone app (src in root) or multi-app workspace (apps/appName)
+    const standaloneAppPath = path.join(workspacePath, "src");
+    const multiAppPath = path.join(workspacePath, "apps", a.name);
+
+    let appPath: string;
+    let srcPath: string;
+    let appSrcPath: string;
+
+    if (fs.existsSync(standaloneAppPath)) {
+      // Standalone app structure
+      appPath = workspacePath;
+      srcPath = standaloneAppPath;
+      appSrcPath = path.join(srcPath, "app");
+      console.log("📁 Detected standalone app structure");
+    } else if (fs.existsSync(multiAppPath)) {
+      // Multi-app workspace structure
+      appPath = multiAppPath;
+      srcPath = path.join(appPath, "src");
+      appSrcPath = path.join(srcPath, "app");
+      console.log("📁 Detected multi-app workspace structure");
+    } else {
+      console.warn(
+        "⚠️  Could not detect app structure, skipping customizations"
+      );
+      return;
+    }
+
+    // Update the main app component with PTG branding
+    const appTsxPath = path.join(appSrcPath, "app.tsx");
+    const appJsxPath = path.join(appSrcPath, "app.jsx");
+    const mainAppPath = fs.existsSync(appTsxPath) ? appTsxPath : appJsxPath;
+
+    if (fs.existsSync(mainAppPath)) {
+      console.log(
+        `🔧 Updating ${path.basename(mainAppPath)} with PTG customizations...`
+      );
+
+      const appContent = `import React from 'react';
+import './app.${a.style}';
+${
+  a.routing
+    ? "import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';"
+    : ""
+}
+${
+  a.redux
+    ? "import { Provider } from 'react-redux';\nimport { store } from './store';"
+    : ""
+}
+${
+  a.i18n
+    ? "import { useTranslation } from 'react-i18next';\nimport './i18n';"
+    : ""
+}
+
+export function App() {
+  ${a.i18n ? "const { t, i18n } = useTranslation();" : ""}
+
+  return (
+    ${a.redux ? "<Provider store={store}>" : ""}
+    ${a.routing ? "<Router>" : ""}
+    <div className="app">
+      <header className="app-header">
+        <h1>${a.i18n ? "{t('welcome')}" : `Welcome to ${a.name}!`}</h1>
+        <p>Generated by PTG UI Schematics with:</p>
+        <ul className="feature-list">
+          <li>✅ React ${a.framework !== "none" ? `+ ${a.framework}` : ""}</li>
+          <li>✅ ${a.style.toUpperCase()} Styling</li>
+          <li>✅ ${a.bundler.charAt(0).toUpperCase() + a.bundler.slice(1)} Bundler</li>
+          ${a.routing ? "<li>✅ React Router</li>" : ""}
+          ${a.redux ? "<li>✅ Redux Toolkit</li>" : ""}
+          ${a.i18n ? "<li>✅ Internationalization</li>" : ""}
+          ${a.unitTestRunner !== 'none' ? `<li>✅ ${a.unitTestRunner.charAt(0).toUpperCase() + a.unitTestRunner.slice(1)} Unit Tests</li>` : ""}
+          ${a.e2eTestRunner !== 'none' ? `<li>✅ ${a.e2eTestRunner.charAt(0).toUpperCase() + a.e2eTestRunner.slice(1)} E2E Tests</li>` : ""}
+          ${a.linter ? "<li>✅ ESLint Linting</li>" : ""}
+          ${a.prettier ? "<li>✅ Prettier Formatting</li>" : ""}
+          ${
+            a.auth !== "custom"
+              ? `<li>✅ ${a.auth.toUpperCase()} Authentication</li>`
+              : "<li>✅ Custom Authentication</li>"
+          }
+        </ul>
+      </header>
+      
+      ${
+        a.routing
+          ? `
+      <nav className="app-nav">
+        <Link to="/">Home</Link>
+        <Link to="/about">About</Link>
+      </nav>
+      
+      <main className="app-main">
+        <Routes>
+          <Route path="/" element={<div>Home Page</div>} />
+          <Route path="/about" element={<div>About Page</div>} />
+        </Routes>
+      </main>`
+          : ""
+      }
+      
+      ${
+        a.i18n
+          ? `
+      <div className="language-switcher">
+        <button onClick={() => i18n.changeLanguage('en')}>English</button>
+        <button onClick={() => i18n.changeLanguage('es')}>Español</button>
+      </div>`
+          : ""
+      }
+    </div>
+    ${a.routing ? "</Router>" : ""}
+    ${a.redux ? "</Provider>" : ""}
+  );
+}
+
+export default App;`;
+
+      fs.writeFileSync(mainAppPath, appContent);
+      console.log("✅ App component updated with PTG features");
+    } else {
+      console.warn("⚠️  Could not find main app component file");
+    }
+
+    // Add enhanced styling
+    const possibleStylePaths = [
+      path.join(appSrcPath, `app.${a.style}`),
+      path.join(srcPath, `app.${a.style}`),
+      path.join(srcPath, `styles.${a.style}`),
+      path.join(srcPath, `index.${a.style}`),
+    ];
+
+    const stylePath =
+      possibleStylePaths.find((p) => fs.existsSync(p)) || possibleStylePaths[0];
+
+    console.log(`🎨 Updating styles at ${path.basename(stylePath)}...`);
+
+    let styleContent = `.app {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  min-height: 100vh;
+  color: white;
+}
+
+.app-header {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.app-header h1 {
+  font-size: 2.5rem;
+  margin-bottom: 1rem;
+  text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+}
+
+.feature-list {
+  list-style: none;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 1rem;
+}
+
+.feature-list li {
+  background: rgba(255,255,255,0.1);
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  backdrop-filter: blur(10px);
+}
+
+.app-nav {
+  display: flex;
+  justify-content: center;
+  gap: 2rem;
+  margin-bottom: 2rem;
+}
+
+.app-nav a {
+  color: white;
+  text-decoration: none;
+  padding: 0.5rem 1rem;
+  border: 2px solid rgba(255,255,255,0.3);
+  border-radius: 25px;
+  transition: all 0.3s ease;
+}
+
+.app-nav a:hover {
+  background: rgba(255,255,255,0.2);
+  transform: translateY(-2px);
+}
+
+.app-main {
+  min-height: 200px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255,255,255,0.1);
+  border-radius: 15px;
+  padding: 2rem;
+  backdrop-filter: blur(10px);
+}
+
+.language-switcher {
+  margin-top: 2rem;
+  text-align: center;
+}
+
+.language-switcher button {
+  margin: 0 0.5rem;
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 20px;
+  background: rgba(255,255,255,0.2);
+  color: white;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.language-switcher button:hover {
+  background: rgba(255,255,255,0.3);
+  transform: scale(1.05);
+}`;
+
+    // Add framework-specific styles
+    if (a.framework === "bootstrap") {
+      styleContent += `
+      
+/* Bootstrap customizations */
+.btn-primary {
+  background: linear-gradient(45deg, #667eea, #764ba2);
+  border: none;
+}`;
+    } else if (a.framework === "material") {
+      styleContent += `
+      
+/* Material-UI customizations */
+.MuiButton-root {
+  background: linear-gradient(45deg, #667eea, #764ba2);
+}`;
+    }
+
+    fs.writeFileSync(stylePath, styleContent);
+    console.log("✅ Enhanced styling applied");
+
+    console.log("✅ PTG customizations applied successfully!");
+  } catch (error) {
+    console.warn("⚠️  Some customizations failed to apply:", error.message);
+  }
 }
 
 function addVSCodeExtensions() {
