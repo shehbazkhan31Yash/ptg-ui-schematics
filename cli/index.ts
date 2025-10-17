@@ -35,7 +35,7 @@ function getArgs() {
    value: "angular",
   },
   {
-   name: "ReactS",
+   name: "React",
    value: "react",
   },
   {
