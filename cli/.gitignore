@@ -6,6 +6,8 @@
 # Node artifact files
 node_modules/
 dist/
+angular-schematics/dist/
+react-schematics/dist/
 
 # Compiled Java class files
 *.class

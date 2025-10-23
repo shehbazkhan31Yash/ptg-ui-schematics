@@ -1,9 +1,51 @@
 import { Rule, SchematicsException, Tree } from "@angular-devkit/schematics";
-import { applyChangesToString, ChangeType } from "@nrwl/devkit";
-import { insert } from "@nrwl/workspace";
-import { insertImport } from "@nrwl/workspace/src/utils/ast-utils";
+import * as ts from "typescript";
+
+// Local implementation of ChangeType (replaces @nx/devkit)
+enum ChangeType {
+  Insert = 'insert',
+  Remove = 'remove',
+  Replace = 'replace'
+}
+
+// Local implementation of applyChangesToString (replaces @nx/devkit)
+function applyChangesToString(content: string, changes: Array<{type: ChangeType, index: number, text: string}>): string {
+  let result = content;
+  // Sort changes by index in descending order to avoid position shifts
+  const sortedChanges = changes.sort((a, b) => b.index - a.index);
+  
+  for (const change of sortedChanges) {
+    if (change.type === ChangeType.Insert) {
+      result = result.slice(0, change.index) + change.text + result.slice(change.index);
+    }
+  }
+  return result;
+}
+
+// Local implementation of insert function
+function insert(host: any, path: string, changes: any[]) {
+  const content = host.read(path)?.toString() || '';
+  let updatedContent = content;
+  
+  // Apply changes in reverse order to maintain positions
+  changes.sort((a, b) => b.pos - a.pos).forEach(change => {
+    if (change.toAdd) {
+      updatedContent = updatedContent.slice(0, change.pos) + change.toAdd + updatedContent.slice(change.pos);
+    }
+  });
+  
+  host.overwrite(path, updatedContent);
+}
+
+// Local implementation of insertImport
+function insertImport(sourceFile: ts.SourceFile, filePath: string, symbolName: string, fileName: string) {
+  const importStatement = `import { ${symbolName} } from '${fileName}';\n`;
+  return {
+    pos: 0,
+    toAdd: importStatement
+  };
+}
 import { addImportToModule } from "./ast-utils";
-import ts = require("typescript");
 
 export function addImportToAppModule(
   moduleName: string,

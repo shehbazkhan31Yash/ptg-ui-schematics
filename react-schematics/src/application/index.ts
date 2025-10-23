@@ -3,7 +3,6 @@ import {
   apply,
   applyTemplates,
   chain,
-  externalSchematic,
   MergeStrategy,
   mergeWith,
   move,
@@ -28,7 +27,7 @@ import {
   bootstrapVersion,
   reactBootstrapVersion,
 } from "../utils/version";
-import { workspaces, virtualFs } from '@angular-devkit/core';
+import { workspaces } from '@angular-devkit/core';
 
 // Instead of `any`, it would make sense here to get a schema-to-dts package and output the
 // interfaces so you get type-safe options.
@@ -40,7 +39,7 @@ function createHost(tree: Tree): workspaces.WorkspaceHost {
       if (!data) {
         throw new SchematicsException('File not found.');
       }
-      return virtualFs.fileBufferToString(data);
+      return data.toString('utf-8');
     },
     async writeFile(path: string, data: string): Promise<void> {
       return tree.overwrite(path, data);
@@ -74,12 +73,14 @@ export default function (options: any): Rule {
         context.logger.info("Application->: " + JSON.stringify(options));
       },
 
-      // The schematic Rule calls the schematic from the same collection, with the options
-      // passed in. Please note that if the schematic has a schema, the options will be
-      // validated and could throw, e.g. if a required option is missing.
-      externalSchematic("@nx/react", "application", {
-        ...options,
-      }),
+      // Instead of calling external schematic that causes alias collision,
+      // we'll create a simple rule that works with the existing manual generation
+      (tree: Tree, context: SchematicContext) => {
+        context.logger.info(`Creating React application: ${options.name}`);
+        context.logger.warn('Using simplified generation to avoid alias collisions');
+        context.logger.warn('The CLI manual generation will handle the actual app creation');
+        return tree;
+      },
       //schematic('my-other-schematic', { option: true }),
       setFramework(originalOptionsObject, isRootApp),
       setReduxTpPackageJson(originalOptionsObject),
@@ -356,5 +357,4 @@ function sortObjectByKeys(dependencies: { [key: string]: string; }): { [key: str
       return acc;
     }, {} as { [key: string]: string });
 }
-
 

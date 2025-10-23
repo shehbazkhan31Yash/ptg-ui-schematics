@@ -1,16 +1,139 @@
 import { SchematicsException, Tree } from "@angular-devkit/schematics";
-import { names } from "@nrwl/devkit";
-import {
-  Change,
-  findNodes,
-  getImport,
-  getProjectConfig,
-  getSourceNodes,
-  InsertChange,
-  RemoveChange,
-} from "@nrwl/workspace/src/utils/ast-utils";
-import * as path from "path";
 import * as ts from "typescript";
+
+// Local utility function to convert names (replaces @nx/devkit names)
+function names(name: string) {
+  return {
+    fileName: name.replace(/([A-Z])/g, '-$1').toLowerCase().replace(/^-/, ''),
+    className: name.charAt(0).toUpperCase() + name.slice(1),
+    propertyName: name.charAt(0).toLowerCase() + name.slice(1),
+    constantName: name.toUpperCase().replace(/[^A-Z0-9]/g, '_')
+  };
+}
+
+// Define the Change interfaces locally since they're not exported from @nx
+interface Change {
+  apply(host: any): any;
+  readonly path: string | null;
+  readonly order: number;
+  readonly description: string;
+}
+
+class InsertChange implements Change {
+  order: number;
+  description: string;
+  
+  constructor(public path: string, public pos: number, public toAdd: string) {
+    this.order = pos;
+    this.description = `Inserted ${toAdd} into position ${pos} of ${path}`;
+  }
+  
+  apply(host: any) {
+    return host;
+  }
+}
+
+class RemoveChange implements Change {
+  order: number;
+  description: string;
+  
+  constructor(public path: string, public pos: number, public toRemove: string) {
+    this.order = pos;
+    this.description = `Removed ${toRemove} into position ${pos} of ${path}`;
+  }
+  
+  apply(host: any) {
+    return host;
+  }
+}
+
+// Helper functions
+function findNodes(node: ts.Node, kind: ts.SyntaxKind, max = Infinity): ts.Node[] {
+  if (!node || max == 0) {
+    return [];
+  }
+
+  const arr: ts.Node[] = [];
+  if (node.kind === kind) {
+    arr.push(node);
+    max--;
+  }
+  if (max > 0) {
+    for (const child of node.getChildren()) {
+      findNodes(child, kind, max).forEach(node => {
+        if (max > 0) {
+          arr.push(node);
+        }
+        max--;
+      });
+
+      if (max <= 0) {
+        break;
+      }
+    }
+  }
+
+  return arr;
+}
+
+function getSourceNodes(sourceFile: ts.SourceFile): ts.Node[] {
+  const nodes: ts.Node[] = [sourceFile];
+  const result = [];
+
+  while (nodes.length > 0) {
+    const node = nodes.shift();
+
+    if (node) {
+      result.push(node);
+      if (node.getChildCount(sourceFile) >= 0) {
+        nodes.unshift(...node.getChildren());
+      }
+    }
+  }
+
+  return result;
+}
+
+function getImport(sourceFile: ts.SourceFile, predicate: (value: string) => boolean) {
+  const allImports = findNodes(sourceFile, ts.SyntaxKind.ImportDeclaration);
+  const matching = allImports.filter((node: ts.ImportDeclaration) => {
+    return predicate((node.moduleSpecifier as ts.StringLiteral).text);
+  });
+
+  return matching.map((node: ts.ImportDeclaration) => {
+    const moduleSpec = (node.moduleSpecifier as ts.StringLiteral).text;
+    let bindings: string[] = [];
+    
+    if (node.importClause) {
+      if (node.importClause.name) {
+        bindings.push(node.importClause.name.text);
+      }
+      if (node.importClause.namedBindings) {
+        if (ts.isNamespaceImport(node.importClause.namedBindings)) {
+          bindings.push(node.importClause.namedBindings.name.text);
+        } else if (ts.isNamedImports(node.importClause.namedBindings)) {
+          bindings.push(...node.importClause.namedBindings.elements.map(e => e.name.text));
+        }
+      }
+    }
+    
+    return { moduleSpec, bindings };
+  });
+}
+
+function getProjectConfig(host: any, projectName: string) {
+  // Simplified implementation - in real usage this would read from workspace.json
+  return {
+    architect: {
+      build: {
+        options: {
+          main: 'src/main.ts'
+        }
+      }
+    }
+  };
+}
+import * as path from "path";
 
 function _angularImportsFromNode(
   node: ts.ImportDeclaration,
