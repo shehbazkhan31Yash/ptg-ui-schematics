@@ -159,6 +159,17 @@
       "description": "Adds i18n in project",
       "default": false,
       "x-prompt": "Would you like to configure i18n for this application?"
+    },
+    "enableLinting": {
+      "type": "boolean",
+      "description": "Enable code linting for the project",
+      "default": false
+    },
+    "lintingStyle": {
+      "type": "string",
+      "description": "The linting style to use",
+      "enum": ["airbnb", "standard", "custom"],
+      "default": "airbnb"
     }
   },
   "required": ["name"]

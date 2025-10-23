@@ -72,7 +72,7 @@ export function application(options: any): Rule {
   options.appDir = appDir;
 
   let originalOptionsObject = JSON.parse(JSON.stringify(options));
-  const keysToDelete = ["framework", "ngrx", "i18n", "appDir"];
+  const keysToDelete = ["framework", "ngrx", "i18n", "appDir", "enableLinting", "lintingStyle"];
   /*--get schema compatible with application schema---*/
   let inputToApplicationSchema = deleteKeys(options, keysToDelete);
 
@@ -121,6 +121,7 @@ export function application(options: any): Rule {
     originalOptionsObject.i18n
    ),
    setNGRX(originalOptionsObject),
+   setLinting(originalOptionsObject),
 
    (tree: Tree) => tree,
   ]);
@@ -181,6 +182,108 @@ export function setNGRX(_options: any): Rule {
    return tree;
   },
  ]);
+}
+
+export function setLinting(_options: any): Rule {
+ if (!_options.enableLinting) {
+  return noop;
+ }
+
+ return chain([
+  addLintingDependencies(_options.lintingStyle),
+  createLintingConfig(_options.lintingStyle),
+  (tree: Tree, context: SchematicContext) => {
+   context.logger.info(`\n🔍 ${_options.lintingStyle} linting configuration added`);
+   context.logger.info('📝 Run "npm run lint" to check your code');
+   return tree;
+  },
+ ]);
+}
+
+function addLintingDependencies(lintingStyle: string): Rule {
+ const baseDeps = {
+  "@typescript-eslint/eslint-plugin": "^7.0.0",
+  "@typescript-eslint/parser": "^7.0.0",
+  "eslint": "^8.57.0",
+ };
+
+ let styleDeps = {};
+ if (lintingStyle === "airbnb") {
+  styleDeps = {
+   "eslint-config-airbnb-base": "^15.0.0",
+   "eslint-config-airbnb-typescript": "^17.1.0",
+   "eslint-plugin-import": "^2.29.0",
+  };
+ } else if (lintingStyle === "standard") {
+  styleDeps = {
+   "eslint-config-standard": "^17.1.0",
+   "eslint-plugin-import": "^2.29.0",
+   "eslint-plugin-n": "^16.6.0",
+   "eslint-plugin-promise": "^6.1.0",
+  };
+ }
+
+ return addDepsToPackageJson({}, { ...baseDeps, ...styleDeps });
+}
+
+function createLintingConfig(lintingStyle: string): Rule {
+ return (tree: Tree) => {
+  let eslintConfig = {};
+
+  if (lintingStyle === "airbnb") {
+   eslintConfig = {
+    extends: [
+     "@typescript-eslint/recommended",
+     "airbnb-base",
+     "airbnb-typescript/base",
+    ],
+    parser: "@typescript-eslint/parser",
+    parserOptions: {
+     project: "./tsconfig.json",
+    },
+    plugins: ["@typescript-eslint"],
+    rules: {},
+   };
+  } else if (lintingStyle === "standard") {
+   eslintConfig = {
+    extends: [
+     "@typescript-eslint/recommended",
+     "standard",
+    ],
+    parser: "@typescript-eslint/parser",
+    parserOptions: {
+     project: "./tsconfig.json",
+    },
+    plugins: ["@typescript-eslint"],
+    rules: {},
+   };
+  } else {
+   eslintConfig = {
+    extends: ["@typescript-eslint/recommended"],
+    parser: "@typescript-eslint/parser",
+    parserOptions: {
+     project: "./tsconfig.json",
+    },
+    plugins: ["@typescript-eslint"],
+    rules: {},
+   };
+  }
+
+  tree.create(".eslintrc.json", JSON.stringify(eslintConfig, null, 2));
+
+  // Add lint script to package.json
+  const packageJsonPath = "package.json";
+  if (tree.exists(packageJsonPath)) {
+   const packageJsonContent = tree.read(packageJsonPath)!.toString();
+   const packageJson = JSON.parse(packageJsonContent);
+   packageJson.scripts = packageJson.scripts || {};
+   packageJson.scripts.lint = "eslint src/**/*.ts";
+   packageJson.scripts["lint:fix"] = "eslint src/**/*.ts --fix";
+   tree.overwrite(packageJsonPath, JSON.stringify(packageJson, null, 2));
+  }
+
+  return tree;
+ };
 }
 
 export function addMaterialToPackageJson(): Rule {
