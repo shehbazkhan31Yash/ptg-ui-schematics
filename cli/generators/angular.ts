@@ -57,14 +57,14 @@ async function createSandbox() {
 
  try {
   console.log("🔗 Linking PTG Angular Schematics...");
-  execSync(`npm link ptg-ui-angular-schematics --force`, {
+  execSync(`npm link @ptg-ui/angular-schematics --force`, {
    cwd: tmpDir,
    stdio: [0, 1, 2],
   });
   console.log("✅ PTG Angular Schematics linked successfully");
  } catch (error) {
   cleanup(tmpDir);
-  console.error("❌ Error linking ptg-ui-angular-schematics:", error);
+  console.error("❌ Error linking @ptg-ui/angular-schematics:", error);
   throw error;
  }
  
@@ -115,7 +115,7 @@ async function createApp(tmpDir: string) {
  ]).then((answers: any) => answers.name);
  
  // Prepare Angular CLI command with PTG schematics
- const collection = `${tmpDir}/node_modules/ptg-ui-angular-schematics/src/collection.json`;
+ const collection = `@ptg-ui/angular-schematics`;
  const command = `${tmpDir}/node_modules/.bin/ng new ${projectName} --collection=${collection} --strict false`;
  
  let createdProjectName = projectName;
