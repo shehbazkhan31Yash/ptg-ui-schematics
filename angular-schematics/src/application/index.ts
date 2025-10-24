@@ -17,6 +17,7 @@ import {
 import { getWorkspace } from "@schematics/angular/utility/workspace";
 import { join, normalize } from "path";
 import { addImportToAppModule, insertStatement } from "../utils/utils";
+import { ESLINT_CONFIGS, ESLINT_DEPENDENCIES } from "../eslint-configs/eslint-configs";
 
 // Local implementation of addDepsToPackageJson (replaces @nx/workspace)
 function addDepsToPackageJson(
@@ -193,8 +194,10 @@ export function setLinting(_options: any): Rule {
   addLintingDependencies(_options.lintingStyle),
   createLintingConfig(_options.lintingStyle),
   (tree: Tree, context: SchematicContext) => {
-   context.logger.info(`\n🔍 ${_options.lintingStyle} linting configuration added`);
-   context.logger.info('📝 Run "npm run lint" to check your code');
+   context.logger.info(`\n🔍 ${_options.lintingStyle.toUpperCase()} ESLint configuration added`);
+   context.logger.info('📝 Available commands:');
+   context.logger.info('   • npm run lint      - Check your code for issues');
+   context.logger.info('   • npm run lint:fix  - Automatically fix linting issues');
    return tree;
   },
  ]);
@@ -202,72 +205,32 @@ export function setLinting(_options: any): Rule {
 
 function addLintingDependencies(lintingStyle: string): Rule {
  const baseDeps = {
-  "@typescript-eslint/eslint-plugin": "^7.0.0",
-  "@typescript-eslint/parser": "^7.0.0",
+  "@typescript-eslint/eslint-plugin": "^7.18.0",
+  "@typescript-eslint/parser": "^7.18.0",
   "eslint": "^8.57.0",
  };
 
- let styleDeps = {};
- if (lintingStyle === "airbnb") {
-  styleDeps = {
-   "eslint-config-airbnb-base": "^15.0.0",
-   "eslint-config-airbnb-typescript": "^17.1.0",
-   "eslint-plugin-import": "^2.29.0",
-  };
- } else if (lintingStyle === "standard") {
-  styleDeps = {
-   "eslint-config-standard": "^17.1.0",
-   "eslint-plugin-import": "^2.29.0",
-   "eslint-plugin-n": "^16.6.0",
-   "eslint-plugin-promise": "^6.1.0",
-  };
- }
+ const styleDeps = ESLINT_DEPENDENCIES[lintingStyle as keyof typeof ESLINT_DEPENDENCIES] || [];
+ const styleDepsObj = styleDeps.reduce((acc, dep) => {
+  // Handle scoped packages correctly
+  const lastAtIndex = dep.lastIndexOf('@');
+  if (lastAtIndex === -1) {
+    // No version specified
+    acc[dep] = 'latest';
+  } else {
+    const name = dep.substring(0, lastAtIndex);
+    const version = dep.substring(lastAtIndex + 1);
+    acc[name] = `^${version}`;
+  }
+  return acc;
+ }, {} as Record<string, string>);
 
- return addDepsToPackageJson({}, { ...baseDeps, ...styleDeps });
+ return addDepsToPackageJson({}, { ...baseDeps, ...styleDepsObj });
 }
 
 function createLintingConfig(lintingStyle: string): Rule {
  return (tree: Tree) => {
-  let eslintConfig = {};
-
-  if (lintingStyle === "airbnb") {
-   eslintConfig = {
-    extends: [
-     "@typescript-eslint/recommended",
-     "airbnb-base",
-     "airbnb-typescript/base",
-    ],
-    parser: "@typescript-eslint/parser",
-    parserOptions: {
-     project: "./tsconfig.json",
-    },
-    plugins: ["@typescript-eslint"],
-    rules: {},
-   };
-  } else if (lintingStyle === "standard") {
-   eslintConfig = {
-    extends: [
-     "@typescript-eslint/recommended",
-     "standard",
-    ],
-    parser: "@typescript-eslint/parser",
-    parserOptions: {
-     project: "./tsconfig.json",
-    },
-    plugins: ["@typescript-eslint"],
-    rules: {},
-   };
-  } else {
-   eslintConfig = {
-    extends: ["@typescript-eslint/recommended"],
-    parser: "@typescript-eslint/parser",
-    parserOptions: {
-     project: "./tsconfig.json",
-    },
-    plugins: ["@typescript-eslint"],
-    rules: {},
-   };
-  }
+  const eslintConfig = ESLINT_CONFIGS[lintingStyle as keyof typeof ESLINT_CONFIGS] || ESLINT_CONFIGS.custom;
 
   tree.create(".eslintrc.json", JSON.stringify(eslintConfig, null, 2));
 
@@ -277,8 +240,8 @@ function createLintingConfig(lintingStyle: string): Rule {
    const packageJsonContent = tree.read(packageJsonPath)!.toString();
    const packageJson = JSON.parse(packageJsonContent);
    packageJson.scripts = packageJson.scripts || {};
-   packageJson.scripts.lint = "eslint src/**/*.ts";
-   packageJson.scripts["lint:fix"] = "eslint src/**/*.ts --fix";
+   packageJson.scripts.lint = "eslint src/**/*.ts src/**/*.html";
+   packageJson.scripts["lint:fix"] = "eslint src/**/*.ts src/**/*.html --fix";
    tree.overwrite(packageJsonPath, JSON.stringify(packageJson, null, 2));
   }
 

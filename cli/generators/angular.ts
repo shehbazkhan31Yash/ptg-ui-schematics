@@ -9,7 +9,7 @@ import {
 } from "fs";
 import * as path from "path";
 import { dirSync } from "tmp";
-import { ESLINT_CONFIGS, ESLINT_DEPENDENCIES } from "../configs/eslint-configs";
+
 const inquirer = require("inquirer");
 
 /**
@@ -57,14 +57,14 @@ async function createSandbox() {
 
  try {
   console.log("🔗 Linking PTG Angular Schematics...");
-  execSync(`npm link @ptg-ui/angular-schematics --force`, {
+  execSync(`npm link ptg-ui-angular-schematics --force`, {
    cwd: tmpDir,
    stdio: [0, 1, 2],
   });
   console.log("✅ PTG Angular Schematics linked successfully");
  } catch (error) {
   cleanup(tmpDir);
-  console.error("❌ Error linking @ptg-ui/angular-schematics:", error);
+  console.error("❌ Error linking ptg-ui-angular-schematics:", error);
   throw error;
  }
  
@@ -86,92 +86,52 @@ async function createSandbox() {
 //     return a.ApplicationName;
 //   });
 // }
-/**
- * Prompts user for linting preferences and configuration
- * Supports multiple linting styles: Airbnb, Standard, and Custom
- */
-async function getLintingPreferences() {
- console.log("\n🔍 Configuring code linting preferences...");
- 
- const enableLinting = await inquirer.prompt([
-  {
-   name: "enableLinting",
-   message: "Enable code linting?",
-   type: "confirm",
-   default: true,
-  },
- ]);
 
- if (!enableLinting.enableLinting) {
-  console.log("⚠️  Linting disabled - skipping linting configuration");
-  return { enableLinting: false };
- }
-
- console.log("✅ Linting enabled - selecting style...");
- const lintingStyle = await inquirer.prompt([
-  {
-   name: "lintingStyle",
-   message: "Choose linting style:",
-   type: "list",
-   choices: [
-    { name: "Airbnb", value: "airbnb" },
-    { name: "Standard", value: "standard" },
-    { name: "Custom", value: "custom" },
-   ],
-   default: "airbnb",
-  },
- ]);
-
- console.log(`🎯 Selected linting style: ${lintingStyle.lintingStyle}`);
- return {
-  enableLinting: true,
-  lintingStyle: lintingStyle.lintingStyle,
- };
-}
 
 /**
  * Creates the Angular application using PTG schematics
- * Handles linting configuration if enabled by user
+ * ESLint configuration is now handled automatically by the schematic
  */
 async function createApp(tmpDir: string) {
  console.log("\n🚀 Starting Angular application creation...");
  
- // Get user preferences for linting
- const lintingOptions = await getLintingPreferences();
+ // Get project name from user
+ const projectName = await inquirer.prompt([
+  {
+   name: "name",
+   message: "Enter project name:",
+   type: "input",
+   default: "my-angular-app",
+   validate: (input: string) => {
+    if (!input || input.trim().length === 0) {
+     return "Project name is required";
+    }
+    if (!/^[a-zA-Z][a-zA-Z0-9-]*$/.test(input)) {
+     return "Project name must start with a letter and contain only letters, numbers, and hyphens";
+    }
+    return true;
+   }
+  }
+ ]).then((answers: any) => answers.name);
  
  // Prepare Angular CLI command with PTG schematics
- const collection = `${tmpDir}/node_modules/@ptg-ui/angular-schematics/src/collection.json`;
- const command = `${tmpDir}/node_modules/.bin/ng new --collection=${collection} --strict false`;
+ const collection = `${tmpDir}/node_modules/ptg-ui-angular-schematics/src/collection.json`;
+ const command = `${tmpDir}/node_modules/.bin/ng new ${projectName} --collection=${collection} --strict false`;
  
- let projectName = null;
+ let createdProjectName = projectName;
  
  try {
   console.log("\n🏗️  Executing Angular project creation...");
+  console.log("📝 Note: ESLint configuration will be handled by the schematic prompts");
+  
   execSync(`${command}`, {
    stdio: [0, 1, 2],
    cwd: process.cwd(),
   });
   console.log("✅ Angular project created successfully!");
   
-  // Find the created project directory
-  const currentDir = process.cwd();
-  const directories = readdirSync(currentDir).filter(item => 
-   lstatSync(path.join(currentDir, item)).isDirectory() && 
-   existsSync(path.join(currentDir, item, 'package.json')) &&
-   existsSync(path.join(currentDir, item, 'angular.json'))
-  );
-  
-  if (directories.length > 0) {
-   projectName = directories[directories.length - 1];
-  }
-  
-  // Apply linting configuration after project creation if enabled
-  if (lintingOptions.enableLinting) {
-   console.log("\n🔍 Applying linting configuration...");
-   await applyLintingConfig(lintingOptions.lintingStyle);
-  } else {
-   console.log("\n⚠️  Skipping linting configuration (disabled by user)");
-  }
+  // Project should be created with the specified name
+  createdProjectName = projectName;
   
  } catch (err) {
   console.error("\n❌ Angular project creation failed:");
@@ -183,87 +143,10 @@ async function createApp(tmpDir: string) {
  console.log("\n🧹 Cleaning up sandbox environment...");
  cleanup(tmpDir);
  
- return projectName;
+ return createdProjectName;
 }
 
-/**
- * Applies linting configuration to the newly created Angular project
- * Installs ESLint dependencies and creates configuration files
- */
-async function applyLintingConfig(lintingStyle: string) {
- console.log(`\n🔍 Step 1/4: Preparing ${lintingStyle} linting configuration...`);
- 
- // Wait a moment for the project to be fully created
- console.log("⏳ Waiting for project creation to complete...");
- await new Promise(resolve => setTimeout(resolve, 2000));
- 
- console.log("\n🔍 Step 2/4: Locating Angular project directory...");
- // Find the newly created project directory in current working directory
- const currentDir = process.cwd();
- 
- const directories = readdirSync(currentDir).filter(item => 
-  lstatSync(path.join(currentDir, item)).isDirectory() && 
-  existsSync(path.join(currentDir, item, 'package.json')) &&
-  existsSync(path.join(currentDir, item, 'angular.json'))
- );
- 
- if (directories.length === 0) {
-  console.warn("\n⚠️  Warning: Could not find the created Angular project");
-  console.log("❌ Linting configuration skipped");
-  return;
- }
- 
- // Use the most recently created directory (assuming it's the new project)
- const projectPath = path.join(currentDir, directories[directories.length - 1]);
- console.log(`✅ Found Angular project: ${directories[directories.length - 1]}`);
- 
- try {
-  console.log("\n🔍 Step 3/4: Installing ESLint dependencies...");
-  
-  // Prepare dependency lists
-  const baseDeps = "@typescript-eslint/eslint-plugin@^6.21.0 @typescript-eslint/parser@^6.21.0 eslint@^8.57.0";
-  const styleDeps = ESLINT_DEPENDENCIES[lintingStyle as keyof typeof ESLINT_DEPENDENCIES] || [];
-  const allDeps = `${baseDeps} ${styleDeps.join(" ")}`;
-  
-  console.log("\n⬇️  Installing dependencies...");
-  execSync(`npm install --save-dev ${allDeps} --legacy-peer-deps`, {
-   cwd: projectPath,
-   stdio: [0, 1, 2],
-   shell: process.platform === "win32" ? "cmd.exe" : "/bin/sh"
-  });
-  console.log("✅ ESLint dependencies installed successfully");
-  
-  console.log("\n🔍 Step 4/4: Creating configuration files...");
-  
-  // Create ESLint config
-  const eslintConfig = createEslintConfig(lintingStyle);
-  writeFileSync(path.join(projectPath, ".eslintrc.json"), JSON.stringify(eslintConfig, null, 2));
-  
-  // Add lint scripts to package.json
-  const packageJsonPath = path.join(projectPath, "package.json");
-  const packageJson = JSON.parse(require("fs").readFileSync(packageJsonPath, "utf8"));
-  packageJson.scripts = packageJson.scripts || {};
-  packageJson.scripts.lint = "eslint src/**/*.ts";
-  packageJson.scripts["lint:fix"] = "eslint src/**/*.ts --fix";
-  writeFileSync(packageJsonPath, JSON.stringify(packageJson, null, 2));
-  console.log("✅ Configuration files created successfully");
-  
-  console.log(`\n🎉 ${lintingStyle.toUpperCase()} linting configuration completed!`);
-  console.log("\n📋 Available lint commands:");
-  console.log('   📝 npm run lint      - Check your code for issues');
-  console.log('   🔧 npm run lint:fix  - Automatically fix linting issues');
-  
- } catch (error) {
-  console.error("\n❌ Linting configuration failed:");
-  console.error(`   Error: ${error.message}`);
-  console.warn("⚠️  Project created successfully, but linting setup incomplete");
-  console.log("💡 You can manually configure ESLint later if needed");
- }
-}
 
-function createEslintConfig(lintingStyle: string) {
- return ESLINT_CONFIGS[lintingStyle as keyof typeof ESLINT_CONFIGS] || ESLINT_CONFIGS.custom;
-}
 
 /**
  * Installs recommended VS Code extensions for Angular development
@@ -340,10 +223,8 @@ export async function invokeAngularGenerator() {
  
  console.log("📋 Process Overview:");
  console.log("   1️⃣  Create sandbox environment");
- console.log("   2️⃣  Configure linting preferences");
- console.log("   3️⃣  Generate Angular project");
- console.log("   4️⃣  Apply linting configuration");
- console.log("   5️⃣  Cleanup and finalize\n");
+ console.log("   2️⃣  Generate Angular project with ESLint");
+ console.log("   3️⃣  Cleanup and finalize\n");
  
  try {
   // Step 1: Create sandbox environment
@@ -368,7 +249,8 @@ export async function invokeAngularGenerator() {
    console.log("   2. Run 'npm start' to start the development server");
   }
   console.log("   3. Open http://localhost:4200 in your browser");
-  console.log("   4. Start building your Angular application!\n");
+  console.log("   4. Run 'npm run lint' to check your code for issues");
+  console.log("   5. Start building your Angular application!\n");
   
  } catch (error) {
   console.error("\n❌ Angular project generation failed:");

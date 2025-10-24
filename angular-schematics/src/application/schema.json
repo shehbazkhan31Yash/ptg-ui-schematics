@@ -163,13 +163,32 @@
     "enableLinting": {
       "type": "boolean",
       "description": "Enable code linting for the project",
-      "default": false
+      "default": true,
+      "x-prompt": "Would you like to enable ESLint for code quality?"
     },
     "lintingStyle": {
       "type": "string",
       "description": "The linting style to use",
       "enum": ["airbnb", "standard", "custom"],
-      "default": "airbnb"
+      "default": "airbnb",
+      "x-prompt": {
+        "message": "Which ESLint configuration would you like to use?",
+        "type": "list",
+        "items": [
+          {
+            "value": "airbnb",
+            "label": "Airbnb - Strict and comprehensive rules"
+          },
+          {
+            "value": "standard",
+            "label": "Standard - Popular JavaScript style guide"
+          },
+          {
+            "value": "custom",
+            "label": "Custom - Basic TypeScript ESLint setup"
+          }
+        ]
+      }
     }
   },
   "required": ["name"]
