@@ -1,194 +1,359 @@
-export const ESLINT_CONFIGS = {
-  airbnb: {
-    extends: ["@typescript-eslint/recommended", "airbnb-base", "airbnb-typescript/base"],
-    parser: "@typescript-eslint/parser",
-    parserOptions: { project: "./tsconfig.json" },
-    plugins: ["@typescript-eslint"],
-    rules: {}
-  },
-  
-  standard: {
-    extends: ["@typescript-eslint/recommended", "standard"],
-    parser: "@typescript-eslint/parser",
-    parserOptions: { project: "./tsconfig.json" },
-    plugins: ["@typescript-eslint"],
-    rules: {}
-  },
-  
-  custom: {
-    root: true,
-    ignorePatterns: ["projects/**/*"],
-    overrides: [
-      {
-        files: ["*.ts"],
-        extends: [
-          "eslint:recommended",
-          "plugin:@typescript-eslint/recommended",
-          "plugin:@angular-eslint/recommended",
-          "plugin:@angular-eslint/template/process-inline-templates",
-          "plugin:rxjs/recommended",
-          "plugin:prettier/recommended"
-        ],
-        parserOptions: {
-          project: ["tsconfig.json", "tsconfig.app.json", "tsconfig.spec.json"],
-          createDefaultProgram: true
+/**
+ * ESLint configuration templates for different linting strategies
+ */
+
+export const ESLintConfigs = {
+  /**
+   * Custom ESLint configuration with comprehensive rules
+   */
+  getCustomConfig: () => `import js from '@eslint/js';
+import typescriptEslint from '@typescript-eslint/eslint-plugin';
+import typescriptParser from '@typescript-eslint/parser';
+import react from 'eslint-plugin-react';
+import reactHooks from 'eslint-plugin-react-hooks';
+import importPlugin from 'eslint-plugin-import';
+import prettier from 'eslint-plugin-prettier';
+
+export default [
+  js.configs.recommended,
+  {
+    files: ['**/*.{js,jsx,ts,tsx}'],
+    languageOptions: {
+      ecmaVersion: 'latest',
+      sourceType: 'module',
+      parser: typescriptParser,
+      parserOptions: {
+        ecmaFeatures: {
+          jsx: true,
         },
-        rules: {
-          "@angular-eslint/directive-selector": [
-            "error",
-            {
-              type: "attribute",
-              prefix: "app",
-              style: "camelCase"
-            }
-          ],
-          "@angular-eslint/component-selector": [
-            "error",
-            {
-              type: "element",
-              prefix: "app",
-              style: "kebab-case"
-            }
-          ],
-          "max-lines": ["error", { max: 400, skipBlankLines: true, skipComments: true }],
-          "quotes": ["error", "single"],
-          "semi": ["error", "always"],
-          "no-unused-vars": "warn",
-          "@typescript-eslint/no-unused-vars": [
-            "error",
-            { argsIgnorePattern: "^_" }
-          ],
-          "eqeqeq": ["error", "always"],
-          "curly": ["error", "all"],
-          "prefer-const": "error",
-          "no-var": "error",
-          "no-console": ["warn", { allow: ["warn", "error"] }],
-          "no-debugger": "warn",
-          "@typescript-eslint/no-explicit-any": "error",
-          "@typescript-eslint/no-non-null-assertion": "warn",
-          "@typescript-eslint/no-inferrable-types": "off",
-          "@typescript-eslint/explicit-function-return-type": [
-            "off",
-            {
-              allowExpressions: true,
-              allowTypedFunctionExpressions: true
-            }
-          ],
-          "@typescript-eslint/naming-convention": [
-            "error",
-            {
-              selector: "interface",
-              format: ["PascalCase"]
-            },
-            {
-              selector: "enum",
-              format: ["PascalCase"]
-            },
-            {
-              selector: "variable",
-              format: ["camelCase", "UPPER_CASE"]
-            },
-            {
-              selector: "function",
-              format: ["camelCase"]
-            },
-            {
-              selector: "class",
-              format: ["PascalCase"]
-            }
-          ],
-          "@typescript-eslint/member-ordering": "warn",
-          "@typescript-eslint/consistent-type-assertions": "error",
-          "@angular-eslint/no-empty-lifecycle-method": "error",
-          "@angular-eslint/use-lifecycle-interface": "error",
-          "@angular-eslint/no-output-on-prefix": "error",
-          "@angular-eslint/no-conflicting-lifecycle": "error",
-          "@angular-eslint/prefer-on-push-component-change-detection": "off",
-          "@angular-eslint/no-host-metadata-property": "off",
-          "@angular-eslint/no-inputs-metadata-property": "error",
-          "@angular-eslint/no-outputs-metadata-property": "error",
-          "@angular-eslint/use-pipe-transform-interface": "error",
-          "rxjs/no-ignored-observable": "warn",
-          "rxjs/no-nested-subscribe": "error",
-          "rxjs/no-unbound-methods": "error",
-          "rxjs/no-unsafe-takeuntil": "error",
-          "rxjs/no-implicit-any-catch": "error",
-          "rxjs/no-subject-value": "error",
-          "rxjs/finnish": [
-            "error",
-            {
-              functions: false,
-              methods: false,
-              parameters: true,
-              properties: true,
-              variables: true
-            }
-          ],
-          "complexity": ["warn", 10],
-          "max-depth": ["warn", 3],
-          "max-lines-per-function": ["warn", 150],
-          "max-params": ["warn", 7],
-          "max-nested-callbacks": ["warn", 3],
-          "no-duplicate-imports": "error",
-          "@typescript-eslint/no-unnecessary-type-assertion": "error",
-          "prettier/prettier": [
-            "error",
-            {
-              endOfLine: "auto",
-              singleQuote: true
-            }
-          ]
-        }
+        project: ['./tsconfig.json', './tsconfig.*.json'],
+        tsconfigRootDir: import.meta.dirname,
       },
-      {
-        files: ["*.spec.ts", "translation-keys.ts"],
-        rules: {
-          "max-lines": "off"
-        }
+      globals: {
+        window: 'readonly',
+        document: 'readonly',
+        console: 'readonly',
+        process: 'readonly',
+        JSX: 'readonly',
+        browser: true,
+        es2021: true,
       },
-      {
-        files: ["*.html"],
-        extends: [
-          "plugin:@angular-eslint/template/recommended"
-        ],
-        parser: "@angular-eslint/template-parser",
-        parserOptions: {
-          ecmaVersion: 2020,
-          sourceType: "module"
+    },
+    plugins: {
+      '@typescript-eslint': typescriptEslint,
+      react: react,
+      'react-hooks': reactHooks,
+      import: importPlugin,
+      prettier: prettier,
+    },
+    rules: {
+      // Base ESLint recommended rules
+      ...js.configs.recommended.rules,
+      // TypeScript rules
+      ...typescriptEslint.configs.recommended.rules,
+      // React rules
+      ...react.configs.recommended.rules,
+      // React Hooks rules
+      ...reactHooks.configs.recommended.rules,
+      
+      // Custom rules
+      'no-use-before-define': 'off',
+      '@typescript-eslint/no-use-before-define': ['error'],
+      'react/jsx-filename-extension': ['warn', { extensions: ['.tsx', '.jsx'] }],
+      '@typescript-eslint/explicit-function-return-type': [
+        'error',
+        {
+          allowExpressions: true,
+          allowTypedFunctionExpressions: true,
         },
-        rules: {
-          "@angular-eslint/template/no-negated-async": "error",
-          "@angular-eslint/template/conditional-complexity": [
-            "error",
-            { maxComplexity: 4 }
-          ],
-          "@angular-eslint/template/mouse-events-have-key-events": "warn",
-          "@angular-eslint/template/click-events-have-key-events": "warn",
-          "@angular-eslint/template/no-any": "warn",
-          "@angular-eslint/template/no-duplicate-attributes": "error"
-        }
-      }
-    ]
-  }
+      ],
+      'max-len': ['warn', { code: 200 }],
+      'react-hooks/rules-of-hooks': 'error',
+      'react-hooks/exhaustive-deps': 'error',
+      'consistent-return': 'error',
+      'prefer-const': 'error',
+      'no-unused-vars': 'off',
+      '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
+      'no-console': 'error',
+      'no-debugger': 'error',
+      'no-alert': 'error',
+      'no-fallthrough': 'error',
+      'no-implicit-coercion': 'error',
+      curly: 'error',
+      eqeqeq: 'error',
+      'no-const-assign': 'error',
+      'no-multiple-empty-lines': 'error',
+      camelcase: 'error',
+      'no-var': 'error',
+      'no-duplicate-imports': 'error',
+      'padding-line-between-statements': 'error',
+      'complexity': ['error', { max: 10 }],
+      
+      // Import rules
+      'import/extensions': [
+        'error',
+        'ignorePackages',
+        {
+          js: 'never',
+          jsx: 'never',
+          ts: 'never',
+          tsx: 'never',
+        },
+      ],
+      'import/no-unresolved': 'off',
+      
+      // React specific rules
+      'react/react-in-jsx-scope': 'off',
+      'react/prop-types': 'off',
+      
+      // Prettier rules
+      'prettier/prettier': 'error',
+    },
+    settings: {
+      react: {
+        version: 'detect',
+      },
+      'import/resolver': {
+        typescript: {
+          alwaysTryTypes: true,
+          project: ['./tsconfig.json', './tsconfig.*.json'],
+        },
+        node: {
+          extensions: ['.js', '.jsx', '.ts', '.tsx'],
+        },
+      },
+    },
+  },
+  {
+    files: ['src/setupTests.js'],
+    languageOptions: {
+      parserOptions: {
+        project: 'tsconfig.json',
+        tsconfigRootDir: './',
+      },
+    },
+  },
+];`,
+
+  /**
+   * Airbnb ESLint configuration with accessibility and import rules
+   */
+  getAirbnbConfig: () => `import js from '@eslint/js';
+import typescriptEslint from '@typescript-eslint/eslint-plugin';
+import typescriptParser from '@typescript-eslint/parser';
+import react from 'eslint-plugin-react';
+import reactHooks from 'eslint-plugin-react-hooks';
+import jsxA11y from 'eslint-plugin-jsx-a11y';
+import importPlugin from 'eslint-plugin-import';
+import prettier from 'eslint-plugin-prettier';
+
+export default [
+  js.configs.recommended,
+  {
+    files: ['**/*.{js,jsx,ts,tsx}'],
+    languageOptions: {
+      ecmaVersion: 2021,
+      sourceType: 'module',
+      parser: typescriptParser,
+      parserOptions: {
+        ecmaFeatures: {
+          jsx: true,
+        },
+        project: ['./tsconfig.json', './tsconfig.*.json'],
+        tsconfigRootDir: import.meta.dirname,
+      },
+      globals: {
+        window: 'readonly',
+        document: 'readonly',
+        console: 'readonly',
+        process: 'readonly',
+        JSX: 'readonly',
+      },
+    },
+    plugins: {
+      '@typescript-eslint': typescriptEslint,
+      react: react,
+      'react-hooks': reactHooks,
+      'jsx-a11y': jsxA11y,
+      import: importPlugin,
+      prettier: prettier,
+    },
+    rules: {
+      ...typescriptEslint.configs.recommended.rules,
+      ...react.configs.recommended.rules,
+      ...reactHooks.configs.recommended.rules,
+      ...jsxA11y.configs.recommended.rules,
+      'react/react-in-jsx-scope': 'off',
+      'react/jsx-filename-extension': [1, { extensions: ['.tsx', '.jsx'] }],
+      'import/extensions': [
+        'error',
+        'ignorePackages',
+        {
+          js: 'never',
+          jsx: 'never',
+          ts: 'never',
+          tsx: 'never',
+        },
+      ],
+      'import/no-unresolved': 'off',
+      '@typescript-eslint/explicit-function-return-type': 'off',
+      '@typescript-eslint/explicit-module-boundary-types': 'off',
+      '@typescript-eslint/no-explicit-any': 'warn',
+      'prettier/prettier': 'error',
+      'react/function-component-definition': [
+        2,
+        {
+          namedComponents: 'arrow-function',
+          unnamedComponents: 'arrow-function',
+        },
+      ],
+      'no-console': 'warn',
+      'prefer-const': 'error',
+      'no-unused-vars': 'off',
+      '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
+      'react/prop-types': 'off',
+      'react/require-default-props': 'off',
+    },
+    settings: {
+      react: {
+        version: 'detect',
+      },
+      'import/resolver': {
+        typescript: {
+          alwaysTryTypes: true,
+          project: ['./tsconfig.json', './tsconfig.*.json'],
+        },
+        node: {
+          extensions: ['.js', '.jsx', '.ts', '.tsx'],
+        },
+      },
+    },
+  },
+];`,
+
+  /**
+   * Standard ESLint configuration with basic TypeScript and React support
+   */
+  getStandardConfig: () => `import js from '@eslint/js';
+import typescriptEslint from '@typescript-eslint/eslint-plugin';
+import typescriptParser from '@typescript-eslint/parser';
+import react from 'eslint-plugin-react';
+import reactHooks from 'eslint-plugin-react-hooks';
+import prettier from 'eslint-plugin-prettier';
+
+export default [
+  js.configs.recommended,
+  {
+    files: ['**/*.{js,jsx,ts,tsx}'],
+    languageOptions: {
+      ecmaVersion: 2021,
+      sourceType: 'module',
+      parser: typescriptParser,
+      parserOptions: {
+        ecmaFeatures: {
+          jsx: true,
+        },
+        project: ['./tsconfig.json', './tsconfig.*.json'],
+        tsconfigRootDir: import.meta.dirname,
+      },
+      globals: {
+        window: 'readonly',
+        document: 'readonly',
+        console: 'readonly',
+        process: 'readonly',
+        JSX: 'readonly',
+      },
+    },
+    plugins: {
+      '@typescript-eslint': typescriptEslint,
+      react: react,
+      'react-hooks': reactHooks,
+      prettier: prettier,
+    },
+    rules: {
+      ...typescriptEslint.configs.recommended.rules,
+      ...react.configs.recommended.rules,
+      ...reactHooks.configs.recommended.rules,
+      'react/react-in-jsx-scope': 'off',
+      'prettier/prettier': 'error',
+      'no-unused-vars': 'off',
+      '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
+      'react/prop-types': 'off',
+    },
+    settings: {
+      react: {
+        version: 'detect',
+      },
+    },
+  },
+];`
 };
 
-export const ESLINT_DEPENDENCIES = {
-  airbnb: [
-    "eslint-config-airbnb-base@^15.0.0",
-    "eslint-config-airbnb-typescript@^17.1.0", 
-    "eslint-plugin-import@^2.29.0"
-  ],
-  standard: [
-    "eslint-config-standard@^17.1.0",
-    "eslint-plugin-import@^2.29.0",
-    "eslint-plugin-n@^16.6.0",
-    "eslint-plugin-promise@^6.1.0"
-  ],
-  custom: [
-    "@angular-eslint/eslint-plugin@^17.0.0",
-    "@angular-eslint/template-parser@^17.0.0",
-    "eslint-plugin-rxjs@^5.0.0",
-    "eslint-plugin-prettier@^5.0.0",
-    "prettier@^3.0.0"
-  ]
-};
+/**
+ * Get ESLint configuration based on linter type
+ * @param linterType - The type of linter configuration to return
+ * @returns ESLint configuration string
+ */
+export function getEslintConfig(linterType: string): string {
+  switch (linterType) {
+    case "custom":
+      return ESLintConfigs.getCustomConfig();
+    case "airbnb":
+      return ESLintConfigs.getAirbnbConfig();
+    case "eslint":
+    default:
+      return ESLintConfigs.getStandardConfig();
+  }
+}
+
+/**
+ * Get dependencies for ESLint configurations
+ * @param linterType - The type of linter configuration
+ * @returns Array of package names
+ */
+export function getEslintDependencies(linterType: string): string[] {
+  const baseDeps = [
+    "eslint@latest",
+    "@eslint/js@latest",
+    "@typescript-eslint/eslint-plugin@latest",
+    "@typescript-eslint/parser@latest",
+    "eslint-plugin-react@latest",
+    "eslint-plugin-react-hooks@latest",
+    "eslint-import-resolver-typescript@latest"
+  ];
+
+  switch (linterType) {
+    case "airbnb":
+      return [
+        ...baseDeps,
+        "eslint-config-airbnb@latest",
+        "eslint-config-airbnb-typescript@latest",
+        "eslint-plugin-import@latest",
+        "eslint-plugin-jsx-a11y@latest"
+      ];
+    case "custom":
+      return [
+        ...baseDeps,
+        "eslint-plugin-import@latest",
+        "eslint-config-react-app@latest"
+      ];
+    case "eslint":
+    default:
+      return baseDeps;
+  }
+}
+
+/**
+ * Get prettier dependencies if prettier is enabled
+ * @param prettierEnabled - Whether prettier is enabled
+ * @returns Array of prettier-related package names
+ */
+export function getPrettierDependencies(prettierEnabled: boolean): string[] {
+  if (!prettierEnabled) return [];
+  
+  return [
+    "prettier@latest",
+    "eslint-config-prettier@latest",
+    "eslint-plugin-prettier@latest"
+  ];
+}

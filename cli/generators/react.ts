@@ -3,8 +3,8 @@ import { execSync } from "child_process";
 import * as fs from "fs";
 import * as path from "path";
 import inquirer = require("inquirer");
-import { getEslintConfig, getEslintDependencies, getPrettierDependencies } from "./eslint-configs";
-import { getPrettierConfig, CONFIG as TEMPLATE_CONFIG } from "./config-templates";
+import { getEslintConfig, getEslintDependencies, getPrettierDependencies } from "../configs/eslint-configs";
+import { getPrettierConfig, CONFIG as TEMPLATE_CONFIG } from "../configs/config-templates";
 
 // Template constants for better maintainability
 const TEMPLATES = {
