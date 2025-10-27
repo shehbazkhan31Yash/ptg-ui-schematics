@@ -3,6 +3,8 @@ import { execSync } from "child_process";
 import * as fs from "fs";
 import * as path from "path";
 import inquirer = require("inquirer");
+import { getEslintConfig, getEslintDependencies, getPrettierDependencies } from "./eslint-configs";
+import { getPrettierConfig, CONFIG as TEMPLATE_CONFIG } from "./config-templates";
 
 // Template constants for better maintainability
 const TEMPLATES = {
@@ -485,396 +487,13 @@ export default defineConfig({
 });`,
 
   getEslintConfig: (linterType: string, hasTypeScript: boolean = true) => {
-    if (linterType === "custom") {
-      return `import js from '@eslint/js';
-import typescriptEslint from '@typescript-eslint/eslint-plugin';
-import typescriptParser from '@typescript-eslint/parser';
-import react from 'eslint-plugin-react';
-import reactHooks from 'eslint-plugin-react-hooks';
-import importPlugin from 'eslint-plugin-import';
-import prettier from 'eslint-plugin-prettier';
-import complexity from 'eslint-plugin-complexity';
-
-export default [
-  js.configs.recommended,
-  {
-    files: ['**/*.{js,jsx,ts,tsx}'],
-    languageOptions: {
-      ecmaVersion: 'latest',
-      sourceType: 'module',
-      parser: typescriptParser,
-      parserOptions: {
-        ecmaFeatures: {
-          jsx: true,
-        },
-        project: ['./tsconfig.json', './tsconfig.*.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      globals: {
-        window: 'readonly',
-        document: 'readonly',
-        console: 'readonly',
-        process: 'readonly',
-        JSX: 'readonly',
-        browser: true,
-        es2021: true,
-      },
-    },
-    plugins: {
-      '@typescript-eslint': typescriptEslint,
-      react: react,
-      'react-hooks': reactHooks,
-      import: importPlugin,
-      prettier: prettier,
-      complexity: complexity,
-    },
-    rules: {
-      // Base ESLint recommended rules
-      ...js.configs.recommended.rules,
-      // TypeScript rules
-      ...typescriptEslint.configs.recommended.rules,
-      // React rules
-      ...react.configs.recommended.rules,
-      // React Hooks rules
-      ...reactHooks.configs.recommended.rules,
-      
-      // Custom rules
-      'no-use-before-define': 'off',
-      '@typescript-eslint/no-use-before-define': ['error'],
-      'react/jsx-filename-extension': ['warn', { extensions: ['.tsx', '.jsx'] }],
-      '@typescript-eslint/explicit-function-return-type': [
-        'error',
-        {
-          allowExpressions: true,
-          allowTypedFunctionExpressions: true,
-        },
-      ],
-      'max-len': ['warn', { code: 200 }],
-      'react-hooks/rules-of-hooks': 'error',
-      'react-hooks/exhaustive-deps': 'error',
-      'consistent-return': 'error',
-      'prefer-const': 'error',
-      'no-unused-vars': 'off',
-      '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
-      'no-console': 'error',
-      'no-debugger': 'error',
-      'no-alert': 'error',
-      'no-fallthrough': 'error',
-      'no-implicit-coercion': 'error',
-      curly: 'error',
-      eqeqeq: 'error',
-      'no-const-assign': 'error',
-      'no-multiple-empty-lines': 'error',
-      camelcase: 'error',
-      'no-var': 'error',
-      'no-duplicate-imports': 'error',
-      'padding-line-between-statements': 'error',
-      'complexity': ['error', { max: 10 }],
-      
-      // Import rules
-      'import/extensions': [
-        'error',
-        'ignorePackages',
-        {
-          js: 'never',
-          jsx: 'never',
-          ts: 'never',
-          tsx: 'never',
-        },
-      ],
-      'import/no-unresolved': 'off',
-      
-      // React specific rules
-      'react/react-in-jsx-scope': 'off',
-      'react/prop-types': 'off',
-      
-      // Prettier rules
-      'prettier/prettier': 'error',
-    },
-    settings: {
-      react: {
-        version: 'detect',
-      },
-      'import/resolver': {
-        typescript: {
-          alwaysTryTypes: true,
-          project: ['./tsconfig.json', './tsconfig.*.json'],
-        },
-        node: {
-          extensions: ['.js', '.jsx', '.ts', '.tsx'],
-        },
-      },
-    },
-  },
-  {
-    files: ['src/setupTests.js'],
-    languageOptions: {
-      parserOptions: {
-        project: 'tsconfig.json',
-        tsconfigRootDir: './',
-      },
-    },
-  },
-];`;
-    } else if (linterType === "airbnb") {
-      return `import js from '@eslint/js';
-import typescriptEslint from '@typescript-eslint/eslint-plugin';
-import typescriptParser from '@typescript-eslint/parser';
-import react from 'eslint-plugin-react';
-import reactHooks from 'eslint-plugin-react-hooks';
-import jsxA11y from 'eslint-plugin-jsx-a11y';
-import importPlugin from 'eslint-plugin-import';
-import prettier from 'eslint-plugin-prettier';
-
-export default [
-  js.configs.recommended,
-  {
-    files: ['**/*.{js,jsx,ts,tsx}'],
-    languageOptions: {
-      ecmaVersion: 2021,
-      sourceType: 'module',
-      parser: typescriptParser,
-      parserOptions: {
-        ecmaFeatures: {
-          jsx: true,
-        },
-        project: ['./tsconfig.json', './tsconfig.*.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      globals: {
-        window: 'readonly',
-        document: 'readonly',
-        console: 'readonly',
-        process: 'readonly',
-        JSX: 'readonly',
-      },
-    },
-    plugins: {
-      '@typescript-eslint': typescriptEslint,
-      react: react,
-      'react-hooks': reactHooks,
-      'jsx-a11y': jsxA11y,
-      import: importPlugin,
-      prettier: prettier,
-    },
-    rules: {
-      ...typescriptEslint.configs.recommended.rules,
-      ...react.configs.recommended.rules,
-      ...reactHooks.configs.recommended.rules,
-      ...jsxA11y.configs.recommended.rules,
-      'react/react-in-jsx-scope': 'off',
-      'react/jsx-filename-extension': [1, { extensions: ['.tsx', '.jsx'] }],
-      'import/extensions': [
-        'error',
-        'ignorePackages',
-        {
-          js: 'never',
-          jsx: 'never',
-          ts: 'never',
-          tsx: 'never',
-        },
-      ],
-      'import/no-unresolved': 'off',
-      '@typescript-eslint/explicit-function-return-type': 'off',
-      '@typescript-eslint/explicit-module-boundary-types': 'off',
-      '@typescript-eslint/no-explicit-any': 'warn',
-      'prettier/prettier': 'error',
-      'react/function-component-definition': [
-        2,
-        {
-          namedComponents: 'arrow-function',
-          unnamedComponents: 'arrow-function',
-        },
-      ],
-      'no-console': 'warn',
-      'prefer-const': 'error',
-      'no-unused-vars': 'off',
-      '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
-      'react/prop-types': 'off',
-      'react/require-default-props': 'off',
-    },
-    settings: {
-      react: {
-        version: 'detect',
-      },
-      'import/resolver': {
-        typescript: {
-          alwaysTryTypes: true,
-          project: ['./tsconfig.json', './tsconfig.*.json'],
-        },
-        node: {
-          extensions: ['.js', '.jsx', '.ts', '.tsx'],
-        },
-      },
-    },
-  },
-];`;
-    } else {
-      return `import js from '@eslint/js';
-import typescriptEslint from '@typescript-eslint/eslint-plugin';
-import typescriptParser from '@typescript-eslint/parser';
-import react from 'eslint-plugin-react';
-import reactHooks from 'eslint-plugin-react-hooks';
-import prettier from 'eslint-plugin-prettier';
-
-export default [
-  js.configs.recommended,
-  {
-    files: ['**/*.{js,jsx,ts,tsx}'],
-    languageOptions: {
-      ecmaVersion: 2021,
-      sourceType: 'module',
-      parser: typescriptParser,
-      parserOptions: {
-        ecmaFeatures: {
-          jsx: true,
-        },
-        project: ['./tsconfig.json', './tsconfig.*.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      globals: {
-        window: 'readonly',
-        document: 'readonly',
-        console: 'readonly',
-        process: 'readonly',
-        JSX: 'readonly',
-      },
-    },
-    plugins: {
-      '@typescript-eslint': typescriptEslint,
-      react: react,
-      'react-hooks': reactHooks,
-      prettier: prettier,
-    },
-    rules: {
-      ...typescriptEslint.configs.recommended.rules,
-      ...react.configs.recommended.rules,
-      ...reactHooks.configs.recommended.rules,
-      'react/react-in-jsx-scope': 'off',
-      'prettier/prettier': 'error',
-      'no-unused-vars': 'off',
-      '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
-      'react/prop-types': 'off',
-    },
-    settings: {
-      react: {
-        version: 'detect',
-      },
-    },
-  },
-];`;
-    }
+    return getEslintConfig(linterType);
   },
 
-  getPrettierConfig: () => JSON.stringify({
-    "semi": true,
-    "trailingComma": "es5",
-    "singleQuote": true,
-    "printWidth": 100,
-    "tabWidth": 2,
-    "useTabs": false
-  }, null, 2)
+  getPrettierConfig: () => getPrettierConfig()
 };
 
-// Configuration constants
-const CONFIG = {
-  NX_CONFIG: {
-    $schema: "./node_modules/nx/schemas/nx-schema.json",
-    namedInputs: {
-      default: ["{projectRoot}/**/*", "sharedGlobals"],
-      production: [
-        "default",
-        "!{projectRoot}/**/?(*.)+(spec|test).[jt]s?(x)?(.snap)",
-        "!{projectRoot}/tsconfig.spec.json",
-        "!{projectRoot}/jest.config.[jt]s",
-        "!{projectRoot}/eslint.config.js",
-        "!{projectRoot}/src/test-setup.[jt]s",
-        "!{projectRoot}/test-setup.[jt]s",
-      ],
-      sharedGlobals: [],
-    },
-    targetDefaults: {
-      build: {
-        dependsOn: ["^build"],
-        inputs: ["production", "^production"],
-      },
-      test: {
-        inputs: [
-          "default",
-          "^production",
-          "{workspaceRoot}/jest.preset.js",
-        ],
-      },
-      lint: {
-        inputs: ["default", "{workspaceRoot}/eslint.config.js"],
-      },
-    },
-    generators: {
-      "@nx/react": {
-        application: {
-          style: "css",
-          linter: "eslint",
-          bundler: "vite",
-        },
-        component: {
-          style: "css",
-        },
-        library: {
-          style: "css",
-          linter: "eslint",
-        },
-      },
-    },
-  },
-  
-  TSCONFIG_BASE: {
-    compileOnSave: false,
-    compilerOptions: {
-      rootDir: ".",
-      sourceMap: true,
-      declaration: false,
-      moduleResolution: "node",
-      emitDecoratorMetadata: true,
-      experimentalDecorators: true,
-      importHelpers: true,
-      target: "es2015",
-      module: "esnext",
-      lib: ["es2020", "dom"],
-      skipLibCheck: true,
-      skipDefaultLibCheck: true,
-      baseUrl: ".",
-      paths: {},
-    },
-    exclude: ["node_modules", "tmp"],
-  },
-  
-  TSCONFIG: {
-    extends: "./tsconfig.base.json",
-    compilerOptions: {
-      composite: true,
-      declaration: true,
-      declarationMap: true,
-    },
-    files: [],
-    include: [],
-    references: [],
-  },
-  
-  APP_TSCONFIG: {
-    extends: "../../tsconfig.base.json",
-    compilerOptions: {
-      jsx: "react-jsx",
-      allowJs: true,
-      esModuleInterop: true,
-      allowSyntheticDefaultImports: true,
-      strict: false,
-      moduleResolution: "node",
-      types: ["node", "vite/client"],
-    },
-    include: ["src/**/*", "index.html"],
-    exclude: ["node_modules", "dist"],
-  }
-};
+
 
 // Utility functions
 const createFileWithErrorHandling = (filePath: string, content: string, description: string) => {
@@ -977,10 +596,10 @@ const createManualWorkspace = (workspacePath: string, a: any) => {
     };
 
     const filesToCreate = [
-      { path: path.join(workspacePath, "nx.json"), content: JSON.stringify(CONFIG.NX_CONFIG, null, 2), desc: "nx.json" },
+      { path: path.join(workspacePath, "nx.json"), content: JSON.stringify(TEMPLATE_CONFIG.NX_CONFIG, null, 2), desc: "nx.json" },
       { path: path.join(workspacePath, "package.json"), content: JSON.stringify(packageJson, null, 2), desc: "package.json" },
-      { path: path.join(workspacePath, "tsconfig.base.json"), content: JSON.stringify(CONFIG.TSCONFIG_BASE, null, 2), desc: "tsconfig.base.json" },
-      { path: path.join(workspacePath, "tsconfig.json"), content: JSON.stringify(CONFIG.TSCONFIG, null, 2), desc: "tsconfig.json" },
+      { path: path.join(workspacePath, "tsconfig.base.json"), content: JSON.stringify(TEMPLATE_CONFIG.TSCONFIG_BASE, null, 2), desc: "tsconfig.base.json" },
+      { path: path.join(workspacePath, "tsconfig.json"), content: JSON.stringify(TEMPLATE_CONFIG.TSCONFIG, null, 2), desc: "tsconfig.json" },
       { path: path.join(workspacePath, ".gitignore"), content: "node_modules\ndist\n.nx\n", desc: ".gitignore" }
     ];
 
@@ -1010,38 +629,14 @@ const getDependenciesByFeature = (a: any) => {
 
   // Add linting packages
   if (a.linter === "eslint" || a.linter === "airbnb" || a.linter === "custom") {
-    baseDevPkgs.push(
-      "eslint@latest",
-      "@eslint/js@latest",
-      "@typescript-eslint/eslint-plugin@latest",
-      "@typescript-eslint/parser@latest",
-      "eslint-plugin-react@latest",
-      "eslint-plugin-react-hooks@latest",
-      "eslint-import-resolver-typescript@latest"
-    );
-    
-    if (a.linter === "airbnb") {
-      baseDevPkgs.push(
-        "eslint-config-airbnb@latest",
-        "eslint-config-airbnb-typescript@latest",
-        "eslint-plugin-import@latest",
-        "eslint-plugin-jsx-a11y@latest"
-      );
-    } else if (a.linter === "custom") {
-      baseDevPkgs.push(
-        "eslint-plugin-import@latest",
-        "eslint-plugin-complexity@latest",
-        "eslint-config-react-app@latest"
-      );
-    }
+    const eslintDeps = getEslintDependencies(a.linter);
+    baseDevPkgs.push(...eslintDeps);
   }
 
   // Add prettier if selected
   if (a.prettier) {
-    baseDevPkgs.push("prettier@latest");
-    if (a.linter === "eslint" || a.linter === "airbnb" || a.linter === "custom") {
-      baseDevPkgs.push("eslint-config-prettier@latest", "eslint-plugin-prettier@latest");
-    }
+    const prettierDeps = getPrettierDependencies(a.prettier);
+    baseDevPkgs.push(...prettierDeps);
   }
 
   const featurePackages = {
@@ -1123,8 +718,8 @@ export function reactAppGenerator() {
 
       if (!fs.existsSync(tsconfigBasePath) && !fs.existsSync(tsconfigPath)) {
         console.log("\n⚠️  TypeScript configuration missing, creating...\n");
-        createFileWithErrorHandling(tsconfigBasePath, JSON.stringify(CONFIG.TSCONFIG_BASE, null, 2), "tsconfig.base.json");
-        createFileWithErrorHandling(tsconfigPath, JSON.stringify(CONFIG.TSCONFIG, null, 2), "tsconfig.json");
+        createFileWithErrorHandling(tsconfigBasePath, JSON.stringify(TEMPLATE_CONFIG.TSCONFIG_BASE, null, 2), "tsconfig.base.json");
+        createFileWithErrorHandling(tsconfigPath, JSON.stringify(TEMPLATE_CONFIG.TSCONFIG, null, 2), "tsconfig.json");
         console.log("✅ TypeScript configuration files created");
       }
 
@@ -1675,7 +1270,7 @@ function createManualReactApp(workspacePath: string, a: any) {
   // Create tsconfig.json for the app
   fs.writeFileSync(
     path.join(appPath, "tsconfig.json"),
-    JSON.stringify(CONFIG.APP_TSCONFIG, null, 2)
+    JSON.stringify(TEMPLATE_CONFIG.APP_TSCONFIG, null, 2)
   );
 
   // Setup ESLint and Prettier if requested
