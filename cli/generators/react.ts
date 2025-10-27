@@ -66,7 +66,7 @@ export function App() {
           ${a.i18n ? "<li>✅ Internationalization</li>" : ""}
           ${a.unitTestRunner !== 'none' ? `<li>✅ ${a.unitTestRunner.charAt(0).toUpperCase() + a.unitTestRunner.slice(1)} Unit Tests</li>` : ""}
           ${a.e2eTestRunner !== 'none' ? `<li>✅ ${a.e2eTestRunner.charAt(0).toUpperCase() + a.e2eTestRunner.slice(1)} E2E Tests</li>` : ""}
-          ${a.linter !== 'none' ? `<li>✅ ${a.linter === 'airbnb' ? 'ESLint with Airbnb' : 'ESLint'} Linting</li>` : ""}
+          ${a.linter !== 'none' ? `<li>✅ ${a.linter === 'airbnb' ? 'ESLint with Airbnb' : a.linter === 'custom' ? 'ESLint with Custom Rules' : 'ESLint'} Linting</li>` : ""}
           ${a.prettier ? "<li>✅ Prettier Formatting</li>" : ""}
           ${
             a.auth !== "custom"
@@ -485,7 +485,138 @@ export default defineConfig({
 });`,
 
   getEslintConfig: (linterType: string, hasTypeScript: boolean = true) => {
-    if (linterType === "airbnb") {
+    if (linterType === "custom") {
+      return `import js from '@eslint/js';
+import typescriptEslint from '@typescript-eslint/eslint-plugin';
+import typescriptParser from '@typescript-eslint/parser';
+import react from 'eslint-plugin-react';
+import reactHooks from 'eslint-plugin-react-hooks';
+import importPlugin from 'eslint-plugin-import';
+import prettier from 'eslint-plugin-prettier';
+import complexity from 'eslint-plugin-complexity';
+
+export default [
+  js.configs.recommended,
+  {
+    files: ['**/*.{js,jsx,ts,tsx}'],
+    languageOptions: {
+      ecmaVersion: 'latest',
+      sourceType: 'module',
+      parser: typescriptParser,
+      parserOptions: {
+        ecmaFeatures: {
+          jsx: true,
+        },
+        project: ['./tsconfig.json', './tsconfig.*.json'],
+        tsconfigRootDir: import.meta.dirname,
+      },
+      globals: {
+        window: 'readonly',
+        document: 'readonly',
+        console: 'readonly',
+        process: 'readonly',
+        JSX: 'readonly',
+        browser: true,
+        es2021: true,
+      },
+    },
+    plugins: {
+      '@typescript-eslint': typescriptEslint,
+      react: react,
+      'react-hooks': reactHooks,
+      import: importPlugin,
+      prettier: prettier,
+      complexity: complexity,
+    },
+    rules: {
+      // Base ESLint recommended rules
+      ...js.configs.recommended.rules,
+      // TypeScript rules
+      ...typescriptEslint.configs.recommended.rules,
+      // React rules
+      ...react.configs.recommended.rules,
+      // React Hooks rules
+      ...reactHooks.configs.recommended.rules,
+      
+      // Custom rules
+      'no-use-before-define': 'off',
+      '@typescript-eslint/no-use-before-define': ['error'],
+      'react/jsx-filename-extension': ['warn', { extensions: ['.tsx', '.jsx'] }],
+      '@typescript-eslint/explicit-function-return-type': [
+        'error',
+        {
+          allowExpressions: true,
+          allowTypedFunctionExpressions: true,
+        },
+      ],
+      'max-len': ['warn', { code: 200 }],
+      'react-hooks/rules-of-hooks': 'error',
+      'react-hooks/exhaustive-deps': 'error',
+      'consistent-return': 'error',
+      'prefer-const': 'error',
+      'no-unused-vars': 'off',
+      '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
+      'no-console': 'error',
+      'no-debugger': 'error',
+      'no-alert': 'error',
+      'no-fallthrough': 'error',
+      'no-implicit-coercion': 'error',
+      curly: 'error',
+      eqeqeq: 'error',
+      'no-const-assign': 'error',
+      'no-multiple-empty-lines': 'error',
+      camelcase: 'error',
+      'no-var': 'error',
+      'no-duplicate-imports': 'error',
+      'padding-line-between-statements': 'error',
+      'complexity': ['error', { max: 10 }],
+      
+      // Import rules
+      'import/extensions': [
+        'error',
+        'ignorePackages',
+        {
+          js: 'never',
+          jsx: 'never',
+          ts: 'never',
+          tsx: 'never',
+        },
+      ],
+      'import/no-unresolved': 'off',
+      
+      // React specific rules
+      'react/react-in-jsx-scope': 'off',
+      'react/prop-types': 'off',
+      
+      // Prettier rules
+      'prettier/prettier': 'error',
+    },
+    settings: {
+      react: {
+        version: 'detect',
+      },
+      'import/resolver': {
+        typescript: {
+          alwaysTryTypes: true,
+          project: ['./tsconfig.json', './tsconfig.*.json'],
+        },
+        node: {
+          extensions: ['.js', '.jsx', '.ts', '.tsx'],
+        },
+      },
+    },
+  },
+  {
+    files: ['src/setupTests.js'],
+    languageOptions: {
+      parserOptions: {
+        project: 'tsconfig.json',
+        tsconfigRootDir: './',
+      },
+    },
+  },
+];`;
+    } else if (linterType === "airbnb") {
       return `import js from '@eslint/js';
 import typescriptEslint from '@typescript-eslint/eslint-plugin';
 import typescriptParser from '@typescript-eslint/parser';
@@ -878,7 +1009,7 @@ const getDependenciesByFeature = (a: any) => {
   ];
 
   // Add linting packages
-  if (a.linter === "eslint" || a.linter === "airbnb") {
+  if (a.linter === "eslint" || a.linter === "airbnb" || a.linter === "custom") {
     baseDevPkgs.push(
       "eslint@latest",
       "@eslint/js@latest",
@@ -896,13 +1027,19 @@ const getDependenciesByFeature = (a: any) => {
         "eslint-plugin-import@latest",
         "eslint-plugin-jsx-a11y@latest"
       );
+    } else if (a.linter === "custom") {
+      baseDevPkgs.push(
+        "eslint-plugin-import@latest",
+        "eslint-plugin-complexity@latest",
+        "eslint-config-react-app@latest"
+      );
     }
   }
 
   // Add prettier if selected
   if (a.prettier) {
     baseDevPkgs.push("prettier@latest");
-    if (a.linter === "eslint" || a.linter === "airbnb") {
+    if (a.linter === "eslint" || a.linter === "airbnb" || a.linter === "custom") {
       baseDevPkgs.push("eslint-config-prettier@latest", "eslint-plugin-prettier@latest");
     }
   }
@@ -1189,7 +1326,7 @@ export function reactAppGenerator() {
       console.log(`🧭 Routing: ${a.routing ? "Yes" : "No"}`);
       console.log(`📦 Redux: ${a.redux ? "Yes" : "No"}`);
       console.log(`🌐 i18n: ${a.i18n ? "Yes" : "No"}`);
-      console.log(`🔧 Linter: ${a.linter === 'none' ? 'None' : a.linter === 'airbnb' ? 'ESLint with Airbnb' : 'ESLint'}`);
+      console.log(`🔧 Linter: ${a.linter === 'none' ? 'None' : a.linter === 'airbnb' ? 'ESLint with Airbnb' : a.linter === 'custom' ? 'ESLint with Custom Rules' : 'ESLint'}`);
       console.log(`✨ Prettier: ${a.prettier ? "Yes" : "No"}`);
       console.log("━".repeat(50));
       console.log("\nTo get started:\n");
@@ -1319,6 +1456,10 @@ function getArgs() {
     {
       value: "airbnb",
       label: "ESLint with Airbnb",
+    },
+    {
+      value: "custom",
+      label: "ESLint with Custom Rules",
     },
     {
       value: "none",
@@ -1640,6 +1781,7 @@ function applyPTGCustomizations(workspacePath: string, a: any) {
     // Setup ESLint and Prettier configurations
     if (a.linter !== 'none') {
       console.log("📦 Setting up ESLint configuration...");
+      // Use eslint.config.js for all configurations (ESLint v9 format)
       const eslintConfigPath = path.join(appPath, "eslint.config.js");
       const eslintConfig = TEMPLATES.getEslintConfig(a.linter);
       createFileWithErrorHandling(eslintConfigPath, eslintConfig, "ESLint configuration");
