@@ -74,7 +74,8 @@ export const ESLINT_CONFIGS = {
           "plugin:@angular-eslint/recommended",
           "plugin:@angular-eslint/template/process-inline-templates",
           "plugin:rxjs/recommended",
-          "plugin:prettier/recommended"
+          "plugin:prettier/recommended",
+          "prettier"
         ],
         parserOptions: {
           project: ["tsconfig.json", "tsconfig.app.json", "tsconfig.spec.json"],
@@ -231,8 +232,8 @@ export const ESLINT_DEPENDENCIES = {
   standard: [
     "eslint-config-standard@17.1.0",
     "eslint-plugin-import@2.30.0",
-    "eslint-plugin-n@17.0.0",
-    "eslint-plugin-promise@7.1.0",
+    "eslint-plugin-n@16.6.2",
+    "eslint-plugin-promise@6.6.0",
     "@angular-eslint/eslint-plugin@18.0.0",
     "@angular-eslint/eslint-plugin-template@18.0.0",
     "@angular-eslint/template-parser@18.0.0"
@@ -243,6 +244,7 @@ export const ESLINT_DEPENDENCIES = {
     "@angular-eslint/template-parser@18.0.0",
     "eslint-plugin-rxjs@5.0.0",
     "eslint-plugin-prettier@5.0.0",
+    "eslint-config-prettier@9.0.0",
     "prettier@3.0.0"
   ]
 };
