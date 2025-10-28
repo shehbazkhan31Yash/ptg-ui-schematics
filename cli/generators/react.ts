@@ -3,6 +3,30 @@ import { execSync } from "child_process";
 import * as fs from "fs";
 import * as path from "path";
 import inquirer = require("inquirer");
+import { getEslintConfig, getEslintDependencies, getPrettierDependencies } from "../configs/eslint-configs";
+import { getPrettierConfig, CONFIG as TEMPLATE_CONFIG } from "../configs/config-templates";
+
+// Helper function to normalize style option for Nx compatibility
+// Nx only supports: css, scss, less, tailwind, styled-components, @emotion/styled, styled-jsx, none
+// styl (Stylus) is not supported, so we map it to css
+function getNormalizedStyleForNx(style: string): string {
+  const nxSupportedStyles = ['css', 'scss', 'less', 'tailwind', 'styled-components', '@emotion/styled', 'styled-jsx', 'none'];
+  
+  // If style is supported by Nx, return as is
+  if (nxSupportedStyles.includes(style)) {
+    return style;
+  }
+  
+  // Map unsupported styles to css as fallback
+  if (style === 'styl') {
+    console.warn(`\n⚠️  Warning: Stylus (.styl) is not supported by Nx. Using CSS as fallback for Nx generation.`);
+    console.warn(`   Your application will still be configured to use Stylus files.\n`);
+    return 'css';
+  }
+  
+  // Default fallback
+  return 'css';
+}
 
 // Template constants for better maintainability
 const TEMPLATES = {
@@ -66,7 +90,7 @@ export function App() {
           ${a.i18n ? "<li>✅ Internationalization</li>" : ""}
           ${a.unitTestRunner !== 'none' ? `<li>✅ ${a.unitTestRunner.charAt(0).toUpperCase() + a.unitTestRunner.slice(1)} Unit Tests</li>` : ""}
           ${a.e2eTestRunner !== 'none' ? `<li>✅ ${a.e2eTestRunner.charAt(0).toUpperCase() + a.e2eTestRunner.slice(1)} E2E Tests</li>` : ""}
-          ${a.linter ? "<li>✅ ESLint Linting</li>" : ""}
+          ${a.linter !== 'none' ? `<li>✅ ${a.linter === 'airbnb' ? 'ESLint with Airbnb' : a.linter === 'custom' ? 'ESLint with Custom Rules' : 'ESLint'} Linting</li>` : ""}
           ${a.prettier ? "<li>✅ Prettier Formatting</li>" : ""}
           ${
             a.auth !== "custom"
@@ -482,108 +506,16 @@ export default defineConfig({
   define: {
     global: 'globalThis',
   },
-});`
+});`,
+
+  getEslintConfig: (linterType: string, hasTypeScript: boolean = true) => {
+    return getEslintConfig(linterType);
+  },
+
+  getPrettierConfig: () => getPrettierConfig()
 };
 
-// Configuration constants
-const CONFIG = {
-  NX_CONFIG: {
-    $schema: "./node_modules/nx/schemas/nx-schema.json",
-    namedInputs: {
-      default: ["{projectRoot}/**/*", "sharedGlobals"],
-      production: [
-        "default",
-        "!{projectRoot}/**/?(*.)+(spec|test).[jt]s?(x)?(.snap)",
-        "!{projectRoot}/tsconfig.spec.json",
-        "!{projectRoot}/jest.config.[jt]s",
-        "!{projectRoot}/.eslintrc.json",
-        "!{projectRoot}/src/test-setup.[jt]s",
-        "!{projectRoot}/test-setup.[jt]s",
-      ],
-      sharedGlobals: [],
-    },
-    targetDefaults: {
-      build: {
-        dependsOn: ["^build"],
-        inputs: ["production", "^production"],
-      },
-      test: {
-        inputs: [
-          "default",
-          "^production",
-          "{workspaceRoot}/jest.preset.js",
-        ],
-      },
-      lint: {
-        inputs: ["default", "{workspaceRoot}/.eslintrc.json"],
-      },
-    },
-    generators: {
-      "@nx/react": {
-        application: {
-          style: "css",
-          linter: "eslint",
-          bundler: "vite",
-        },
-        component: {
-          style: "css",
-        },
-        library: {
-          style: "css",
-          linter: "eslint",
-        },
-      },
-    },
-  },
-  
-  TSCONFIG_BASE: {
-    compileOnSave: false,
-    compilerOptions: {
-      rootDir: ".",
-      sourceMap: true,
-      declaration: false,
-      moduleResolution: "node",
-      emitDecoratorMetadata: true,
-      experimentalDecorators: true,
-      importHelpers: true,
-      target: "es2015",
-      module: "esnext",
-      lib: ["es2020", "dom"],
-      skipLibCheck: true,
-      skipDefaultLibCheck: true,
-      baseUrl: ".",
-      paths: {},
-    },
-    exclude: ["node_modules", "tmp"],
-  },
-  
-  TSCONFIG: {
-    extends: "./tsconfig.base.json",
-    compilerOptions: {
-      composite: true,
-      declaration: true,
-      declarationMap: true,
-    },
-    files: [],
-    include: [],
-    references: [],
-  },
-  
-  APP_TSCONFIG: {
-    extends: "../../tsconfig.base.json",
-    compilerOptions: {
-      jsx: "react-jsx",
-      allowJs: true,
-      esModuleInterop: true,
-      allowSyntheticDefaultImports: true,
-      strict: false,
-      moduleResolution: "node",
-      types: ["node", "vite/client"],
-    },
-    include: ["src/**/*", "index.html"],
-    exclude: ["node_modules", "dist"],
-  }
-};
+
 
 // Utility functions
 const createFileWithErrorHandling = (filePath: string, content: string, description: string) => {
@@ -629,9 +561,12 @@ const installPackagesWithRetry = (packages: string[], isDev: boolean, workspaceP
 };
 
 const createWorkspaceWithRetry = (workspacePath: string, a: any) => {
+  // Normalize style for Nx compatibility
+  const nxStyle = getNormalizedStyleForNx(a.style);
+  
   const strategies = [
     {
-      cmd: `npx create-nx-workspace@latest ${a.workspace} --preset react-standalone --appName ${a.name} --style ${a.style} --nx-cloud skip --packageManager npm --routing ${a.routing} --bundler ${a.bundler} --unitTestRunner ${a.unitTestRunner} --e2eTestRunner ${a.e2eTestRunner}`,
+      cmd: `npx create-nx-workspace@latest ${a.workspace} --preset react-standalone --appName ${a.name} --style ${nxStyle} --nx-cloud skip --packageManager npm --routing ${a.routing} --bundler ${a.bundler} --unitTestRunner ${a.unitTestRunner} --e2eTestRunner ${a.e2eTestRunner}`,
       desc: "React standalone preset"
     },
     {
@@ -661,15 +596,30 @@ const createManualWorkspace = (workspacePath: string, a: any) => {
   try {
     fs.mkdirSync(workspacePath, { recursive: true });
 
+    const scripts: { [key: string]: string } = {
+      build: "nx build",
+      test: "nx test",
+      start: "nx serve",
+    };
+
+    // Add lint scripts if linter is enabled
+    if (a.linter && a.linter !== 'none') {
+      scripts.lint = `eslint "src/**/*.{js,jsx,ts,tsx}"`;
+      scripts["lint:fix"] = `eslint "src/**/*.{js,jsx,ts,tsx}" --fix`;
+    }
+
+    // Add format scripts if prettier is enabled
+    if (a.prettier) {
+      scripts.format = `prettier --write "src/**/*.{js,jsx,ts,tsx,json,css,scss,md}"`;
+      scripts["format:check"] = `prettier --check "src/**/*.{js,jsx,ts,tsx,json,css,scss,md}"`;
+    }
+
     const packageJson = {
       name: a.workspace,
       version: "0.0.0",
       license: "MIT",
-      scripts: {
-        build: "nx build",
-        test: "nx test",
-        start: "nx serve",
-      },
+      type: "module",
+      scripts,
       private: true,
       dependencies: {},
       devDependencies: {
@@ -685,10 +635,10 @@ const createManualWorkspace = (workspacePath: string, a: any) => {
     };
 
     const filesToCreate = [
-      { path: path.join(workspacePath, "nx.json"), content: JSON.stringify(CONFIG.NX_CONFIG, null, 2), desc: "nx.json" },
+      { path: path.join(workspacePath, "nx.json"), content: JSON.stringify(TEMPLATE_CONFIG.NX_CONFIG, null, 2), desc: "nx.json" },
       { path: path.join(workspacePath, "package.json"), content: JSON.stringify(packageJson, null, 2), desc: "package.json" },
-      { path: path.join(workspacePath, "tsconfig.base.json"), content: JSON.stringify(CONFIG.TSCONFIG_BASE, null, 2), desc: "tsconfig.base.json" },
-      { path: path.join(workspacePath, "tsconfig.json"), content: JSON.stringify(CONFIG.TSCONFIG, null, 2), desc: "tsconfig.json" },
+      { path: path.join(workspacePath, "tsconfig.base.json"), content: JSON.stringify(TEMPLATE_CONFIG.TSCONFIG_BASE, null, 2), desc: "tsconfig.base.json" },
+      { path: path.join(workspacePath, "tsconfig.json"), content: JSON.stringify(TEMPLATE_CONFIG.TSCONFIG, null, 2), desc: "tsconfig.json" },
       { path: path.join(workspacePath, ".gitignore"), content: "node_modules\ndist\n.nx\n", desc: ".gitignore" }
     ];
 
@@ -713,12 +663,21 @@ const getDependenciesByFeature = (a: any) => {
     "@types/react-dom@latest",
     "@vitejs/plugin-react@latest",
     "vite@latest",
-    "eslint@latest",
-    "prettier@latest",
-    "@typescript-eslint/eslint-plugin@latest",
-    "@typescript-eslint/parser@latest",
     ...(a.style === 'scss' ? ["sass@latest"] : []),
+    ...(a.style === 'styl' ? ["stylus@latest"] : []),
   ];
+
+  // Add linting packages
+  if (a.linter === "eslint" || a.linter === "airbnb" || a.linter === "custom") {
+    const eslintDeps = getEslintDependencies(a.linter);
+    baseDevPkgs.push(...eslintDeps);
+  }
+
+  // Add prettier if selected
+  if (a.prettier) {
+    const prettierDeps = getPrettierDependencies(a.prettier);
+    baseDevPkgs.push(...prettierDeps);
+  }
 
   const featurePackages = {
     auth: {
@@ -764,6 +723,41 @@ const getDependenciesByFeature = (a: any) => {
   return { production: basePkgs, development: baseDevPkgs };
 };
 
+const addLintScriptsToPackageJson = (workspacePath: string, a: any) => {
+  if (!a.linter || a.linter === 'none') {
+    return;
+  }
+
+  try {
+    const packageJsonPath = path.join(workspacePath, "package.json");
+    if (!fs.existsSync(packageJsonPath)) {
+      console.warn("⚠️  package.json not found, skipping lint scripts");
+      return;
+    }
+
+    const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, "utf8"));
+    
+    // Initialize scripts if not present
+    packageJson.scripts = packageJson.scripts || {};
+
+    // Add lint scripts - use paths that work on both Windows and Unix
+    packageJson.scripts.lint = `eslint "src/**/*.{js,jsx,ts,tsx}"`;
+    packageJson.scripts["lint:fix"] = `eslint "src/**/*.{js,jsx,ts,tsx}" --fix`;
+
+    // Add format scripts if prettier is enabled
+    if (a.prettier) {
+      packageJson.scripts.format = `prettier --write "src/**/*.{js,jsx,ts,tsx,json,css,scss,md}"`;
+      packageJson.scripts["format:check"] = `prettier --check "src/**/*.{js,jsx,ts,tsx,json,css,scss,md}"`;
+    }
+
+    // Write back to package.json
+    fs.writeFileSync(packageJsonPath, JSON.stringify(packageJson, null, 2));
+    console.log("✅ Lint scripts added to package.json");
+  } catch (error) {
+    console.warn("⚠️  Failed to add lint scripts to package.json:", error.message);
+  }
+};
+
 export function reactAppGenerator() {
   getArgs().then((a: any) => {
     try {
@@ -799,8 +793,8 @@ export function reactAppGenerator() {
 
       if (!fs.existsSync(tsconfigBasePath) && !fs.existsSync(tsconfigPath)) {
         console.log("\n⚠️  TypeScript configuration missing, creating...\n");
-        createFileWithErrorHandling(tsconfigBasePath, JSON.stringify(CONFIG.TSCONFIG_BASE, null, 2), "tsconfig.base.json");
-        createFileWithErrorHandling(tsconfigPath, JSON.stringify(CONFIG.TSCONFIG, null, 2), "tsconfig.json");
+        createFileWithErrorHandling(tsconfigBasePath, JSON.stringify(TEMPLATE_CONFIG.TSCONFIG_BASE, null, 2), "tsconfig.base.json");
+        createFileWithErrorHandling(tsconfigPath, JSON.stringify(TEMPLATE_CONFIG.TSCONFIG, null, 2), "tsconfig.json");
         console.log("✅ TypeScript configuration files created");
       }
 
@@ -906,6 +900,19 @@ export function reactAppGenerator() {
             console.warn("⚠️ Failed to install SASS. You may need to install it manually: npm install --save-dev sass");
           }
         }
+        
+        // If using Stylus, ensure stylus is installed
+        if (a.style === 'styl') {
+          try {
+            execSync('npm install --save-dev stylus', {
+              cwd: workspacePath,
+              stdio: [0, 1, 2],
+            });
+            console.log("✅ Stylus installed successfully");
+          } catch (error) {
+            console.warn("⚠️ Failed to install Stylus. You may need to install it manually: npm install --save-dev stylus");
+          }
+        }
 
         // Apply PTG customizations to the preset-generated app
         console.log(
@@ -915,10 +922,13 @@ export function reactAppGenerator() {
       } else {
         console.log("🚀 Creating React application using Nx generator...");
 
+        // Normalize style for Nx compatibility
+        const nxStyle = getNormalizedStyleForNx(a.style);
+
         try {
           // Use Nx React generator to create the application
           execSync(
-            `npx nx generate @nx/react:application ${a.name} --style=${a.style} --routing=${a.routing} --bundler=${a.bundler} --unitTestRunner=${a.unitTestRunner} --e2eTestRunner=${a.e2eTestRunner} --linter=${a.linter ? 'eslint' : 'none'} --skipFormat=true`,
+            `npx nx generate @nx/react:application ${a.name} --style=${nxStyle} --routing=${a.routing} --bundler=${a.bundler} --unitTestRunner=${a.unitTestRunner} --e2eTestRunner=${a.e2eTestRunner} --linter=${a.linter !== 'none' ? 'eslint' : 'none'} --skipFormat=true`,
             {
               cwd: workspacePath,
               stdio: [0, 1, 2],
@@ -939,7 +949,7 @@ export function reactAppGenerator() {
           try {
             // Try without some optional parameters
             execSync(
-              `npx nx generate @nx/react:app ${a.name} --style=${a.style} --routing=${a.routing}`,
+              `npx nx generate @nx/react:app ${a.name} --style=${nxStyle} --routing=${a.routing} --linter=${a.linter === 'none' ? 'none' : 'eslint'}`,
               {
                 cwd: workspacePath,
                 stdio: [0, 1, 2],
@@ -959,8 +969,9 @@ export function reactAppGenerator() {
 
             try {
               // Try using the custom PTG React schematic
+              // Note: PTG schematic handles the original style option internally
               execSync(
-                `npx nx generate @ptg-ui/react-schematics:application ${a.name} --style=${a.style} --routing=${a.routing} --framework=${a.framework} --auth=${a.auth} --redux=${a.redux} --i18n=${a.i18n}`,
+                `npx nx generate @ptg-ui/react-schematics:application ${a.name} --style=${a.style} --routing=${a.routing} --framework=${a.framework} --auth=${a.auth} --redux=${a.redux} --i18n=${a.i18n} --linter=${a.linter}`,
                 {
                   cwd: workspacePath,
                   stdio: [0, 1, 2],
@@ -993,6 +1004,9 @@ export function reactAppGenerator() {
       installPackagesWithRetry(dependencies.production, false, workspacePath, "production dependencies");
       installPackagesWithRetry(dependencies.development, true, workspacePath, "development dependencies");
 
+      // Add lint scripts to package.json
+      addLintScriptsToPackageJson(workspacePath, a);
+
       console.log("\n✅ React application created successfully!\n");
       console.log("━".repeat(50));
       console.log(`📁 Workspace: ${a.workspace}`);
@@ -1002,6 +1016,8 @@ export function reactAppGenerator() {
       console.log(`🧭 Routing: ${a.routing ? "Yes" : "No"}`);
       console.log(`📦 Redux: ${a.redux ? "Yes" : "No"}`);
       console.log(`🌐 i18n: ${a.i18n ? "Yes" : "No"}`);
+      console.log(`🔧 Linter: ${a.linter === 'none' ? 'None' : a.linter === 'airbnb' ? 'ESLint with Airbnb' : a.linter === 'custom' ? 'ESLint with Custom Rules' : 'ESLint'}`);
+      console.log(`✨ Prettier: ${a.prettier ? "Yes" : "No"}`);
       console.log("━".repeat(50));
       console.log("\nTo get started:\n");
       console.log(`  cd ${a.workspace}`);
@@ -1122,6 +1138,24 @@ function getArgs() {
       label: "None",
     },
   ];
+  const linterOptions: { value: string; label: string }[] = [
+    {
+      value: "eslint",
+      label: "ESLint (Standard)",
+    },
+    {
+      value: "airbnb",
+      label: "ESLint with Airbnb",
+    },
+    {
+      value: "custom",
+      label: "ESLint with Custom Rules",
+    },
+    {
+      value: "none",
+      label: "None",
+    },
+  ];
   return (inquirer as any)
     .prompt([
       {
@@ -1193,9 +1227,10 @@ function getArgs() {
       },
       {
         name: "linter",
-        message: "Would you like to use ESLint for linting?",
-        type: "confirm",
-        default: true,
+        message: "Which linter would you like to use?",
+        type: "list",
+        default: "eslint",
+        choices: linterOptions,
       },
       {
         name: "prettier",
@@ -1238,6 +1273,7 @@ function createManualReactApp(workspacePath: string, a: any) {
   const packageJsonPath = path.join(workspacePath, "package.json");
   const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, "utf8"));
 
+  packageJson.type = "module";
   packageJson.dependencies = packageJson.dependencies || {};
   packageJson.dependencies["react"] = "latest";
   packageJson.dependencies["react-dom"] = "latest";
@@ -1329,8 +1365,21 @@ function createManualReactApp(workspacePath: string, a: any) {
   // Create tsconfig.json for the app
   fs.writeFileSync(
     path.join(appPath, "tsconfig.json"),
-    JSON.stringify(CONFIG.APP_TSCONFIG, null, 2)
+    JSON.stringify(TEMPLATE_CONFIG.APP_TSCONFIG, null, 2)
   );
+
+  // Setup ESLint and Prettier if requested
+  if (a.linter !== 'none') {
+    const eslintConfigPath = path.join(appPath, "eslint.config.js");
+    const eslintConfig = TEMPLATES.getEslintConfig(a.linter);
+    createFileWithErrorHandling(eslintConfigPath, eslintConfig, "ESLint configuration");
+  }
+
+  if (a.prettier) {
+    const prettierConfigPath = path.join(appPath, ".prettierrc");
+    const prettierConfig = TEMPLATES.getPrettierConfig();
+    createFileWithErrorHandling(prettierConfigPath, prettierConfig, "Prettier configuration");
+  }
 
   console.log(
     `✅ React application '${a.name}' created successfully using manual fallback!`
@@ -1340,6 +1389,21 @@ function createManualReactApp(workspacePath: string, a: any) {
 function applyPTGCustomizations(workspacePath: string, a: any) {
   try {
     console.log("🔧 Applying framework-specific customizations...");
+
+    // Update package.json to include module type for ESLint v9 compatibility
+    const packageJsonPath = path.join(workspacePath, "package.json");
+    if (fs.existsSync(packageJsonPath)) {
+      try {
+        const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, "utf8"));
+        if (!packageJson.type) {
+          packageJson.type = "module";
+          fs.writeFileSync(packageJsonPath, JSON.stringify(packageJson, null, 2));
+          console.log("✅ Updated package.json with module type");
+        }
+      } catch (error) {
+        console.warn("⚠️  Could not update package.json:", error.message);
+      }
+    }
 
     // Detect if it's a standalone app (src in root) or multi-app workspace (apps/appName)
     const standaloneAppPath = path.join(workspacePath, "src");
@@ -1402,7 +1466,25 @@ function applyPTGCustomizations(workspacePath: string, a: any) {
     const stylePath = path.join(appSrcPath, `app.${a.style}`);
     const styleContent = TEMPLATES.getStyleContent(a);
     createFileWithErrorHandling(stylePath, styleContent, "style file") ||
-      createFileWithErrorHandling(path.join(srcPath, `app.${a.style}`), styleContent, "style file (fallback)");    console.log("✅ PTG customizations applied successfully!");
+      createFileWithErrorHandling(path.join(srcPath, `app.${a.style}`), styleContent, "style file (fallback)");
+
+    // Setup ESLint and Prettier configurations
+    if (a.linter !== 'none') {
+      console.log("📦 Setting up ESLint configuration...");
+      // Use eslint.config.js for all configurations (ESLint v9 format)
+      const eslintConfigPath = path.join(appPath, "eslint.config.js");
+      const eslintConfig = TEMPLATES.getEslintConfig(a.linter);
+      createFileWithErrorHandling(eslintConfigPath, eslintConfig, "ESLint configuration");
+    }
+
+    if (a.prettier) {
+      console.log("📦 Setting up Prettier configuration...");
+      const prettierConfigPath = path.join(appPath, ".prettierrc");
+      const prettierConfig = TEMPLATES.getPrettierConfig();
+      createFileWithErrorHandling(prettierConfigPath, prettierConfig, "Prettier configuration");
+    }
+
+    console.log("✅ PTG customizations applied successfully!");
   } catch (error) {
     console.warn("⚠️  Some customizations failed to apply:", error.message);
   }

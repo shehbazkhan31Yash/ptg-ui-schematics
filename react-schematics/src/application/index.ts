@@ -28,6 +28,12 @@ import {
   reactBootstrapVersion,
 } from "../utils/version";
 import { workspaces } from '@angular-devkit/core';
+import { 
+  getEslintConfig, 
+  getEslintDependencies, 
+  getPrettierDependencies,
+  getPrettierConfig
+} from "../utils/eslint-configs";
 
 // Instead of `any`, it would make sense here to get a schema-to-dts package and output the
 // interfaces so you get type-safe options.
@@ -85,6 +91,8 @@ export default function (options: any): Rule {
       setFramework(originalOptionsObject, isRootApp),
       setReduxTpPackageJson(originalOptionsObject),
       setI18nToPackageJson(originalOptionsObject),
+      setLinterToPackageJson(originalOptionsObject),
+      setPrettierToPackageJson(originalOptionsObject),
       (originalOptionsObject.redux)
         ? addDashboardToProject(originalOptionsObject, isRootApp)
         : noop,
@@ -182,12 +190,16 @@ export default function (options: any): Rule {
         ]),
         MergeStrategy.Overwrite
       ),
+      addEslintConfigToProject(originalOptionsObject),
+      addPrettierConfigToProject(originalOptionsObject),
+      addLintScriptsToPackageJson(originalOptionsObject),
     ]);
   };
 }
 
 type PackageJson = {
   dependencies?: { [key: string]: string };
+  scripts?: { [key: string]: string };
   [key: string]: any;
 };
 
@@ -200,6 +212,19 @@ function addPackageToPackageJson(host: Tree, pkg: string, version: string): Tree
       json.dependencies[pkg] = version;
       json.dependencies = sortObjectByKeys(json.dependencies);
     }
+    host.overwrite("package.json", JSON.stringify(json, null, 2));
+  }
+  return host;
+}
+
+function addScriptToPackageJson(host: Tree, scriptName: string, scriptCommand: string): Tree {
+  if (host.exists("package.json")) {
+    const sourceText = host.read("package.json")!.toString("utf-8");
+    const json = JSON.parse(sourceText) as PackageJson;
+    json.scripts ??= {};
+    // Always set/overwrite the script
+    json.scripts[scriptName] = scriptCommand;
+    json.scripts = sortObjectByKeys(json.scripts);
     host.overwrite("package.json", JSON.stringify(json, null, 2));
   }
   return host;
@@ -261,6 +286,106 @@ export function setI18nToPackageJson(options: any): Rule {
     (tree: Tree) => addPackageToPackageJson(tree, "i18next-browser-languagedetector", i18nextBrowserLanguagedetectorVersion),
     (tree: Tree) => addPackageToPackageJson(tree, "react-i18next", reactI18nextVersion),
   ]);
+}
+
+export function setLinterToPackageJson(options: any): Rule {
+  if (!options.linter || options.linter === 'none') {
+    return noop;
+  }
+  
+  return chain([
+    (tree: Tree) => {
+      const dependencies = getEslintDependencies(options.linter);
+      Object.entries(dependencies).forEach(([pkg, version]) => {
+        tree = addPackageToPackageJson(tree, pkg, version);
+      });
+      return tree;
+    },
+  ]);
+}
+
+export function setPrettierToPackageJson(options: any): Rule {
+  if (!options.prettier) {
+    return noop;
+  }
+  
+  return chain([
+    (tree: Tree) => {
+      const dependencies = getPrettierDependencies(options.prettier);
+      Object.entries(dependencies).forEach(([pkg, version]) => {
+        tree = addPackageToPackageJson(tree, pkg, version);
+      });
+      return tree;
+    },
+  ]);
+}
+
+export function addEslintConfigToProject(options: any): Rule {
+  if (!options.linter || options.linter === 'none') {
+    return noop;
+  }
+
+  return (tree: Tree) => {
+    const eslintConfigPath = `apps/${options.name}/eslint.config.js`;
+    const eslintConfig = getEslintConfig(options.linter);
+    
+    if (tree.exists(eslintConfigPath)) {
+      tree.overwrite(eslintConfigPath, eslintConfig);
+    } else {
+      tree.create(eslintConfigPath, eslintConfig);
+    }
+    
+    return tree;
+  };
+}
+
+export function addPrettierConfigToProject(options: any): Rule {
+  if (!options.prettier) {
+    return noop;
+  }
+
+  return (tree: Tree) => {
+    const prettierConfigPath = `apps/${options.name}/.prettierrc`;
+    const prettierConfig = getPrettierConfig();
+    
+    if (tree.exists(prettierConfigPath)) {
+      tree.overwrite(prettierConfigPath, prettierConfig);
+    } else {
+      tree.create(prettierConfigPath, prettierConfig);
+    }
+    
+    return tree;
+  };
+}
+
+export function addLintScriptsToPackageJson(options: any): Rule {
+  if (!options.linter || options.linter === 'none') {
+    return noop;
+  }
+
+  return (tree: Tree) => {
+    const appName = options.name;
+    const lintPath = `src/**/*.{js,jsx,ts,tsx}`;
+    
+    // Add lint scripts with app-specific names
+    tree = addScriptToPackageJson(tree, `lint:${appName}`, `eslint "${lintPath}"`);
+    tree = addScriptToPackageJson(tree, `lint:${appName}:fix`, `eslint "${lintPath}" --fix`);
+    
+    // Also add generic lint script if it doesn't exist
+    tree = addScriptToPackageJson(tree, "lint", `eslint "${lintPath}"`);
+    tree = addScriptToPackageJson(tree, "lint:fix", `eslint "${lintPath}" --fix`);
+    
+    // Add format script if prettier is enabled
+    if (options.prettier) {
+      const formatPath = `src/**/*.{js,jsx,ts,tsx,json,css,scss,md}`;
+      tree = addScriptToPackageJson(tree, `format:${appName}`, `prettier --write "${formatPath}"`);
+      tree = addScriptToPackageJson(tree, `format:${appName}:check`, `prettier --check "${formatPath}"`);
+      tree = addScriptToPackageJson(tree, "format", `prettier --write "${formatPath}"`);
+      tree = addScriptToPackageJson(tree, "format:check", `prettier --check "${formatPath}"`);
+    }
+    
+    return tree;
+  };
 }
 
 export function addDashboardToProject(_options: any, isRootApp: boolean): Rule {

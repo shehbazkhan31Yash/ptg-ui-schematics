@@ -10,9 +10,19 @@ import {
 import * as path from "path";
 import { dirSync } from "tmp";
 
+const inquirer = require("inquirer");
+
+/**
+ * Creates a temporary sandbox environment for Angular CLI operations
+ * This ensures clean dependency resolution and prevents conflicts
+ */
 async function createSandbox() {
+ console.log("\n🏗️  Creating temporary sandbox environment...");
  const tmpDir = dirSync().name;
+ console.log(`📁 Sandbox directory: ${tmpDir}`);
+ 
  try {
+  console.log("📝 Creating package.json with Angular dependencies...");
   writeFileSync(
    path.join(tmpDir, "package.json"),
    JSON.stringify({
@@ -25,30 +35,40 @@ async function createSandbox() {
     license: "MIT",
    })
   );
+  console.log("✅ package.json created successfully");
  } catch (error) {
   cleanup(tmpDir);
-  console.error("Error creating package.json", error);
+  console.error("❌ Error creating package.json:", error);
+  throw error;
  }
 
  try {
+  console.log("📦 Installing Angular CLI dependencies...");
   execSync(`npm install`, {
    cwd: tmpDir,
    stdio: [0, 1, 2],
   });
+  console.log("✅ Dependencies installed successfully");
  } catch (error) {
   cleanup(tmpDir);
-  console.error("error on dependency installation", error);
+  console.error("❌ Error during dependency installation:", error);
+  throw error;
  }
 
  try {
+  console.log("🔗 Linking PTG Angular Schematics...");
   execSync(`npm link @ptg-ui/angular-schematics --force`, {
    cwd: tmpDir,
    stdio: [0, 1, 2],
   });
+  console.log("✅ PTG Angular Schematics linked successfully");
  } catch (error) {
   cleanup(tmpDir);
-  console.error("Error on adding @ptg-ui/angular-schematics", error);
+  console.error("❌ Error linking @ptg-ui/angular-schematics:", error);
+  throw error;
  }
+ 
+ console.log("✅ Sandbox environment ready!");
  return tmpDir;
 }
 
@@ -66,68 +86,180 @@ async function createSandbox() {
 //     return a.ApplicationName;
 //   });
 // }
+
+
+/**
+ * Creates the Angular application using PTG schematics
+ * ESLint configuration is now handled automatically by the schematic
+ */
 async function createApp(tmpDir: string) {
- const collection = `${tmpDir}/node_modules/@ptg-ui/angular-schematics/src/collection.json`;
- const command = `${tmpDir}/node_modules/.bin/ng new --collection=${collection} --strict false`;
+ console.log("\n🚀 Starting Angular application creation...");
+ 
+ // Get project name from user
+ const projectName = await inquirer.prompt([
+  {
+   name: "name",
+   message: "Enter project name:",
+   type: "input",
+   default: "my-angular-app",
+   validate: (input: string) => {
+    if (!input || input.trim().length === 0) {
+     return "Project name is required";
+    }
+    if (!/^[a-zA-Z][a-zA-Z0-9-]*$/.test(input)) {
+     return "Project name must start with a letter and contain only letters, numbers, and hyphens";
+    }
+    return true;
+   }
+  }
+ ]).then((answers: any) => answers.name);
+ 
+ // Prepare Angular CLI command with PTG schematics
+ const collection = `@ptg-ui/angular-schematics`;
+ const command = `${tmpDir}/node_modules/.bin/ng new ${projectName} --collection=${collection} --strict false`;
+ 
+ let createdProjectName = projectName;
+ 
  try {
+  console.log("\n🏗️  Executing Angular project creation...");
+  console.log("📝 Note: ESLint configuration will be handled by the schematic prompts");
+  
   execSync(`${command}`, {
    stdio: [0, 1, 2],
    cwd: process.cwd(),
   });
+  console.log("✅ Angular project created successfully!");
+  
+  // Project should be created with the specified name
+  createdProjectName = projectName;
+  
  } catch (err) {
+  console.error("\n❌ Angular project creation failed:");
+  console.error(err);
   cleanup(tmpDir);
-  console.log({ err });
+  throw err;
  }
+ 
+ console.log("\n🧹 Cleaning up sandbox environment...");
  cleanup(tmpDir);
+ 
+ return createdProjectName;
 }
 
+
+
+/**
+ * Installs recommended VS Code extensions for Angular development
+ * This function is currently disabled but can be enabled if needed
+ */
 function addVSCodeExtensions() {
+ console.log("\n🔧 Installing recommended VS Code extensions...");
+ 
  try {
   const extensionsList = [
-   "simontest.simontest", 
-   "nrwl.angular-console",
-   "mrmlnc.vscode-scss",
-   "esbenp.prettier-vscode",
-   "ms-vscode.vscode-typescript-tslint-plugin",
-   "vscode-icons-team.vscode-icons",
-   "Angular.ng-template",
+   "simontest.simontest",           // Simon Test extension
+   "nrwl.angular-console",          // Nx Console for Angular
+   "mrmlnc.vscode-scss",            // SCSS IntelliSense
+   "esbenp.prettier-vscode",        // Prettier code formatter
+   "ms-vscode.vscode-typescript-tslint-plugin", // TypeScript linting
+   "vscode-icons-team.vscode-icons", // File icons
+   "Angular.ng-template",           // Angular template support
   ];
+  
+  console.log("📦 Extensions to install:");
+  extensionsList.forEach(ext => console.log(`   • ${ext}`));
+  
   const extensions = extensionsList
    .map((ext) => `--install-extension ${ext}`)
    .join(" ");
+   
+  console.log("\n⬇️  Installing extensions...");
   execSync(`code ${extensions}`, {
    // stdio: [0, 1, 2],
    cwd: process.cwd(),
   });
-  console.log("VS Code extensions installed successfully");
+  console.log("✅ VS Code extensions installed successfully");
+  
  } catch (error) {
-  console.warn("Warning: Could not install VS Code extensions:", error.message);
+  console.warn("\n⚠️  Warning: Could not install VS Code extensions:");
+  console.warn(`   ${error.message}`);
+  console.log("💡 You can manually install these extensions later from VS Code");
   // Continue execution even if extension installation fails
  }
 }
 
-//cleanup function
+/**
+ * Recursively cleans up temporary directories and files
+ * Used to remove the sandbox environment after project creation
+ */
 function cleanup(dirPath: string) {
  if (existsSync(dirPath)) {
-  readdirSync(dirPath).forEach((file) => {
-   const curPath = path.join(dirPath, file);
-   if (lstatSync(curPath).isDirectory()) {
-    // Recursively delete directory
-    cleanup(curPath);
-   } else {
-    // Delete file
-    unlinkSync(curPath);
-   }
-  });
-  // Remove the empty directory
-  rmdirSync(dirPath);
- } else {
-  console.warn(`Directory does not exist: ${dirPath}`);
+  try {
+   readdirSync(dirPath).forEach((file) => {
+    const curPath = path.join(dirPath, file);
+    if (lstatSync(curPath).isDirectory()) {
+     // Recursively delete directory
+     cleanup(curPath);
+    } else {
+     // Delete file
+     unlinkSync(curPath);
+    }
+   });
+   // Remove the empty directory
+   rmdirSync(dirPath);
+  } catch (error) {
+   console.warn("⚠️  Cleanup warning:", error.message);
+  }
  }
 }
 
+/**
+ * Main entry point for Angular project generation
+ * Orchestrates the entire project creation process
+ */
 export async function invokeAngularGenerator() {
- const temp = await createSandbox();
- createApp(temp);
-//  addVSCodeExtensions();
+ console.log("\n🚀 PTG Angular Project Generator");
+ console.log("==================================\n");
+ 
+ console.log("📋 Process Overview:");
+ console.log("   1️⃣  Create sandbox environment");
+ console.log("   2️⃣  Generate Angular project with ESLint");
+ console.log("   3️⃣  Cleanup and finalize\n");
+ 
+ try {
+  // Step 1: Create sandbox environment
+  console.log("\n🏗️  Step 1/2: Setting up build environment...");
+  const temp = await createSandbox();
+  
+  // Step 2: Create the Angular application
+  console.log("\n🚀 Step 2/2: Creating Angular application...");
+  const projectName = await createApp(temp);
+  
+  // Optional: VS Code extensions (currently disabled)
+  // console.log("\n🔧 Installing VS Code extensions...");
+  // addVSCodeExtensions();
+  
+  console.log("\n🎉 Angular project generation completed successfully!");
+  console.log("\n📋 Next steps:");
+  if (projectName) {
+   console.log(`   1. cd ${projectName}`);
+   console.log("   2. npm start");
+  } else {
+   console.log("   1. Navigate to your project directory");
+   console.log("   2. Run 'npm start' to start the development server");
+  }
+  console.log("   3. Open http://localhost:4200 in your browser");
+  console.log("   4. Run 'npm run lint' to check your code for issues");
+  console.log("   5. Start building your Angular application!\n");
+  
+ } catch (error) {
+  console.error("\n❌ Angular project generation failed:");
+  console.error(`   ${error.message}`);
+  console.log("\n💡 Troubleshooting tips:");
+  console.log("   • Ensure you have Node.js and npm installed");
+  console.log("   • Check your internet connection");
+  console.log("   • Verify you have write permissions in the current directory");
+  console.log("   • Try running the command again\n");
+  process.exit(1);
+ }
 }

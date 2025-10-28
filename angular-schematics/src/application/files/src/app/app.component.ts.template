@@ -6,18 +6,18 @@ import { TranslateService } from '@ngx-translate/core';
 @Component({
   selector: 'app-root',
   templateUrl: './app.component.html',
-  styleUrls: ['./app.component.scss']
+  styleUrls: ['./app.component.scss'],
 })
 export class AppComponent {
   title = '<%= appName %>';
 
 <% if (i18n) { %>
   constructor(private translateService: TranslateService) {
-    translateService.addLangs(['en', 'de']);
-    translateService.setDefaultLang('en');
+    this.translateService.addLangs(['en', 'de']);
+    this.translateService.setDefaultLang('en');
   }
 
-  switchLanguage(language: string) {
+  switchLanguage(language: string): void {
     this.translateService.use(language);
   }
 <% } %>

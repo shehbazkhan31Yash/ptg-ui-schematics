@@ -17,6 +17,7 @@ import {
 import { getWorkspace } from "@schematics/angular/utility/workspace";
 import { join, normalize } from "path";
 import { addImportToAppModule, insertStatement } from "../utils/utils";
+import { ESLINT_CONFIGS, ESLINT_DEPENDENCIES } from "../eslint-configs/eslint-configs";
 
 // Local implementation of addDepsToPackageJson (replaces @nx/workspace)
 function addDepsToPackageJson(
@@ -72,7 +73,7 @@ export function application(options: any): Rule {
   options.appDir = appDir;
 
   let originalOptionsObject = JSON.parse(JSON.stringify(options));
-  const keysToDelete = ["framework", "ngrx", "i18n", "appDir"];
+  const keysToDelete = ["framework", "ngrx", "i18n", "appDir", "enableLinting", "lintingStyle"];
   /*--get schema compatible with application schema---*/
   let inputToApplicationSchema = deleteKeys(options, keysToDelete);
 
@@ -121,6 +122,7 @@ export function application(options: any): Rule {
     originalOptionsObject.i18n
    ),
    setNGRX(originalOptionsObject),
+   setLinting(originalOptionsObject),
 
    (tree: Tree) => tree,
   ]);
@@ -181,6 +183,98 @@ export function setNGRX(_options: any): Rule {
    return tree;
   },
  ]);
+}
+
+export function setLinting(_options: any): Rule {
+ if (!_options.enableLinting) {
+  return noop;
+ }
+
+ return chain([
+  addLintingDependencies(_options.lintingStyle),
+  createLintingConfig(_options.lintingStyle),
+  createPrettierConfig(_options.lintingStyle),
+  createGitAttributes(),
+  (tree: Tree, context: SchematicContext) => {
+   context.logger.info(`\n🔍 ${_options.lintingStyle.toUpperCase()} ESLint configuration added`);
+   context.logger.info('📝 Available commands:');
+   context.logger.info('   • npm run lint      - Check your code for issues');
+   context.logger.info('   • npm run lint:fix  - Automatically fix linting issues');
+   return tree;
+  },
+ ]);
+}
+
+function addLintingDependencies(lintingStyle: string): Rule {
+ const baseDeps = {
+  "@typescript-eslint/eslint-plugin": "^7.18.0",
+  "@typescript-eslint/parser": "^7.18.0",
+  "eslint": "^8.57.0",
+  "prettier": "^3.0.0",
+ };
+
+ const styleDeps = ESLINT_DEPENDENCIES[lintingStyle as keyof typeof ESLINT_DEPENDENCIES] || [];
+ const styleDepsObj = styleDeps.reduce((acc, dep) => {
+  // Handle scoped packages correctly
+  const lastAtIndex = dep.lastIndexOf('@');
+  if (lastAtIndex === -1) {
+    // No version specified
+    acc[dep] = 'latest';
+  } else {
+    const name = dep.substring(0, lastAtIndex);
+    const version = dep.substring(lastAtIndex + 1);
+    acc[name] = `^${version}`;
+  }
+  return acc;
+ }, {} as Record<string, string>);
+
+ return addDepsToPackageJson({}, { ...baseDeps, ...styleDepsObj });
+}
+
+function createLintingConfig(lintingStyle: string): Rule {
+ return (tree: Tree) => {
+  const eslintConfig = ESLINT_CONFIGS[lintingStyle as keyof typeof ESLINT_CONFIGS] || ESLINT_CONFIGS.custom;
+
+  tree.create(".eslintrc.json", JSON.stringify(eslintConfig, null, 2));
+
+  // Add lint script to package.json
+  const packageJsonPath = "package.json";
+  if (tree.exists(packageJsonPath)) {
+   const packageJsonContent = tree.read(packageJsonPath)!.toString();
+   const packageJson = JSON.parse(packageJsonContent);
+   packageJson.scripts = packageJson.scripts || {};
+   packageJson.scripts.lint = "eslint src/**/*.ts src/**/*.html";
+   packageJson.scripts["lint:fix"] = "eslint src/**/*.ts src/**/*.html --fix";
+   packageJson.scripts["lint:check"] = "eslint src/**/*.ts src/**/*.html --max-warnings=0";
+   packageJson.scripts.format = "prettier --write src/**/*.{ts,html,scss,css,json}";
+   tree.overwrite(packageJsonPath, JSON.stringify(packageJson, null, 2));
+  }
+
+  return tree;
+ };
+}
+
+function createPrettierConfig(lintingStyle: string): Rule {
+ return (tree: Tree) => {
+  const prettierConfig = {
+   "endOfLine": "auto",
+   "singleQuote": true,
+   "trailingComma": "es5",
+   "tabWidth": 2,
+   "semi": true,
+   "printWidth": 80
+  };
+  tree.create(".prettierrc", JSON.stringify(prettierConfig, null, 2));
+  return tree;
+ };
+}
+
+function createGitAttributes(): Rule {
+ return (tree: Tree) => {
+  const gitAttributes = `* text=auto`;
+  tree.create(".gitattributes", gitAttributes);
+  return tree;
+ };
 }
 
 export function addMaterialToPackageJson(): Rule {
