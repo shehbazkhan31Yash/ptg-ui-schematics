@@ -571,16 +571,30 @@ const createManualWorkspace = (workspacePath: string, a: any) => {
   try {
     fs.mkdirSync(workspacePath, { recursive: true });
 
+    const scripts: { [key: string]: string } = {
+      build: "nx build",
+      test: "nx test",
+      start: "nx serve",
+    };
+
+    // Add lint scripts if linter is enabled
+    if (a.linter && a.linter !== 'none') {
+      scripts.lint = `eslint "src/**/*.{js,jsx,ts,tsx}"`;
+      scripts["lint:fix"] = `eslint "src/**/*.{js,jsx,ts,tsx}" --fix`;
+    }
+
+    // Add format scripts if prettier is enabled
+    if (a.prettier) {
+      scripts.format = `prettier --write "src/**/*.{js,jsx,ts,tsx,json,css,scss,md}"`;
+      scripts["format:check"] = `prettier --check "src/**/*.{js,jsx,ts,tsx,json,css,scss,md}"`;
+    }
+
     const packageJson = {
       name: a.workspace,
       version: "0.0.0",
       license: "MIT",
       type: "module",
-      scripts: {
-        build: "nx build",
-        test: "nx test",
-        start: "nx serve",
-      },
+      scripts,
       private: true,
       dependencies: {},
       devDependencies: {
@@ -681,6 +695,41 @@ const getDependenciesByFeature = (a: any) => {
   }
 
   return { production: basePkgs, development: baseDevPkgs };
+};
+
+const addLintScriptsToPackageJson = (workspacePath: string, a: any) => {
+  if (!a.linter || a.linter === 'none') {
+    return;
+  }
+
+  try {
+    const packageJsonPath = path.join(workspacePath, "package.json");
+    if (!fs.existsSync(packageJsonPath)) {
+      console.warn("⚠️  package.json not found, skipping lint scripts");
+      return;
+    }
+
+    const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, "utf8"));
+    
+    // Initialize scripts if not present
+    packageJson.scripts = packageJson.scripts || {};
+
+    // Add lint scripts - use paths that work on both Windows and Unix
+    packageJson.scripts.lint = `eslint "src/**/*.{js,jsx,ts,tsx}"`;
+    packageJson.scripts["lint:fix"] = `eslint "src/**/*.{js,jsx,ts,tsx}" --fix`;
+
+    // Add format scripts if prettier is enabled
+    if (a.prettier) {
+      packageJson.scripts.format = `prettier --write "src/**/*.{js,jsx,ts,tsx,json,css,scss,md}"`;
+      packageJson.scripts["format:check"] = `prettier --check "src/**/*.{js,jsx,ts,tsx,json,css,scss,md}"`;
+    }
+
+    // Write back to package.json
+    fs.writeFileSync(packageJsonPath, JSON.stringify(packageJson, null, 2));
+    console.log("✅ Lint scripts added to package.json");
+  } catch (error) {
+    console.warn("⚠️  Failed to add lint scripts to package.json:", error.message);
+  }
 };
 
 export function reactAppGenerator() {
@@ -911,6 +960,9 @@ export function reactAppGenerator() {
       const dependencies = getDependenciesByFeature(a);
       installPackagesWithRetry(dependencies.production, false, workspacePath, "production dependencies");
       installPackagesWithRetry(dependencies.development, true, workspacePath, "development dependencies");
+
+      // Add lint scripts to package.json
+      addLintScriptsToPackageJson(workspacePath, a);
 
       console.log("\n✅ React application created successfully!\n");
       console.log("━".repeat(50));
