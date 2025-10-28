@@ -1,17 +1,17 @@
-import {ModuleWithProviders, NgModule, Optional, SkipSelf} from '@angular/core';
-import {CommonModule} from '@angular/common';
-import {FormsModule} from '@angular/forms';
+import { ModuleWithProviders, NgModule, Optional, SkipSelf } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 
 @NgModule({
-    imports: [
-        CommonModule,
-        FormsModule,
-    ],
-    declarations: [],
-    exports: [],
-    providers: [
-        // put your services here, ensures they are actually singletons
-    ]
+  imports: [
+    CommonModule,
+    FormsModule,
+  ],
+  declarations: [],
+  exports: [],
+  providers: [
+    // put your services here, ensures they are actually singletons
+  ],
 })
 
 /**
@@ -21,21 +21,19 @@ import {FormsModule} from '@angular/forms';
  * @see https://angular.io/guide/module-types.
  */
 export class CoreModule {
-
-    constructor(@Optional() @SkipSelf() parentModule: CoreModule) {
-        if (parentModule) {
-            throw new Error('CoreModule is already loaded. Import it in the AppModule only');
-        }
+  constructor(@Optional() @SkipSelf() parentModule: CoreModule) {
+    if (parentModule) {
+      throw new Error('CoreModule is already loaded. Import it in the AppModule only');
     }
+  }
 
-    static forRoot(): ModuleWithProviders<any> {
-        return {
-            ngModule: CoreModule,
-            providers: [
-                // add in service config providers
-                // {provide: MyServiceConfig, useValue: config}
-            ]
-        };
-    }
-
+  static forRoot(): ModuleWithProviders<CoreModule> {
+    return {
+      ngModule: CoreModule,
+      providers: [
+        // add in service config providers
+        // {provide: MyServiceConfig, useValue: config}
+      ],
+    };
+  }
 }
