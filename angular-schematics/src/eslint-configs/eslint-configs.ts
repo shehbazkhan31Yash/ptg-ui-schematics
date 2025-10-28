@@ -17,8 +17,12 @@ export const ESLINT_CONFIGS = {
         },
         plugins: ["@typescript-eslint"],
         rules: {
-          "@typescript-eslint/no-unused-vars": "error",
-          "@typescript-eslint/no-explicit-any": "warn"
+          "@typescript-eslint/no-unused-vars": "warn",
+          "@typescript-eslint/no-explicit-any": "warn",
+          "linebreak-style": "off",
+          "import/prefer-default-export": "off",
+          "class-methods-use-this": "off",
+          "@typescript-eslint/no-empty-function": "off"
         }
       },
       {
@@ -48,8 +52,12 @@ export const ESLINT_CONFIGS = {
         },
         plugins: ["@typescript-eslint"],
         rules: {
-          "@typescript-eslint/no-unused-vars": "error",
-          "@typescript-eslint/no-explicit-any": "warn"
+          "@typescript-eslint/no-unused-vars": "warn",
+          "@typescript-eslint/no-explicit-any": "warn",
+          "linebreak-style": "off",
+          "import/prefer-default-export": "off",
+          "class-methods-use-this": "off",
+          "@typescript-eslint/no-empty-function": "off"
         }
       },
       {
