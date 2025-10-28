@@ -3,7 +3,7 @@ import { execSync } from "child_process";
 import * as fs from "fs";
 import * as path from "path";
 import inquirer = require("inquirer");
-import { getEslintConfig, getEslintDependencies, getPrettierDependencies } from "../configs/eslint-configs";
+import { getEslintConfig, getEslintDependencies, getPrettierDependencies, getHuskyDependencies, getHuskyPreCommitHook, getLintStagedConfig } from "../configs/eslint-configs";
 import { getPrettierConfig, CONFIG as TEMPLATE_CONFIG } from "../configs/config-templates";
 
 // Template constants for better maintainability
@@ -70,6 +70,7 @@ export function App() {
           ${a.e2eTestRunner !== 'none' ? `<li>✅ ${a.e2eTestRunner.charAt(0).toUpperCase() + a.e2eTestRunner.slice(1)} E2E Tests</li>` : ""}
           ${a.linter !== 'none' ? `<li>✅ ${a.linter === 'airbnb' ? 'ESLint with Airbnb' : a.linter === 'custom' ? 'ESLint with Custom Rules' : 'ESLint'} Linting</li>` : ""}
           ${a.prettier ? "<li>✅ Prettier Formatting</li>" : ""}
+          ${a.husky ? "<li>✅ Husky Git Hooks</li>" : ""}
           ${
             a.auth !== "custom"
               ? `<li>✅ ${a.auth.toUpperCase()} Authentication</li>`
@@ -653,6 +654,12 @@ const getDependenciesByFeature = (a: any) => {
     baseDevPkgs.push(...prettierDeps);
   }
 
+  // Add husky if selected
+  if (a.husky) {
+    const huskyDeps = getHuskyDependencies(a.husky);
+    baseDevPkgs.push(...huskyDeps);
+  }
+
   const featurePackages = {
     auth: {
       msal: ["@azure/msal-react@latest", "@azure/msal-browser@latest"],
@@ -729,6 +736,69 @@ const addLintScriptsToPackageJson = (workspacePath: string, a: any) => {
     console.log("✅ Lint scripts added to package.json");
   } catch (error) {
     console.warn("⚠️  Failed to add lint scripts to package.json:", error.message);
+  }
+};
+
+const setupHusky = (workspacePath: string, a: any) => {
+  if (!a.husky) {
+    return;
+  }
+
+  try {
+    console.log("\n🐶 Setting up Husky...");
+
+    // Initialize Husky
+    try {
+      execSync("npx husky init", {
+        cwd: workspacePath,
+        stdio: [0, 1, 2],
+      });
+    } catch (error) {
+      // Husky init might fail if already initialized, continue anyway
+      console.warn("⚠️  Husky init warning (may already be initialized)");
+    }
+
+    // Create .husky directory if it doesn't exist
+    const huskyDir = path.join(workspacePath, ".husky");
+    if (!fs.existsSync(huskyDir)) {
+      fs.mkdirSync(huskyDir, { recursive: true });
+    }
+
+    // Create pre-commit hook
+    const preCommitPath = path.join(huskyDir, "pre-commit");
+    const preCommitContent = getHuskyPreCommitHook(
+      a.linter && a.linter !== 'none',
+      a.prettier
+    );
+    
+    fs.writeFileSync(preCommitPath, preCommitContent, { mode: 0o755 });
+    console.log("✅ Created pre-commit hook");
+
+    // Add lint-staged configuration to package.json
+    const packageJsonPath = path.join(workspacePath, "package.json");
+    if (fs.existsSync(packageJsonPath)) {
+      const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, "utf8"));
+      
+      // Parse the lint-staged config and add it to package.json
+      const lintStagedConfigStr = getLintStagedConfig(
+        a.linter && a.linter !== 'none',
+        a.prettier
+      );
+      packageJson["lint-staged"] = JSON.parse(lintStagedConfigStr);
+      
+      // Add prepare script for husky
+      packageJson.scripts = packageJson.scripts || {};
+      packageJson.scripts.prepare = "husky";
+      
+      fs.writeFileSync(packageJsonPath, JSON.stringify(packageJson, null, 2));
+      console.log("✅ Added lint-staged configuration to package.json");
+    }
+
+    console.log("✅ Husky setup completed successfully!");
+  } catch (error) {
+    console.error("❌ Failed to setup Husky:", error.message);
+    console.warn("You can setup Husky manually later by running:");
+    console.warn("  npx husky init");
   }
 };
 
@@ -964,6 +1034,9 @@ export function reactAppGenerator() {
       // Add lint scripts to package.json
       addLintScriptsToPackageJson(workspacePath, a);
 
+      // Setup Husky if enabled
+      setupHusky(workspacePath, a);
+
       console.log("\n✅ React application created successfully!\n");
       console.log("━".repeat(50));
       console.log(`📁 Workspace: ${a.workspace}`);
@@ -975,6 +1048,7 @@ export function reactAppGenerator() {
       console.log(`🌐 i18n: ${a.i18n ? "Yes" : "No"}`);
       console.log(`🔧 Linter: ${a.linter === 'none' ? 'None' : a.linter === 'airbnb' ? 'ESLint with Airbnb' : a.linter === 'custom' ? 'ESLint with Custom Rules' : 'ESLint'}`);
       console.log(`✨ Prettier: ${a.prettier ? "Yes" : "No"}`);
+      console.log(`🐶 Husky: ${a.husky ? "Yes" : "No"}`);
       console.log("━".repeat(50));
       console.log("\nTo get started:\n");
       console.log(`  cd ${a.workspace}`);
@@ -1194,6 +1268,12 @@ function getArgs() {
         message: "Would you like to use Prettier for code formatting?",
         type: "confirm",
         default: true,
+      },
+      {
+        name: "husky",
+        message: "Would you like to add Husky for Git hooks (pre-commit)?",
+        type: "confirm",
+        default: false,
       },
     ])
     .then((a: any) => {

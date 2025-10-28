@@ -373,3 +373,76 @@ export function getPrettierConfig(): string {
     endOfLine: "auto"
   }, null, 2);
 }
+
+/**
+ * Get Husky dependencies
+ * @param huskyEnabled - Whether husky is enabled
+ * @returns Object with husky-related package names and versions
+ */
+export function getHuskyDependencies(huskyEnabled: boolean): { [key: string]: string } {
+  if (!huskyEnabled) return {};
+  
+  return {
+    "husky": "^9.0.0",
+    "lint-staged": "^15.0.0"
+  };
+}
+
+/**
+ * Get Husky pre-commit hook configuration
+ * @param hasLinter - Whether linter is enabled
+ * @param hasPrettier - Whether prettier is enabled
+ * @returns pre-commit hook script content
+ */
+export function getHuskyPreCommitHook(hasLinter: boolean, hasPrettier: boolean): string {
+  const commands: string[] = [];
+  
+  if (hasLinter) {
+    commands.push('npm run lint:fix');
+  }
+  
+  if (hasPrettier) {
+    commands.push('npm run format');
+  }
+  
+  // Fallback if no linter or prettier
+  if (commands.length === 0) {
+    commands.push('echo "Running pre-commit checks..."');
+  }
+  
+  return `#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+${commands.join('\n')}
+npx lint-staged
+`;
+}
+
+/**
+ * Get lint-staged configuration
+ * @param hasLinter - Whether linter is enabled
+ * @param hasPrettier - Whether prettier is enabled
+ * @returns lint-staged configuration as JSON string
+ */
+export function getLintStagedConfig(hasLinter: boolean, hasPrettier: boolean): string {
+  const config: { [key: string]: string[] } = {};
+  
+  const jstsPatterns = "*.{js,jsx,ts,tsx}";
+  const allPatterns = "*.{js,jsx,ts,tsx,json,css,scss,md}";
+  
+  if (hasLinter && hasPrettier) {
+    config[jstsPatterns] = [
+      "eslint --fix",
+      "prettier --write"
+    ];
+    config["*.{json,css,scss,md}"] = ["prettier --write"];
+  } else if (hasLinter) {
+    config[jstsPatterns] = ["eslint --fix"];
+  } else if (hasPrettier) {
+    config[allPatterns] = ["prettier --write"];
+  } else {
+    config[jstsPatterns] = ["echo 'Staged files checked'"];
+  }
+  
+  return JSON.stringify(config, null, 2);
+}
