@@ -194,6 +194,7 @@ export function setLinting(_options: any): Rule {
   addLintingDependencies(_options.lintingStyle),
   createLintingConfig(_options.lintingStyle),
   createPrettierConfig(_options.lintingStyle),
+  createGitAttributes(),
   (tree: Tree, context: SchematicContext) => {
    context.logger.info(`\n🔍 ${_options.lintingStyle.toUpperCase()} ESLint configuration added`);
    context.logger.info('📝 Available commands:');
@@ -244,6 +245,8 @@ function createLintingConfig(lintingStyle: string): Rule {
    packageJson.scripts = packageJson.scripts || {};
    packageJson.scripts.lint = "eslint src/**/*.ts src/**/*.html";
    packageJson.scripts["lint:fix"] = "eslint src/**/*.ts src/**/*.html --fix";
+   packageJson.scripts["lint:check"] = "eslint src/**/*.ts src/**/*.html --max-warnings=0";
+   packageJson.scripts.format = "prettier --write src/**/*.{ts,html,scss,css,json}";
    tree.overwrite(packageJsonPath, JSON.stringify(packageJson, null, 2));
   }
 
@@ -262,6 +265,14 @@ function createPrettierConfig(lintingStyle: string): Rule {
    "printWidth": 80
   };
   tree.create(".prettierrc", JSON.stringify(prettierConfig, null, 2));
+  return tree;
+ };
+}
+
+function createGitAttributes(): Rule {
+ return (tree: Tree) => {
+  const gitAttributes = `* text=auto`;
+  tree.create(".gitattributes", gitAttributes);
   return tree;
  };
 }

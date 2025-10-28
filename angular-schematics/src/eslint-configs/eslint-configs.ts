@@ -22,7 +22,8 @@ export const ESLINT_CONFIGS = {
           "linebreak-style": "off",
           "import/prefer-default-export": "off",
           "class-methods-use-this": "off",
-          "@typescript-eslint/no-empty-function": "off"
+          "@typescript-eslint/no-empty-function": "off",
+          "no-console": ["warn", { "allow": ["warn", "error"] }]
         }
       },
       {
@@ -57,7 +58,8 @@ export const ESLINT_CONFIGS = {
           "linebreak-style": "off",
           "import/prefer-default-export": "off",
           "class-methods-use-this": "off",
-          "@typescript-eslint/no-empty-function": "off"
+          "@typescript-eslint/no-empty-function": "off",
+          "no-console": ["warn", { "allow": ["warn", "error"] }]
         }
       },
       {
