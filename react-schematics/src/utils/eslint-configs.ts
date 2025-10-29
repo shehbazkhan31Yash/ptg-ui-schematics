@@ -18,6 +18,7 @@ export default [
   js.configs.recommended,
   {
     files: ['**/*.{js,jsx,ts,tsx}'],
+    ignores: ['eslint.config.js'], // Exclude ESLint config from linting
     languageOptions: {
       ecmaVersion: 'latest',
       sourceType: 'module',
@@ -162,6 +163,7 @@ export default [
   js.configs.recommended,
   {
     files: ['**/*.{js,jsx,ts,tsx}'],
+    ignores: ['eslint.config.js'], // Exclude ESLint config from linting
     languageOptions: {
       ecmaVersion: 2021,
       sourceType: 'module',
@@ -267,6 +269,7 @@ export default [
   js.configs.recommended,
   {
     files: ['**/*.{js,jsx,ts,tsx}'],
+    ignores: ['eslint.config.js'], // Exclude ESLint config from linting
     languageOptions: {
       ecmaVersion: 2021,
       sourceType: 'module',
@@ -443,10 +446,8 @@ export function getHuskyPreCommitHook(hasLinter: boolean, hasPrettier: boolean):
     commands.push('echo "Running pre-commit checks..."');
   }
   
-  return `#!/usr/bin/env sh
-. "$(dirname -- "$0")/_/husky.sh"
-
-${commands.join('\n')}
+  // Husky v9+ format (removed deprecated lines for v10 compatibility)
+  return `${commands.join('\n')}
 npx lint-staged
 `;
 }
