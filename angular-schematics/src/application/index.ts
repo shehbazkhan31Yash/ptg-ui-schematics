@@ -382,7 +382,6 @@ function addHuskyScripts(): Rule {
    const packageJson = JSON.parse(packageJsonContent);
    packageJson.scripts = packageJson.scripts || {};
    packageJson.scripts.prepare = "husky";
-   packageJson.scripts.postinstall = "husky";
    tree.overwrite(packageJsonPath, JSON.stringify(packageJson, null, 2));
   }
   return tree;
