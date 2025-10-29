@@ -294,7 +294,7 @@ function _addSymbolToNgModuleMetadata(
     let toInsert: string;
     if (expr.properties.length == 0) {
       position = expr.getEnd() - 1;
-      toInsert = `  ${metadataField}: [${expression}]\n`;
+      toInsert = `  ${metadataField}: [${expression}],\n`;
     } else {
       node = expr.properties[expr.properties.length - 1];
       position = node.getEnd();
@@ -303,9 +303,9 @@ function _addSymbolToNgModuleMetadata(
       if (text.match("^\r?\r?\n")) {
         toInsert = `,${
           text.match(/^\r?\n\s+/)[0]
-        }${metadataField}: [${expression}]`;
+        }${metadataField}: [${expression}],`;
       } else {
-        toInsert = `, ${metadataField}: [${expression}]`;
+        toInsert = `, ${metadataField}: [${expression}],`;
       }
     }
     const newMetadataProperty = new InsertChange(
@@ -358,7 +358,7 @@ function _addSymbolToNgModuleMetadata(
     const expr = node as ts.ObjectLiteralExpression;
     if (expr.properties.length == 0) {
       position = expr.getEnd() - 1;
-      toInsert = `  ${metadataField}: [${expression}]\n`;
+      toInsert = `  ${metadataField}: [${expression}],\n`;
     } else {
       node = expr.properties[expr.properties.length - 1];
       position = node.getEnd();
@@ -367,22 +367,22 @@ function _addSymbolToNgModuleMetadata(
       if (text.match("^\r?\r?\n")) {
         toInsert = `,${
           text.match(/^\r?\n\s+/)[0]
-        }${metadataField}: [${expression}]`;
+        }${metadataField}: [${expression}],`;
       } else {
-        toInsert = `, ${metadataField}: [${expression}]`;
+        toInsert = `, ${metadataField}: [${expression}],`;
       }
     }
   } else if (!isArray && node.kind == ts.SyntaxKind.ArrayLiteralExpression) {
     // We found the field but it's empty. Insert it just before the `]`.
     position--;
-    toInsert = `${expression}`;
+    toInsert = `${expression},`;
   } else {
     // Get the indentation of the last element, if any.
     const text = node.getFullText(source);
     if (text.match(/^\r?\n/)) {
-      toInsert = `,${text.match(/^\r?\n(\r?)\s+/)[0]}${expression}`;
+      toInsert = `,${text.match(/^\r?\n(\r?)\s+/)[0]}${expression},`;
     } else {
-      toInsert = `, ${expression}`;
+      toInsert = `, ${expression},`;
     }
   }
   const insert = new InsertChange(ngModulePath, position, toInsert);

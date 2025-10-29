@@ -1,8 +1,8 @@
 <div class="container">
   <h1>Welcome to {{ title }}!</h1>
-  
+
   <p>Congratulations! Your Angular application is running successfully.</p>
-  
+
   <div class="features">
     <h2>Features included:</h2>
     <ul>
@@ -29,7 +29,7 @@
     <button class="btn" (click)="switchLanguage('de')">German</button>
   </div>
   <% } %>
-  
+
   <div class="actions">
     <p>Ready to start building your application!</p>
     <router-outlet></router-outlet>

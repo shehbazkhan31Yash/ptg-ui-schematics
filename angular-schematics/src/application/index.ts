@@ -16,7 +16,8 @@ import {
 
 import { getWorkspace } from "@schematics/angular/utility/workspace";
 import { join, normalize } from "path";
-import { addImportToAppModule, insertStatement } from "../utils/utils";
+import { addImportToAppModule } from "../utils/utils";
+import { addToI18nImportsArray } from "./i18n-helpers";
 import { ESLINT_CONFIGS, ESLINT_DEPENDENCIES } from "../eslint-configs/eslint-configs";
 
 // Local implementation of addDepsToPackageJson (replaces @nx/workspace)
@@ -195,6 +196,7 @@ export function setLinting(_options: any): Rule {
   createLintingConfig(_options.lintingStyle),
   createPrettierConfig(_options.lintingStyle),
   createGitAttributes(),
+  createEslintIgnore(),
   (tree: Tree, context: SchematicContext) => {
    context.logger.info(`\n🔍 ${_options.lintingStyle.toUpperCase()} ESLint configuration added`);
    context.logger.info('📝 Available commands:');
@@ -243,9 +245,9 @@ function createLintingConfig(lintingStyle: string): Rule {
    const packageJsonContent = tree.read(packageJsonPath)!.toString();
    const packageJson = JSON.parse(packageJsonContent);
    packageJson.scripts = packageJson.scripts || {};
-   packageJson.scripts.lint = "eslint src/**/*.ts src/**/*.html";
-   packageJson.scripts["lint:fix"] = "eslint src/**/*.ts src/**/*.html --fix";
-   packageJson.scripts["lint:check"] = "eslint src/**/*.ts src/**/*.html --max-warnings=0";
+   packageJson.scripts.lint = "eslint \"src/**/*.{ts,html}\" --quiet";
+   packageJson.scripts["lint:fix"] = "eslint \"src/**/*.{ts,html}\" --fix --quiet";
+   packageJson.scripts["lint:check"] = "eslint \"src/**/*.{ts,html}\" --max-warnings=0";
    packageJson.scripts.format = "prettier --write src/**/*.{ts,html,scss,css,json}";
    tree.overwrite(packageJsonPath, JSON.stringify(packageJson, null, 2));
   }
@@ -273,6 +275,39 @@ function createGitAttributes(): Rule {
  return (tree: Tree) => {
   const gitAttributes = `* text=auto`;
   tree.create(".gitattributes", gitAttributes);
+  return tree;
+ };
+}
+
+function createEslintIgnore(): Rule {
+ return (tree: Tree) => {
+  const eslintIgnore = `# Dependencies
+node_modules/
+
+# Build outputs
+dist/
+build/
+*.js
+*.d.ts
+
+# Generated files
+projects/
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db`;
+  tree.create(".eslintignore", eslintIgnore);
   return tree;
  };
 }
@@ -375,43 +410,81 @@ export function createTailwindConfig(
 }
 
 export function addI18n(): Rule {
- return chain([
-  addDepsToPackageJson({
-   "@ngx-translate/core": "^15.0.0",
-   "@ngx-translate/http-loader": "^8.0.0",
-  }),
-  addImportToAppModule(
-   `
-         TranslateModule,
-         TranslateLoader
-         `,
-   "@ngx-translate/core",
-   `
-        TranslateModule.forRoot({
-          loader: {
-            provide: TranslateLoader,
-            useFactory: translateHttpLoaderFactory,
-            deps: [HttpClient]
-          }
-        })
-        `
-  ),
-  addImportToAppModule(`HttpClientModule`, "@angular/common/http"),
-  addImportToAppModule(`HttpClient`, "@angular/common/http", undefined, true),
-  addImportToAppModule(
-   `TranslateHttpLoader`,
-   "@ngx-translate/http-loader",
-   undefined,
-   true
-  ),
-  insertStatement(
-   "src/app/app.module.ts",
-   `export function translateHttpLoaderFactory(http: HttpClient) {
-          return new TranslateHttpLoader(http);
-        }`
-  ),
-  noop,
- ]);
+ return (host: Tree) => {
+  // Add dependencies
+  const packageJsonPath = "package.json";
+  if (host.exists(packageJsonPath)) {
+   const packageJsonContent = host.read(packageJsonPath)!.toString();
+   const packageJson = JSON.parse(packageJsonContent);
+   packageJson.dependencies = packageJson.dependencies || {};
+   packageJson.dependencies["@ngx-translate/core"] = "^15.0.0";
+   packageJson.dependencies["@ngx-translate/http-loader"] = "^8.0.0";
+   host.overwrite(packageJsonPath, JSON.stringify(packageJson, null, 2));
+  }
+  
+  // Update app.module.ts with proper formatting
+  const appModulePath = "src/app/app.module.ts";
+  if (host.exists(appModulePath)) {
+   let content = host.read(appModulePath)!.toString();
+   
+   // Add imports at the correct position (after Angular imports, before local imports)
+   const imports = [
+    "import { HttpClient, HttpClientModule } from '@angular/common/http';",
+    "import { TranslateLoader, TranslateModule } from '@ngx-translate/core';",
+    "import { TranslateHttpLoader } from '@ngx-translate/http-loader';",
+    ""
+   ];
+   
+   // Find position after Angular imports but before local imports
+   const lines = content.split('\n');
+   let insertIndex = -1;
+   
+   for (let i = 0; i < lines.length; i++) {
+     const line = lines[i].trim();
+     if (line.startsWith('import ') && line.includes('./')) {
+       insertIndex = i;
+       break;
+     }
+   }
+   
+   if (insertIndex >= 0) {
+     lines.splice(insertIndex, 0, ...imports);
+     content = lines.join('\n');
+   }
+   
+   // Add HttpClientModule to imports
+   content = addToI18nImportsArray(content, 'HttpClientModule');
+   
+   // Add TranslateModule.forRoot to imports
+   const translateModuleConfig = `TranslateModule.forRoot({
+      loader: {
+        provide: TranslateLoader,
+        useFactory: translateHttpLoaderFactory,
+        deps: [HttpClient],
+      },
+    })`;
+   content = addToI18nImportsArray(content, translateModuleConfig);
+   
+   // Add the factory function before the NgModule with proper formatting
+   const factoryFunction = `export function translateHttpLoaderFactory(http: HttpClient) {
+  return new TranslateHttpLoader(http);
+}
+
+`;
+   
+   // Insert factory function before @NgModule
+   const ngModuleIndex = content.indexOf('@NgModule');
+   if (ngModuleIndex > 0) {
+     content = content.slice(0, ngModuleIndex) + factoryFunction + content.slice(ngModuleIndex);
+   } else {
+     content += factoryFunction;
+   }
+   
+   host.overwrite(appModulePath, content);
+  }
+  
+  return host;
+ };
 }
 
 function deleteKeys(inputObj: any, keysToDelete: string[]): any {
