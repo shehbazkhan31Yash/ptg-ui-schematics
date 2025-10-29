@@ -74,7 +74,7 @@ export function application(options: any): Rule {
   options.appDir = appDir;
 
   let originalOptionsObject = JSON.parse(JSON.stringify(options));
-  const keysToDelete = ["framework", "ngrx", "i18n", "appDir", "enableLinting", "lintingStyle"];
+  const keysToDelete = ["framework", "ngrx", "i18n", "appDir", "enableLinting", "lintingStyle", "husky"];
   /*--get schema compatible with application schema---*/
   let inputToApplicationSchema = deleteKeys(options, keysToDelete);
 
@@ -124,6 +124,7 @@ export function application(options: any): Rule {
    ),
    setNGRX(originalOptionsObject),
    setLinting(originalOptionsObject),
+   setHusky(originalOptionsObject),
 
    (tree: Tree) => tree,
   ]);
@@ -308,6 +309,81 @@ projects/
 .DS_Store
 Thumbs.db`;
   tree.create(".eslintignore", eslintIgnore);
+  return tree;
+ };
+}
+
+export function setHusky(_options: any): Rule {
+ if (!_options.husky) {
+  return noop;
+ }
+
+ return chain([
+  addHuskyDependencies(),
+  createHuskyConfig(),
+  addHuskyScripts(),
+  (tree: Tree, context: SchematicContext) => {
+   context.logger.info('\n🐶 Husky pre-commit hooks configured');
+   context.logger.info('📝 Available hooks:');
+   context.logger.info('   • pre-commit: Runs linting and formatting');
+   context.logger.info('   • Hooks will be set up automatically during npm install');
+   return tree;
+  },
+ ]);
+}
+
+function addHuskyDependencies(): Rule {
+ return addDepsToPackageJson({}, {
+  "husky": "^9.0.0",
+  "lint-staged": "^15.0.0"
+ });
+}
+
+function createHuskyConfig(): Rule {
+ return (tree: Tree) => {
+  // Create .husky directory and pre-commit hook
+  const preCommitHook = `npx lint-staged
+`;
+  
+  if (!tree.exists('.husky')) {
+   tree.create('.husky/.gitignore', '_');
+  }
+  tree.create('.husky/pre-commit', preCommitHook);
+  
+  // Create lint-staged configuration
+  const lintStagedConfig = {
+   "*.{ts,html}": [
+    "eslint --fix",
+    "prettier --write"
+   ],
+   "*.{scss,css,json,md}": [
+    "prettier --write"
+   ]
+  };
+  
+  // Add lint-staged config to package.json
+  const packageJsonPath = "package.json";
+  if (tree.exists(packageJsonPath)) {
+   const packageJsonContent = tree.read(packageJsonPath)!.toString();
+   const packageJson = JSON.parse(packageJsonContent);
+   packageJson["lint-staged"] = lintStagedConfig;
+   tree.overwrite(packageJsonPath, JSON.stringify(packageJson, null, 2));
+  }
+  
+  return tree;
+ };
+}
+
+function addHuskyScripts(): Rule {
+ return (tree: Tree) => {
+  const packageJsonPath = "package.json";
+  if (tree.exists(packageJsonPath)) {
+   const packageJsonContent = tree.read(packageJsonPath)!.toString();
+   const packageJson = JSON.parse(packageJsonContent);
+   packageJson.scripts = packageJson.scripts || {};
+   packageJson.scripts.prepare = "husky";
+   tree.overwrite(packageJsonPath, JSON.stringify(packageJson, null, 2));
+  }
   return tree;
  };
 }
