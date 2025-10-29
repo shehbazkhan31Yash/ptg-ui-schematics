@@ -15,7 +15,6 @@ import { FormsModule } from '@angular/forms';
     // put your services here, ensures they are actually singletons
   ],
 })
-
 /**
  * Main/singular application module for the application. Good
  * place to add in services and application specific views/models/etc.

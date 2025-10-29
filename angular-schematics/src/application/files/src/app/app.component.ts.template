@@ -10,8 +10,8 @@ import { TranslateService } from '@ngx-translate/core';
 })
 export class AppComponent {
   title = '<%= appName %>';
-
 <% if (i18n) { %>
+
   constructor(private translateService: TranslateService) {
     this.translateService.addLangs(['en', 'de']);
     this.translateService.setDefaultLang('en');

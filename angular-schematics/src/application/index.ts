@@ -125,7 +125,6 @@ export function application(options: any): Rule {
    setNGRX(originalOptionsObject),
    setLinting(originalOptionsObject),
    setHusky(originalOptionsObject),
-
    (tree: Tree) => tree,
   ]);
  };
@@ -201,8 +200,10 @@ export function setLinting(_options: any): Rule {
   (tree: Tree, context: SchematicContext) => {
    context.logger.info(`\n🔍 ${_options.lintingStyle.toUpperCase()} ESLint configuration added`);
    context.logger.info('📝 Available commands:');
-   context.logger.info('   • npm run lint      - Check your code for issues');
-   context.logger.info('   • npm run lint:fix  - Automatically fix linting issues');
+   context.logger.info('   • npm run lint         - Check your code for issues');
+   context.logger.info('   • npm run lint:fix     - Automatically fix linting issues');
+   context.logger.info('   • npm run format       - Format your code with Prettier');
+   context.logger.info('   • npm run format:check - Check if code is properly formatted');
    return tree;
   },
  ]);
@@ -240,7 +241,7 @@ function createLintingConfig(lintingStyle: string): Rule {
 
   tree.create(".eslintrc.json", JSON.stringify(eslintConfig, null, 2));
 
-  // Add lint script to package.json
+  // Add lint and format scripts to package.json
   const packageJsonPath = "package.json";
   if (tree.exists(packageJsonPath)) {
    const packageJsonContent = tree.read(packageJsonPath)!.toString();
@@ -250,6 +251,7 @@ function createLintingConfig(lintingStyle: string): Rule {
    packageJson.scripts["lint:fix"] = "eslint \"src/**/*.{ts,html}\" --fix --quiet";
    packageJson.scripts["lint:check"] = "eslint \"src/**/*.{ts,html}\" --max-warnings=0";
    packageJson.scripts.format = "prettier --write src/**/*.{ts,html,scss,css,json}";
+   packageJson.scripts["format:check"] = "prettier --check src/**/*.{ts,html,scss,css,json}";
    tree.overwrite(packageJsonPath, JSON.stringify(packageJson, null, 2));
   }
 
@@ -422,40 +424,32 @@ export function addTailwindToPackageJson(): Rule {
 
 export function updateStyles(options: any) {
  return (host: Tree) => {
-  let content = `
-    @import './app/app.theme';
+  let content = `@import './app/app.theme';
 
-    @include app-theme();
-
-
-  `;
+@include app-theme();
+`;
   if (options.framework === "material") {
-   content = `
-    @import "@angular/material/prebuilt-themes/indigo-pink.css";
-    body {
-      height: 100%;
-    }
-    body {
-      margin: 0;
-      font-family: Roboto, "Helvetica Neue", sans-serif;
-    }
-    ${content}
-    ${content}
-    `;
+   content = `@import "@angular/material/prebuilt-themes/indigo-pink.css";
+
+body {
+  height: 100%;
+  margin: 0;
+  font-family: Roboto, "Helvetica Neue", sans-serif;
+}
+
+${content}`;
   }
   if (options.framework === "bootstrap") {
-   content = `
-    @import "~bootstrap/dist/css/bootstrap.css";
-    ${content}
-    `;
+   content = `@import "~bootstrap/dist/css/bootstrap.css";
+
+${content}`;
   }
   if (options.framework === "tailwind") {
-   content = `
-      @import 'tailwindcss/base';
-      @import 'tailwindcss/components';
-      @import 'tailwindcss/utilities';
-    ${content}
-    `;
+   content = `@import 'tailwindcss/base';
+@import 'tailwindcss/components';
+@import 'tailwindcss/utilities';
+
+${content}`;
   }
   host.overwrite(`src/styles.scss`, content);
   return host;
