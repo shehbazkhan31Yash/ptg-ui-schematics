@@ -6,6 +6,28 @@ import inquirer = require("inquirer");
 import { getEslintConfig, getEslintDependencies, getPrettierDependencies, getHuskyDependencies, getHuskyPreCommitHook, getLintStagedConfig } from "../configs/eslint-configs";
 import { getPrettierConfig, CONFIG as TEMPLATE_CONFIG } from "../configs/config-templates";
 
+// Helper function to normalize style option for Nx compatibility
+// Nx only supports: css, scss, less, tailwind, styled-components, @emotion/styled, styled-jsx, none
+// styl (Stylus) is not supported, so we map it to css
+function getNormalizedStyleForNx(style: string): string {
+  const nxSupportedStyles = ['css', 'scss', 'less', 'tailwind', 'styled-components', '@emotion/styled', 'styled-jsx', 'none'];
+  
+  // If style is supported by Nx, return as is
+  if (nxSupportedStyles.includes(style)) {
+    return style;
+  }
+  
+  // Map unsupported styles to css as fallback
+  if (style === 'styl') {
+    console.warn(`\n⚠️  Warning: Stylus (.styl) is not supported by Nx. Using CSS as fallback for Nx generation.`);
+    console.warn(`   Your application will still be configured to use Stylus files.\n`);
+    return 'css';
+  }
+  
+  // Default fallback
+  return 'css';
+}
+
 // Template constants for better maintainability
 const TEMPLATES = {
   getAppContent: (a: any) => `import React from 'react';
@@ -540,9 +562,12 @@ const installPackagesWithRetry = (packages: string[], isDev: boolean, workspaceP
 };
 
 const createWorkspaceWithRetry = (workspacePath: string, a: any) => {
+  // Normalize style for Nx compatibility
+  const nxStyle = getNormalizedStyleForNx(a.style);
+  
   const strategies = [
     {
-      cmd: `npx create-nx-workspace@latest ${a.workspace} --preset react-standalone --appName ${a.name} --style ${a.style} --nx-cloud skip --packageManager npm --routing ${a.routing} --bundler ${a.bundler} --unitTestRunner ${a.unitTestRunner} --e2eTestRunner ${a.e2eTestRunner}`,
+      cmd: `npx create-nx-workspace@latest ${a.workspace} --preset react-standalone --appName ${a.name} --style ${nxStyle} --nx-cloud skip --packageManager npm --routing ${a.routing} --bundler ${a.bundler} --unitTestRunner ${a.unitTestRunner} --e2eTestRunner ${a.e2eTestRunner}`,
       desc: "React standalone preset"
     },
     {
@@ -640,6 +665,7 @@ const getDependenciesByFeature = (a: any) => {
     "@vitejs/plugin-react@latest",
     "vite@latest",
     ...(a.style === 'scss' ? ["sass@latest"] : []),
+    ...(a.style === 'styl' ? ["stylus@latest"] : []),
   ];
 
   // Add linting packages
@@ -944,6 +970,19 @@ export function reactAppGenerator() {
             console.warn("⚠️ Failed to install SASS. You may need to install it manually: npm install --save-dev sass");
           }
         }
+        
+        // If using Stylus, ensure stylus is installed
+        if (a.style === 'styl') {
+          try {
+            execSync('npm install --save-dev stylus', {
+              cwd: workspacePath,
+              stdio: [0, 1, 2],
+            });
+            console.log("✅ Stylus installed successfully");
+          } catch (error) {
+            console.warn("⚠️ Failed to install Stylus. You may need to install it manually: npm install --save-dev stylus");
+          }
+        }
 
         // Apply PTG customizations to the preset-generated app
         console.log(
@@ -953,10 +992,13 @@ export function reactAppGenerator() {
       } else {
         console.log("🚀 Creating React application using Nx generator...");
 
+        // Normalize style for Nx compatibility
+        const nxStyle = getNormalizedStyleForNx(a.style);
+
         try {
           // Use Nx React generator to create the application
           execSync(
-            `npx nx generate @nx/react:application ${a.name} --style=${a.style} --routing=${a.routing} --bundler=${a.bundler} --unitTestRunner=${a.unitTestRunner} --e2eTestRunner=${a.e2eTestRunner} --linter=${a.linter !== 'none' ? 'eslint' : 'none'} --skipFormat=true`,
+            `npx nx generate @nx/react:application ${a.name} --style=${nxStyle} --routing=${a.routing} --bundler=${a.bundler} --unitTestRunner=${a.unitTestRunner} --e2eTestRunner=${a.e2eTestRunner} --linter=${a.linter !== 'none' ? 'eslint' : 'none'} --skipFormat=true`,
             {
               cwd: workspacePath,
               stdio: [0, 1, 2],
@@ -977,7 +1019,7 @@ export function reactAppGenerator() {
           try {
             // Try without some optional parameters
             execSync(
-              `npx nx generate @nx/react:app ${a.name} --style=${a.style} --routing=${a.routing} --linter=${a.linter === 'none' ? 'none' : 'eslint'}`,
+              `npx nx generate @nx/react:app ${a.name} --style=${nxStyle} --routing=${a.routing} --linter=${a.linter === 'none' ? 'none' : 'eslint'}`,
               {
                 cwd: workspacePath,
                 stdio: [0, 1, 2],
@@ -997,6 +1039,7 @@ export function reactAppGenerator() {
 
             try {
               // Try using the custom PTG React schematic
+              // Note: PTG schematic handles the original style option internally
               execSync(
                 `npx nx generate @ptg-ui/react-schematics:application ${a.name} --style=${a.style} --routing=${a.routing} --framework=${a.framework} --auth=${a.auth} --redux=${a.redux} --i18n=${a.i18n} --linter=${a.linter}`,
                 {
