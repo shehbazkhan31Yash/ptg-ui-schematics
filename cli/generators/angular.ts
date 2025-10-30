@@ -19,10 +19,8 @@ const inquirer = require("inquirer");
 async function createSandbox() {
  console.log("\n🏗️  Creating temporary sandbox environment...");
  const tmpDir = dirSync().name;
- console.log(`📁 Sandbox directory: ${tmpDir}`);
  
  try {
-  console.log("📝 Creating package.json with Angular dependencies...");
   writeFileSync(
    path.join(tmpDir, "package.json"),
    JSON.stringify({
@@ -35,7 +33,6 @@ async function createSandbox() {
     license: "MIT",
    })
   );
-  console.log("✅ package.json created successfully");
  } catch (error) {
   cleanup(tmpDir);
   console.error("❌ Error creating package.json:", error);
@@ -48,7 +45,6 @@ async function createSandbox() {
    cwd: tmpDir,
    stdio: [0, 1, 2],
   });
-  console.log("✅ Dependencies installed successfully");
  } catch (error) {
   cleanup(tmpDir);
   console.error("❌ Error during dependency installation:", error);
@@ -56,12 +52,10 @@ async function createSandbox() {
  }
 
  try {
-  console.log("🔗 Linking PTG Angular Schematics...");
   execSync(`npm link @ptg-ui/angular-schematics --force`, {
    cwd: tmpDir,
    stdio: [0, 1, 2],
   });
-  console.log("✅ PTG Angular Schematics linked successfully");
  } catch (error) {
   cleanup(tmpDir);
   console.error("❌ Error linking @ptg-ui/angular-schematics:", error);
@@ -90,7 +84,6 @@ async function createSandbox() {
 
 /**
  * Creates the Angular application using PTG schematics
- * ESLint configuration is now handled automatically by the schematic
  */
 async function createApp(tmpDir: string) {
  console.log("\n🚀 Starting Angular application creation...");
@@ -121,9 +114,6 @@ async function createApp(tmpDir: string) {
  let createdProjectName = projectName;
  
  try {
-  console.log("\n🏗️  Executing Angular project creation...");
-  console.log("📝 Note: ESLint configuration will be handled by the schematic prompts");
-  
   execSync(`${command}`, {
    stdio: [0, 1, 2],
    cwd: process.cwd(),
@@ -218,14 +208,6 @@ function cleanup(dirPath: string) {
  * Orchestrates the entire project creation process
  */
 export async function invokeAngularGenerator() {
- console.log("\n🚀 PTG Angular Project Generator");
- console.log("==================================\n");
- 
- console.log("📋 Process Overview:");
- console.log("   1️⃣  Create sandbox environment");
- console.log("   2️⃣  Generate Angular project with ESLint");
- console.log("   3️⃣  Cleanup and finalize\n");
- 
  try {
   // Step 1: Create sandbox environment
   console.log("\n🏗️  Step 1/2: Setting up build environment...");
@@ -239,18 +221,18 @@ export async function invokeAngularGenerator() {
   // console.log("\n🔧 Installing VS Code extensions...");
   // addVSCodeExtensions();
   
-  console.log("\n🎉 Angular project generation completed successfully!");
-  console.log("\n📋 Next steps:");
+  // Angular project generation completed successfully!
+  console.log("\nTo get started:\n");
   if (projectName) {
-   console.log(`   1. cd ${projectName}`);
-   console.log("   2. npm start");
+   console.log(`  cd ${projectName}`);
+   console.log("  ng serve");
+   console.log("\nOr alternatively:");
+   console.log(`  cd ${projectName}`);
+   console.log("  npm start\n");
   } else {
-   console.log("   1. Navigate to your project directory");
-   console.log("   2. Run 'npm start' to start the development server");
+   console.log("  Navigate to your project directory");
+   console.log("  ng serve\n");
   }
-  console.log("   3. Open http://localhost:4200 in your browser");
-  console.log("   4. Run 'npm run lint' to check your code for issues");
-  console.log("   5. Start building your Angular application!\n");
   
  } catch (error) {
   console.error("\n❌ Angular project generation failed:");
