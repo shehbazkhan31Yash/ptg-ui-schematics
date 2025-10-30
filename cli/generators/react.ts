@@ -33,7 +33,7 @@ const TEMPLATES = {
   getAppContent: (a: any) => `import React from 'react';
 import './app.${a.style}';
 ${a.routing ? "import { Routes, Route, Link, Navigate } from 'react-router-dom';" : ''}
-${a.redux ? "import { Provider, useSelector, useDispatch } from 'react-redux';\nimport { store, RootState, increment, decrement, setTheme } from './store';" : ''}
+${a.redux ? "import { Provider, useSelector, useDispatch } from 'react-redux';\nimport { store, RootState, increment, decrement } from './store';" : ''}
 ${a.i18n ? "import { useTranslation } from 'react-i18next';\nimport './i18n';" : ''}
 ${
   a.redux
@@ -51,12 +51,7 @@ const ReduxFeatures = () => {
         <button onClick={() => dispatch(decrement())}>-</button>
         <button onClick={() => dispatch(increment())}>+</button>
       </div>
-      <div className="theme-switcher">
-        <button onClick={() => dispatch(setTheme('light'))}>
-          Light Theme
-        </button>
-        <button onClick={() => dispatch(setTheme('dark'))}>Dark Theme</button>
-      </div>
+
     </div>
   );
 };
@@ -148,11 +143,7 @@ const resources = {
       welcome: 'Welcome to ${appName}!',
       home: 'Home',
       about: 'About',
-      features: 'Features',
-      theme: {
-        light: 'Light Theme',
-        dark: 'Dark Theme'
-      }
+      features: 'Features'
     }
   },
   es: {
@@ -160,11 +151,7 @@ const resources = {
       welcome: '¡Bienvenido a ${appName}!',
       home: 'Inicio',
       about: 'Acerca de',
-      features: 'Características',
-      theme: {
-        light: 'Tema Claro',
-        dark: 'Tema Oscuro'
-      }
+      features: 'Características'
     }
   }
 };
@@ -182,12 +169,11 @@ i18n
 
 export default i18n;`,
 
-  getReduxStoreContent: () => `import { configureStore, createSlice, PayloadAction } from '@reduxjs/toolkit';
+  getReduxStoreContent: () => `import { configureStore, createSlice } from '@reduxjs/toolkit';
 
 // Example slice
 const initialState = {
   count: 0,
-  theme: 'light',
 };
 
 const appSlice = createSlice({
@@ -200,13 +186,10 @@ const appSlice = createSlice({
     decrement: (state) => {
       state.count -= 1;
     },
-    setTheme: (state, action: PayloadAction<'light' | 'dark'>) => {
-      state.theme = action.payload;
-    },
   },
 });
 
-export const { increment, decrement, setTheme } = appSlice.actions;
+export const { increment, decrement } = appSlice.actions;
 
 export const store = configureStore({
   reducer: {
@@ -363,28 +346,6 @@ export type AppDispatch = typeof store.dispatch;
 .redux-buttons button:hover {
   background: rgba(255,255,255,0.3);
   transform: scale(1.1);
-}
-
-.theme-switcher {
-  display: flex;
-  gap: 1rem;
-  justify-content: center;
-  margin-top: 1rem;
-}
-
-.theme-switcher button {
-  padding: 0.5rem 1rem;
-  border: none;
-  border-radius: 20px;
-  background: rgba(255,255,255,0.2);
-  color: white;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-.theme-switcher button:hover {
-  background: rgba(255,255,255,0.3);
-  transform: scale(1.05);
 }`;
 
     // Add framework-specific styles
