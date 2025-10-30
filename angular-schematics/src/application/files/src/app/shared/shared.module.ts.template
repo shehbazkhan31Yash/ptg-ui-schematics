@@ -3,21 +3,14 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 
 @NgModule({
-  imports: [
-    CommonModule,
-  ],
+  imports: [CommonModule, FormsModule],
   declarations: [],
-  exports: [
-    CommonModule,
-    FormsModule,
-  ],
+  exports: [CommonModule, FormsModule],
 })
-
 /**
  * Shares common components, directives, and pipes that
  * may not be as application specific.
  *
  * @see https://angular.io/guide/sharing-ngmodules
  */
-export class SharedModule {
-}
+export class SharedModule {}

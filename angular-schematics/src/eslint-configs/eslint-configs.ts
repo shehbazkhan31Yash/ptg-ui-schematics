@@ -1,7 +1,7 @@
 export const ESLINT_CONFIGS = {
   airbnb: {
     root: true,
-    ignorePatterns: ["projects/**/*"],
+    ignorePatterns: ["projects/**/*", "dist/**/*", "node_modules/**/*", "*.js", "*.d.ts"],
     overrides: [
       {
         files: ["*.ts"],
@@ -17,13 +17,21 @@ export const ESLINT_CONFIGS = {
         },
         plugins: ["@typescript-eslint"],
         rules: {
-          "@typescript-eslint/no-unused-vars": "warn",
+          "@typescript-eslint/no-unused-vars": ["warn", { "argsIgnorePattern": "^_", "varsIgnorePattern": "^_" }],
           "@typescript-eslint/no-explicit-any": "warn",
+          "@typescript-eslint/explicit-function-return-type": "off",
+          "@typescript-eslint/no-inferrable-types": "off",
+          "@typescript-eslint/no-empty-function": "off",
+          "@typescript-eslint/ban-ts-comment": "off",
           "linebreak-style": "off",
           "import/prefer-default-export": "off",
+          "import/no-unresolved": "off",
           "class-methods-use-this": "off",
-          "@typescript-eslint/no-empty-function": "off",
-          "no-console": ["warn", { "allow": ["warn", "error"] }]
+          "no-console": ["warn", { "allow": ["warn", "error"] }],
+          "no-unused-vars": "off",
+          "max-len": ["warn", { "code": 120, "ignoreUrls": true, "ignoreStrings": true }],
+          "@typescript-eslint/comma-dangle": "off",
+          "@typescript-eslint/quotes": "off"
         }
       },
       {
@@ -38,7 +46,7 @@ export const ESLINT_CONFIGS = {
   
   standard: {
     root: true,
-    ignorePatterns: ["projects/**/*"],
+    ignorePatterns: ["projects/**/*", "dist/**/*", "node_modules/**/*", "*.js", "*.d.ts"],
     overrides: [
       {
         files: ["*.ts"],
@@ -53,13 +61,19 @@ export const ESLINT_CONFIGS = {
         },
         plugins: ["@typescript-eslint"],
         rules: {
-          "@typescript-eslint/no-unused-vars": "warn",
+          "@typescript-eslint/no-unused-vars": ["warn", { "argsIgnorePattern": "^_", "varsIgnorePattern": "^_" }],
           "@typescript-eslint/no-explicit-any": "warn",
+          "@typescript-eslint/explicit-function-return-type": "off",
+          "@typescript-eslint/no-inferrable-types": "off",
+          "@typescript-eslint/no-empty-function": "off",
+          "@typescript-eslint/ban-ts-comment": "off",
           "linebreak-style": "off",
           "import/prefer-default-export": "off",
+          "import/no-unresolved": "off",
           "class-methods-use-this": "off",
-          "@typescript-eslint/no-empty-function": "off",
-          "no-console": ["warn", { "allow": ["warn", "error"] }]
+          "no-console": ["warn", { "allow": ["warn", "error"] }],
+          "no-unused-vars": "off",
+          "max-len": ["warn", { "code": 120, "ignoreUrls": true, "ignoreStrings": true }]
         }
       },
       {
@@ -74,7 +88,7 @@ export const ESLINT_CONFIGS = {
   
   custom: {
     root: true,
-    ignorePatterns: ["projects/**/*"],
+    ignorePatterns: ["projects/**/*", "dist/**/*", "node_modules/**/*", "*.js", "*.d.ts"],
     overrides: [
       {
         files: ["*.ts"],
@@ -108,13 +122,13 @@ export const ESLINT_CONFIGS = {
               style: "kebab-case"
             }
           ],
-          "max-lines": ["error", { max: 400, skipBlankLines: true, skipComments: true }],
+          "max-lines": ["warn", { max: 500, skipBlankLines: true, skipComments: true }],
           "quotes": ["error", "single"],
           "semi": ["error", "always"],
-          "no-unused-vars": "warn",
+          "no-unused-vars": "off",
           "@typescript-eslint/no-unused-vars": [
-            "error",
-            { argsIgnorePattern: "^_" }
+            "warn",
+            { argsIgnorePattern: "^_", varsIgnorePattern: "^_" }
           ],
           "eqeqeq": ["error", "always"],
           "curly": ["error", "all"],
@@ -122,18 +136,12 @@ export const ESLINT_CONFIGS = {
           "no-var": "error",
           "no-console": ["warn", { allow: ["warn", "error"] }],
           "no-debugger": "warn",
-          "@typescript-eslint/no-explicit-any": "error",
+          "@typescript-eslint/no-explicit-any": "warn",
           "@typescript-eslint/no-non-null-assertion": "warn",
           "@typescript-eslint/no-inferrable-types": "off",
-          "@typescript-eslint/explicit-function-return-type": [
-            "off",
-            {
-              allowExpressions: true,
-              allowTypedFunctionExpressions: true
-            }
-          ],
+          "@typescript-eslint/explicit-function-return-type": "off",
           "@typescript-eslint/naming-convention": [
-            "error",
+            "warn",
             {
               selector: "interface",
               format: ["PascalCase"]
@@ -144,7 +152,7 @@ export const ESLINT_CONFIGS = {
             },
             {
               selector: "variable",
-              format: ["camelCase", "UPPER_CASE"]
+              format: ["camelCase", "UPPER_CASE", "PascalCase"]
             },
             {
               selector: "function",
@@ -157,21 +165,21 @@ export const ESLINT_CONFIGS = {
           ],
           "@typescript-eslint/member-ordering": "warn",
           "@typescript-eslint/consistent-type-assertions": "error",
-          "@angular-eslint/no-empty-lifecycle-method": "error",
+          "@angular-eslint/no-empty-lifecycle-method": "warn",
           "@angular-eslint/use-lifecycle-interface": "error",
           "@angular-eslint/no-output-on-prefix": "error",
           "@angular-eslint/no-conflicting-lifecycle": "error",
           "@angular-eslint/prefer-on-push-component-change-detection": "off",
           "@angular-eslint/no-host-metadata-property": "off",
-          "@angular-eslint/no-inputs-metadata-property": "error",
-          "@angular-eslint/no-outputs-metadata-property": "error",
+          "@angular-eslint/no-inputs-metadata-property": "warn",
+          "@angular-eslint/no-outputs-metadata-property": "warn",
           "@angular-eslint/use-pipe-transform-interface": "error",
           "rxjs/no-ignored-observable": "warn",
-          "rxjs/no-nested-subscribe": "error",
-          "rxjs/no-unbound-methods": "error",
-          "rxjs/no-unsafe-takeuntil": "error",
-          "rxjs/no-implicit-any-catch": "error",
-          "rxjs/no-subject-value": "error",
+          "rxjs/no-nested-subscribe": "warn",
+          "rxjs/no-unbound-methods": "warn",
+          "rxjs/no-unsafe-takeuntil": "warn",
+          "rxjs/no-implicit-any-catch": "warn",
+          "rxjs/no-subject-value": "warn",
           "rxjs/finnish": [
             "error",
             {
@@ -182,13 +190,28 @@ export const ESLINT_CONFIGS = {
               variables: true
             }
           ],
-          "complexity": ["warn", 10],
-          "max-depth": ["warn", 3],
-          "max-lines-per-function": ["warn", 150],
-          "max-params": ["warn", 7],
-          "max-nested-callbacks": ["warn", 3],
+          "complexity": ["warn", 15],
+          "max-depth": ["warn", 4],
+          "max-lines-per-function": ["warn", 200],
+          "max-params": ["warn", 10],
+          "max-nested-callbacks": ["warn", 4],
           "no-duplicate-imports": "error",
-          "@typescript-eslint/no-unnecessary-type-assertion": "error",
+          "@typescript-eslint/no-unnecessary-type-assertion": "warn",
+          "@typescript-eslint/no-empty-function": "off",
+          "@typescript-eslint/no-unused-expressions": "off",
+          "@typescript-eslint/ban-ts-comment": "off",
+          // "@typescript-eslint/comma-dangle": ["error", "always-multiline"],
+          "@typescript-eslint/indent": ["error", 2],
+          "import/no-unresolved": "off",
+          "import/prefer-default-export": "off",
+          "import/order": ["error", { "newlines-between": "always" }],
+          "import/newline-after-import": "error",
+          "import/no-duplicates": "error",
+          "class-methods-use-this": "off",
+          "no-trailing-spaces": "error",
+          "eol-last": ["error", "always"],
+          "arrow-parens": ["error", "always"],
+          "object-curly-newline": ["error", { "ImportDeclaration": { "multiline": true, "minProperties": 3 } }],
           "prettier/prettier": [
             "error",
             {
@@ -199,9 +222,14 @@ export const ESLINT_CONFIGS = {
         }
       },
       {
-        files: ["*.spec.ts", "translation-keys.ts"],
+        files: ["*.spec.ts", "translation-keys.ts", "*.component.ts", "*.service.ts", "*.module.ts"],
         rules: {
-          "max-lines": "off"
+          "max-lines": "off",
+          "@typescript-eslint/no-explicit-any": "off",
+          "max-lines-per-function": "off",
+          "complexity": "off",
+          "@angular-eslint/no-empty-lifecycle-method": "off",
+          "@typescript-eslint/no-empty-function": "off"
         }
       },
       {

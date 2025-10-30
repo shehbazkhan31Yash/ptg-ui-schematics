@@ -110,6 +110,15 @@
         "message": "Would you like to add i18n to the application?",
         "type": "confirmation"
       }
+    },
+    "husky": {
+      "type": "boolean",
+      "default": false,
+      "description": "Add Husky for Git hooks (pre-commit)",
+      "x-prompt": {
+        "message": "Would you like to add Husky for Git hooks (pre-commit)?",
+        "type": "confirmation"
+      }
     }
   },
   "required": [
@@ -119,6 +128,7 @@
     "routing",
     "auth",
     "redux",
-    "i18n"
+    "i18n",
+    "husky"
   ]
 }

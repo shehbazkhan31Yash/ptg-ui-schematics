@@ -32,7 +32,10 @@ import {
   getEslintConfig, 
   getEslintDependencies, 
   getPrettierDependencies,
-  getPrettierConfig
+  getPrettierConfig,
+  getHuskyDependencies,
+  getHuskyPreCommitHook,
+  getLintStagedConfig
 } from "../utils/eslint-configs";
 
 // Instead of `any`, it would make sense here to get a schema-to-dts package and output the
@@ -93,6 +96,7 @@ export default function (options: any): Rule {
       setI18nToPackageJson(originalOptionsObject),
       setLinterToPackageJson(originalOptionsObject),
       setPrettierToPackageJson(originalOptionsObject),
+      setHuskyToPackageJson(originalOptionsObject),
       (originalOptionsObject.redux)
         ? addDashboardToProject(originalOptionsObject, isRootApp)
         : noop,
@@ -192,6 +196,7 @@ export default function (options: any): Rule {
       ),
       addEslintConfigToProject(originalOptionsObject),
       addPrettierConfigToProject(originalOptionsObject),
+      addHuskyConfigToProject(originalOptionsObject),
       addLintScriptsToPackageJson(originalOptionsObject),
     ]);
   };
@@ -320,6 +325,22 @@ export function setPrettierToPackageJson(options: any): Rule {
   ]);
 }
 
+export function setHuskyToPackageJson(options: any): Rule {
+  if (!options.husky) {
+    return noop;
+  }
+  
+  return chain([
+    (tree: Tree) => {
+      const dependencies = getHuskyDependencies(options.husky);
+      Object.entries(dependencies).forEach(([pkg, version]) => {
+        tree = addPackageToPackageJson(tree, pkg, version);
+      });
+      return tree;
+    },
+  ]);
+}
+
 export function addEslintConfigToProject(options: any): Rule {
   if (!options.linter || options.linter === 'none') {
     return noop;
@@ -352,6 +373,52 @@ export function addPrettierConfigToProject(options: any): Rule {
       tree.overwrite(prettierConfigPath, prettierConfig);
     } else {
       tree.create(prettierConfigPath, prettierConfig);
+    }
+    
+    return tree;
+  };
+}
+
+export function addHuskyConfigToProject(options: any): Rule {
+  if (!options.husky) {
+    return noop;
+  }
+
+  return (tree: Tree) => {
+    // Create .husky directory
+    const huskyDir = `.husky`;
+    
+    // Create pre-commit hook
+    const preCommitPath = `${huskyDir}/pre-commit`;
+    const preCommitContent = getHuskyPreCommitHook(
+      options.linter && options.linter !== 'none',
+      options.prettier
+    );
+    
+    if (tree.exists(preCommitPath)) {
+      tree.overwrite(preCommitPath, preCommitContent);
+    } else {
+      tree.create(preCommitPath, preCommitContent);
+    }
+    
+    // Add lint-staged configuration to package.json
+    const packageJsonPath = 'package.json';
+    if (tree.exists(packageJsonPath)) {
+      const sourceText = tree.read(packageJsonPath)!.toString('utf-8');
+      const packageJson = JSON.parse(sourceText);
+      
+      // Parse the lint-staged config and add it to package.json
+      const lintStagedConfigStr = getLintStagedConfig(
+        options.linter && options.linter !== 'none',
+        options.prettier
+      );
+      packageJson['lint-staged'] = JSON.parse(lintStagedConfigStr);
+      
+      // Add prepare script for husky
+      packageJson.scripts = packageJson.scripts || {};
+      packageJson.scripts.prepare = 'husky';
+      
+      tree.overwrite(packageJsonPath, JSON.stringify(packageJson, null, 2));
     }
     
     return tree;

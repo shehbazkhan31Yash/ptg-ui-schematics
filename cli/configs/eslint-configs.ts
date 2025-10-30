@@ -18,6 +18,7 @@ export default [
   js.configs.recommended,
   {
     files: ['**/*.{js,jsx,ts,tsx}'],
+    ignores: ['eslint.config.js'], // Exclude ESLint config from linting
     languageOptions: {
       ecmaVersion: 'latest',
       sourceType: 'module',
@@ -37,6 +38,17 @@ export default [
         JSX: 'readonly',
         browser: true,
         es2021: true,
+        // Test globals
+        describe: 'readonly',
+        it: 'readonly',
+        test: 'readonly',
+        expect: 'readonly',
+        beforeEach: 'readonly',
+        afterEach: 'readonly',
+        beforeAll: 'readonly',
+        afterAll: 'readonly',
+        jest: 'readonly',
+        vi: 'readonly',
       },
     },
     plugins: {
@@ -151,6 +163,7 @@ export default [
   js.configs.recommended,
   {
     files: ['**/*.{js,jsx,ts,tsx}'],
+    ignores: ['eslint.config.js'], // Exclude ESLint config from linting
     languageOptions: {
       ecmaVersion: 2021,
       sourceType: 'module',
@@ -168,6 +181,17 @@ export default [
         console: 'readonly',
         process: 'readonly',
         JSX: 'readonly',
+        // Test globals
+        describe: 'readonly',
+        it: 'readonly',
+        test: 'readonly',
+        expect: 'readonly',
+        beforeEach: 'readonly',
+        afterEach: 'readonly',
+        beforeAll: 'readonly',
+        afterAll: 'readonly',
+        jest: 'readonly',
+        vi: 'readonly',
       },
     },
     plugins: {
@@ -245,6 +269,7 @@ export default [
   js.configs.recommended,
   {
     files: ['**/*.{js,jsx,ts,tsx}'],
+    ignores: ['eslint.config.js'], // Exclude ESLint config from linting
     languageOptions: {
       ecmaVersion: 2021,
       sourceType: 'module',
@@ -262,6 +287,17 @@ export default [
         console: 'readonly',
         process: 'readonly',
         JSX: 'readonly',
+        // Test globals
+        describe: 'readonly',
+        it: 'readonly',
+        test: 'readonly',
+        expect: 'readonly',
+        beforeEach: 'readonly',
+        afterEach: 'readonly',
+        beforeAll: 'readonly',
+        afterAll: 'readonly',
+        jest: 'readonly',
+        vi: 'readonly',
       },
     },
     plugins: {
@@ -356,4 +392,75 @@ export function getPrettierDependencies(prettierEnabled: boolean): string[] {
     "eslint-config-prettier@latest",
     "eslint-plugin-prettier@latest"
   ];
+}
+
+/**
+ * Get Husky dependencies
+ * @param huskyEnabled - Whether husky is enabled
+ * @returns Array of husky-related package names
+ */
+export function getHuskyDependencies(huskyEnabled: boolean): string[] {
+  if (!huskyEnabled) return [];
+  
+  return [
+    "husky@latest",
+    "lint-staged@latest"
+  ];
+}
+
+/**
+ * Get Husky pre-commit hook configuration
+ * @param hasLinter - Whether linter is enabled
+ * @param hasPrettier - Whether prettier is enabled
+ * @returns pre-commit hook script content
+ */
+export function getHuskyPreCommitHook(hasLinter: boolean, hasPrettier: boolean): string {
+  const commands: string[] = [];
+  
+  if (hasLinter) {
+    commands.push('npm run lint:fix');
+  }
+  
+  if (hasPrettier) {
+    commands.push('npm run format');
+  }
+  
+  // Fallback if no linter or prettier
+  if (commands.length === 0) {
+    commands.push('echo "Running pre-commit checks..."');
+  }
+  
+  // Husky v9+ format (removed deprecated lines for v10 compatibility)
+  return `${commands.join('\n')}
+npx lint-staged
+`;
+}
+
+/**
+ * Get lint-staged configuration
+ * @param hasLinter - Whether linter is enabled
+ * @param hasPrettier - Whether prettier is enabled
+ * @returns lint-staged configuration as JSON string
+ */
+export function getLintStagedConfig(hasLinter: boolean, hasPrettier: boolean): string {
+  const config: { [key: string]: string[] } = {};
+  
+  const jstsPatterns = "*.{js,jsx,ts,tsx}";
+  const allPatterns = "*.{js,jsx,ts,tsx,json,css,scss,md}";
+  
+  if (hasLinter && hasPrettier) {
+    config[jstsPatterns] = [
+      "eslint --fix",
+      "prettier --write"
+    ];
+    config["*.{json,css,scss,md}"] = ["prettier --write"];
+  } else if (hasLinter) {
+    config[jstsPatterns] = ["eslint --fix"];
+  } else if (hasPrettier) {
+    config[allPatterns] = ["prettier --write"];
+  } else {
+    config[jstsPatterns] = ["echo 'Staged files checked'"];
+  }
+  
+  return JSON.stringify(config, null, 2);
 }
