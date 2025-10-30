@@ -1220,15 +1220,15 @@ function getArgs() {
   const linterOptions: { value: string; label: string }[] = [
     {
       value: "eslint",
-      label: "ESLint (Standard)",
+      label: "Standard - Popular JavaScript style guide",
     },
     {
       value: "airbnb",
-      label: "ESLint with Airbnb",
+      label: "Airbnb - Strict and comprehensive rules",
     },
     {
       value: "custom",
-      label: "ESLint with Custom Rules",
+      label: "Custom - Basic TypeScript ESLint setup",
     },
     {
       value: "none",
