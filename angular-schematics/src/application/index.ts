@@ -173,16 +173,6 @@ export function setNGRX(_options: any): Rule {
    "@ngrx/entity": "^18.1.1",
    "@ngrx/store-devtools": "^18.1.1",
   }),
-  // Log instructions for manual NgRx setup
-  (tree: Tree, context: SchematicContext) => {
-   context.logger.info('\n🎯 NgRx dependencies added to package.json');
-   context.logger.info('📝 To set up NgRx, run these commands after project creation:');
-   context.logger.info(`   cd ${_options.name}`);
-   context.logger.info('   ng add @ngrx/store');
-   context.logger.info('   ng add @ngrx/effects');
-   context.logger.info('   ng add @ngrx/store-devtools');
-   return tree;
-  },
  ]);
 }
 
@@ -197,15 +187,6 @@ export function setLinting(_options: any): Rule {
   createPrettierConfig(_options.lintingStyle),
   createGitAttributes(),
   createEslintIgnore(),
-  (tree: Tree, context: SchematicContext) => {
-   context.logger.info(`\n🔍 ${_options.lintingStyle.toUpperCase()} ESLint configuration added`);
-   context.logger.info('📝 Available commands:');
-   context.logger.info('   • npm run lint         - Check your code for issues');
-   context.logger.info('   • npm run lint:fix     - Automatically fix linting issues');
-   context.logger.info('   • npm run format       - Format your code with Prettier');
-   context.logger.info('   • npm run format:check - Check if code is properly formatted');
-   return tree;
-  },
  ]);
 }
 
@@ -324,13 +305,6 @@ export function setHusky(_options: any): Rule {
   addHuskyDependencies(),
   createHuskyConfig(),
   addHuskyScripts(),
-  (tree: Tree, context: SchematicContext) => {
-   context.logger.info('\n🐶 Husky pre-commit hooks configured');
-   context.logger.info('📝 Available hooks:');
-   context.logger.info('   • pre-commit: Runs linting and formatting');
-   context.logger.info('   • Hooks will be set up automatically during npm install');
-   return tree;
-  },
  ]);
 }
 
