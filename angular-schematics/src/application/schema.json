@@ -189,6 +189,12 @@
           }
         ]
       }
+    },
+    "husky": {
+      "type": "boolean",
+      "description": "Enable Husky pre-commit hooks for code quality",
+      "default": false,
+      "x-prompt": "Would you like to add Husky pre-commit hooks?"
     }
   },
   "required": ["name"]

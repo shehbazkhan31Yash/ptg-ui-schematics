@@ -22,30 +22,8 @@ function applyChangesToString(content: string, changes: Array<{type: ChangeType,
   return result;
 }
 
-// Local implementation of insert function
-function insert(host: any, path: string, changes: any[]) {
-  const content = host.read(path)?.toString() || '';
-  let updatedContent = content;
-  
-  // Apply changes in reverse order to maintain positions
-  changes.sort((a, b) => b.pos - a.pos).forEach(change => {
-    if (change.toAdd) {
-      updatedContent = updatedContent.slice(0, change.pos) + change.toAdd + updatedContent.slice(change.pos);
-    }
-  });
-  
-  host.overwrite(path, updatedContent);
-}
 
-// Local implementation of insertImport
-function insertImport(sourceFile: ts.SourceFile, filePath: string, symbolName: string, fileName: string) {
-  const importStatement = `import { ${symbolName} } from '${fileName}';\n`;
-  return {
-    pos: 0,
-    toAdd: importStatement
-  };
-}
-import { addImportToModule } from "./ast-utils";
+
 
 export function addImportToAppModule(
   moduleName: string,
@@ -60,19 +38,69 @@ export function addImportToAppModule(
       throw new SchematicsException(`File ${appModulePath} does not exist.`);
     }
     const sourceText = text.toString();
-    const source = ts.createSourceFile(
-      appModulePath,
-      sourceText,
-      ts.ScriptTarget.Latest,
-      true
-    );
 
-    insert(host, appModulePath, [
-      insertImport(source, appModulePath, moduleName, modulePath),
-      ...(!importOnly ? addImportToModule(source, modulePath, symbolName) : []),
-    ]);
+
+    // Generate properly formatted code
+    let updatedContent = sourceText;
+    
+    // Add import statement at the top
+    const importStatement = `import { ${moduleName} } from '${modulePath}';\n`;
+    const importInsertPos = getImportInsertPosition(updatedContent);
+    updatedContent = updatedContent.slice(0, importInsertPos) + importStatement + updatedContent.slice(importInsertPos);
+    
+    // Add to imports array if not importOnly
+    if (!importOnly) {
+      updatedContent = addToImportsArray(updatedContent, symbolName);
+    }
+    
+    host.overwrite(appModulePath, updatedContent);
     return host;
   };
+}
+
+function getImportInsertPosition(content: string): number {
+  const lines = content.split('\n');
+  let lastImportIndex = -1;
+  
+  for (let i = 0; i < lines.length; i++) {
+    if (lines[i].trim().startsWith('import ')) {
+      lastImportIndex = i;
+    }
+  }
+  
+  if (lastImportIndex >= 0) {
+    // Insert after the last import
+    const position = lines.slice(0, lastImportIndex + 1).join('\n').length + 1;
+    return position;
+  }
+  
+  return 0;
+}
+
+function addToImportsArray(content: string, symbolName: string): string {
+  // Find the imports array in NgModule
+  const importsRegex = /(imports:\s*\[)([\s\S]*?)(\])/;
+  const match = content.match(importsRegex);
+  
+  if (match) {
+    const [, start, importsContent, end] = match;
+    const trimmedImports = importsContent.trim();
+    
+    let newImportsContent;
+    if (trimmedImports === '') {
+      // Empty imports array
+      newImportsContent = `\n    ${symbolName},\n  `;
+    } else {
+      // Add to existing imports with proper formatting
+      const hasTrailingComma = trimmedImports.endsWith(',');
+      const cleanImports = hasTrailingComma ? trimmedImports : `${trimmedImports},`;
+      newImportsContent = `${cleanImports}\n    ${symbolName},\n  `;
+    }
+    
+    return content.replace(importsRegex, `${start}${newImportsContent}${end}`);
+  }
+  
+  return content;
 }
 
 export function insertStatement(path: string, statement: string): Rule {
