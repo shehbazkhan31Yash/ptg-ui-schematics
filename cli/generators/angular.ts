@@ -221,7 +221,7 @@ export async function invokeAngularGenerator() {
   // console.log("\n🔧 Installing VS Code extensions...");
   // addVSCodeExtensions();
   
-  console.log("\n🎉 Angular project generation completed successfully!");
+  // Angular project generation completed successfully!
   console.log("\nTo get started:\n");
   if (projectName) {
    console.log(`  cd ${projectName}`);
