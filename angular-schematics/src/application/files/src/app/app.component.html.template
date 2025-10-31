@@ -19,8 +19,15 @@
       <% if (framework !== 'none') { %>
       <li>✅ <%= framework %> UI Framework</li>
       <% } %>
+      <% if (seo) { %>
+      <li>✅ SEO Optimization (<%= seoType.toUpperCase() %>)</li>
+      <% } %>
     </ul>
   </div>
+
+  <% if (seo) { %>
+  <app-seo-example></app-seo-example>
+  <% } %>
 
   <% if (i18n) { %>
   <div class="language-switcher">

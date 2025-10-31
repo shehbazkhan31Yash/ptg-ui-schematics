@@ -195,6 +195,36 @@
       "description": "Enable Husky pre-commit hooks for code quality",
       "default": false,
       "x-prompt": "Would you like to add Husky pre-commit hooks?"
+    },
+    "seo": {
+      "type": "boolean",
+      "description": "Enable SEO optimization features",
+      "default": false,
+      "x-prompt": "Enable SEO features? (Meta tags, SSG/SSR options)"
+    },
+    "seoType": {
+      "type": "string",
+      "description": "SEO implementation type",
+      "enum": ["basic", "ssg", "ssr"],
+      "default": "basic",
+      "x-prompt": {
+        "message": "Which SEO implementation would you like?",
+        "type": "list",
+        "items": [
+          {
+            "value": "basic",
+            "label": "Basic - Meta tags and SEO service only"
+          },
+          {
+            "value": "ssg",
+            "label": "SSG - Static Site Generation with prerendering"
+          },
+          {
+            "value": "ssr",
+            "label": "SSR - Server-Side Rendering with Angular Universal"
+          }
+        ]
+      }
     }
   },
   "required": ["name"]
