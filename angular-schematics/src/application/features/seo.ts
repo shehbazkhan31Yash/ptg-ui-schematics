@@ -48,7 +48,7 @@ function createSEOService(): Rule {
 import { Meta, Title } from '@angular/platform-browser';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class SeoService {
   constructor(
@@ -61,7 +61,7 @@ export class SeoService {
   }
 
   updateMetaTags(tags: { [key: string]: string }): void {
-    Object.keys(tags).forEach(key => {
+    Object.keys(tags).forEach((key) => {
       this.meta.updateTag({ name: key, content: tags[key] });
     });
   }
@@ -75,19 +75,21 @@ export class SeoService {
   }
 
   updateOGTags(ogTags: { [key: string]: string }): void {
-    Object.keys(ogTags).forEach(key => {
+    Object.keys(ogTags).forEach((key) => {
       this.meta.updateTag({ property: \`og:\${key}\`, content: ogTags[key] });
     });
   }
 
   updateTwitterTags(twitterTags: { [key: string]: string }): void {
-    Object.keys(twitterTags).forEach(key => {
+    Object.keys(twitterTags).forEach((key) => {
       this.meta.updateTag({ name: \`twitter:\${key}\`, content: twitterTags[key] });
     });
   }
 
   updateCanonicalUrl(url: string): void {
-    let link: HTMLLinkElement = document.querySelector("link[rel='canonical']") as HTMLLinkElement;
+    let link: HTMLLinkElement = document.querySelector(
+      "link[rel='canonical']"
+    ) as HTMLLinkElement;
     if (link) {
       link.setAttribute('href', url);
     } else {
@@ -99,7 +101,9 @@ export class SeoService {
   }
 
   generateStructuredData(data: any): void {
-    let script = document.querySelector('script[type="application/ld+json"]') as HTMLScriptElement;
+    let script = document.querySelector(
+      'script[type="application/ld+json"]'
+    ) as HTMLScriptElement;
     if (script) {
       script.innerHTML = JSON.stringify(data);
     } else {
@@ -135,61 +139,64 @@ import { SeoService } from '../../core/services/seo.service';
       <button (click)="updateSEO()">Update SEO Tags</button>
     </div>
   \`,
-  styles: [\`
-    .seo-example {
-      padding: 20px;
-      border: 1px solid #ddd;
-      border-radius: 8px;
-      margin: 20px 0;
-    }
-    
-    button {
-      background-color: #007bff;
-      color: white;
-      border: none;
-      padding: 10px 20px;
-      border-radius: 4px;
-      cursor: pointer;
-    }
-    
-    button:hover {
-      background-color: #0056b3;
-    }
-  \`]
+  styles: [
+    \`
+      .seo-example {
+        padding: 20px;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        margin: 20px 0;
+      }
+
+      button {
+        background-color: #007bff;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 4px;
+        cursor: pointer;
+      }
+
+      button:hover {
+        background-color: #0056b3;
+      }
+    \`,
+  ],
 })
 export class SeoExampleComponent implements OnInit {
-
-  constructor(private seoService: SeoService) { }
+  constructor(private seoService: SeoService) {}
 
   ngOnInit(): void {
     this.seoService.updateTitle('Angular SEO Example');
-    this.seoService.updateDescription('This is an example of SEO optimization in Angular');
+    this.seoService.updateDescription(
+      'This is an example of SEO optimization in Angular'
+    );
     this.seoService.updateKeywords('angular, seo, optimization, example');
   }
 
   updateSEO(): void {
     this.seoService.updateTitle('Updated SEO Title');
     this.seoService.updateMetaTags({
-      'description': 'Updated description for better SEO',
-      'keywords': 'angular, seo, dynamic, update'
+      description: 'Updated description for better SEO',
+      keywords: 'angular, seo, dynamic, update',
     });
 
     this.seoService.updateOGTags({
-      'title': 'Updated SEO Title',
-      'description': 'Updated description for better SEO',
-      'type': 'website'
+      title: 'Updated SEO Title',
+      description: 'Updated description for better SEO',
+      type: 'website',
     });
 
     this.seoService.updateTwitterTags({
-      'title': 'Updated SEO Title',
-      'description': 'Updated description for better SEO'
+      title: 'Updated SEO Title',
+      description: 'Updated description for better SEO',
     });
 
     const structuredData = {
-      "@context": "https://schema.org",
-      "@type": "WebPage",
-      "name": "Updated SEO Title",
-      "description": "Updated description for better SEO"
+      '@context': 'https://schema.org',
+      '@type': 'WebPage',
+      name: 'Updated SEO Title',
+      description: 'Updated description for better SEO',
     };
     this.seoService.generateStructuredData(structuredData);
 
@@ -266,24 +273,33 @@ function updateIndexHtmlForSEO(): Rule {
   
   let content = tree.read(indexPath)!.toString();
   
-  const metaTags = `  <meta name="description" content="Generated Angular application with SEO optimization">
-  <meta name="keywords" content="angular, typescript, web application">
-  <meta name="author" content="PTG UI Schematics">
-  <meta name="robots" content="index, follow">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  
+  const metaTags = `  <meta
+    name="description"
+    content="Generated Angular application with SEO optimization"
+  />
+  <meta name="keywords" content="angular, typescript, web application" />
+  <meta name="author" content="PTG UI Schematics" />
+  <meta name="robots" content="index, follow" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
   <!-- Open Graph / Facebook -->
-  <meta property="og:type" content="website">
-  <meta property="og:title" content="Angular Application">
-  <meta property="og:description" content="Generated Angular application with SEO optimization">
-  
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="Angular Application" />
+  <meta
+    property="og:description"
+    content="Generated Angular application with SEO optimization"
+  />
+
   <!-- Twitter -->
-  <meta property="twitter:card" content="summary_large_image">
-  <meta property="twitter:title" content="Angular Application">
-  <meta property="twitter:description" content="Generated Angular application with SEO optimization">
-  
+  <meta property="twitter:card" content="summary_large_image" />
+  <meta property="twitter:title" content="Angular Application" />
+  <meta
+    property="twitter:description"
+    content="Generated Angular application with SEO optimization"
+  />
+
   <!-- Canonical URL -->
-  <link rel="canonical" href="/">`;
+  <link rel="canonical" href="/" />`;
   
   const headEndIndex = content.indexOf('</head>');
   if (headEndIndex > 0) {
