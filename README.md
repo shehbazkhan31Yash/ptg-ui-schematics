@@ -33,6 +33,8 @@ $ ptg-ui-cli
 ? Would you like to add NgRx for state management? › Yes
 ? Which Authentication you would like to add? › MSAL
 ? Which stylesheet format would you like to use? › SCSS
+? Enable SEO features? (Meta tags, SSG/SSR options) › Yes
+? Which SEO implementation would you like? › SSG - Static Site Generation with prerendering
 
 # For React:
 ? Workspace name (e.g., org name) › my-company
@@ -72,6 +74,7 @@ ptg-ui-schematics/
 - NgRx state management
 - Multiple authentication options (MSAL, Okta, Custom)
 - Internationalization (i18n) support
+- SEO optimization features (Basic, SSG, SSR)
 - Material Design integration
 - PWA capabilities
 - Comprehensive testing setup
