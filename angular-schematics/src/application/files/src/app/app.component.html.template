@@ -32,8 +32,8 @@
   <% if (i18n) { %>
   <div class="language-switcher">
     <h3>Language Options:</h3>
-    <button class="btn" (click)="switchLanguage('en')">English</button>
-    <button class="btn" (click)="switchLanguage('de')">German</button>
+    <button type="button" class="btn" (click)="switchLanguage('en')">English</button>
+    <button type="button" class="btn" (click)="switchLanguage('de')">German</button>
   </div>
   <% } %>
 

@@ -48,11 +48,13 @@ function createLintingConfig(lintingStyle: string): Rule {
   if (tree.exists(packageJsonPath)) {
    const packageJson = JSON.parse(tree.read(packageJsonPath)!.toString());
    packageJson.scripts = packageJson.scripts || {};
-   packageJson.scripts.lint = "eslint \"src/**/*.{ts,html}\" --quiet";
-   packageJson.scripts["lint:fix"] = "eslint \"src/**/*.{ts,html}\" --fix --quiet";
+   packageJson.scripts.lint = "eslint \"src/**/*.{ts,html}\" --quiet --fix-dry-run";
+   packageJson.scripts["lint:fix"] = "eslint \"src/**/*.{ts,html}\" --fix";
    packageJson.scripts["lint:check"] = "eslint \"src/**/*.{ts,html}\" --max-warnings=0";
+   packageJson.scripts["lint:ci"] = "eslint \"src/**/*.{ts,html}\" --quiet --max-warnings=0";
    packageJson.scripts.format = "prettier --write src/**/*.{ts,html,scss,css,json}";
    packageJson.scripts["format:check"] = "prettier --check src/**/*.{ts,html,scss,css,json}";
+   packageJson.scripts["fix-all"] = "npm run lint:fix && npm run format";
    tree.overwrite(packageJsonPath, JSON.stringify(packageJson, null, 2));
   }
 
@@ -91,16 +93,24 @@ node_modules/
 # Build outputs
 dist/
 build/
+out/
 *.js
+*.js.map
 *.d.ts
 
 # Generated files
 projects/
 
+# Angular specific
+.angular/
+karma.conf.js
+protractor.conf.js
+
 # Environment files
 .env
 .env.local
 .env.*.local
+environment*.ts
 
 # IDE files
 .vscode/
@@ -110,7 +120,20 @@ projects/
 
 # OS files
 .DS_Store
-Thumbs.db`;
+Thumbs.db
+
+# Test coverage
+coverage/
+
+# Temporary files
+*.tmp
+*.temp
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*`;
   tree.create(".eslintignore", eslintIgnore);
   return tree;
  };
