@@ -96,10 +96,33 @@
     "redux": {
       "type": "boolean",
       "default": false,
-      "description": "Add Redux to the application",
+      "description": "Add Redux to the application (deprecated, use stateManagement)",
       "x-prompt": {
         "message": "Would you like to add Redux to the application?",
         "type": "confirmation"
+      }
+    },
+    "stateManagement": {
+      "type": "string",
+      "default": "none",
+      "description": "State management library for the application",
+      "x-prompt": {
+        "message": "Which state management library would you like to use?",
+        "type": "list",
+        "items": [
+          {
+            "label": "None - No state management library",
+            "value": "none"
+          },
+          {
+            "label": "Redux Toolkit - Popular, powerful state management",
+            "value": "redux"
+          },
+          {
+            "label": "Zustand - Lightweight, simple state management",
+            "value": "zustand"
+          }
+        ]
       }
     },
     "i18n": {
@@ -127,7 +150,6 @@
     "framework",
     "routing",
     "auth",
-    "redux",
     "i18n",
     "husky"
   ]

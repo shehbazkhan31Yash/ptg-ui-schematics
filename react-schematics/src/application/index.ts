@@ -17,6 +17,7 @@ import { join, normalize } from "path";
 import {
   reactReduxVersion,
   reduxVersion,
+  zustandVersion,
   i18nextVersion,
   i18nextBrowserLanguagedetectorVersion,
   reactI18nextVersion,
@@ -92,12 +93,12 @@ export default function (options: any): Rule {
       },
       //schematic('my-other-schematic', { option: true }),
       setFramework(originalOptionsObject, isRootApp),
-      setReduxTpPackageJson(originalOptionsObject),
+      setStateManagementToPackageJson(originalOptionsObject),
       setI18nToPackageJson(originalOptionsObject),
       setLinterToPackageJson(originalOptionsObject),
       setPrettierToPackageJson(originalOptionsObject),
       setHuskyToPackageJson(originalOptionsObject),
-      (originalOptionsObject.redux)
+      (originalOptionsObject.stateManagement === 'redux')
         ? addDashboardToProject(originalOptionsObject, isRootApp)
         : noop,
       // The mergeWith() rule merge two trees; one that's coming from a Source (a Tree with no
@@ -155,9 +156,23 @@ export default function (options: any): Rule {
           MergeStrategy.Overwrite
         )
         : noop,
-      originalOptionsObject.redux
+      originalOptionsObject.stateManagement === 'redux'
         ? mergeWith(
           apply(url("./redux/"), [
+            applyTemplates({
+              utils: strings,
+              ...originalOptionsObject,
+              appName: originalOptionsObject.name,
+              isRootApp,
+            }),
+            move(`apps/${options.name}/src/app/`),
+          ]),
+          MergeStrategy.Overwrite
+        )
+        : noop,
+      originalOptionsObject.stateManagement === 'zustand'
+        ? mergeWith(
+          apply(url("./zustand/"), [
             applyTemplates({
               utils: strings,
               ...originalOptionsObject,
@@ -269,7 +284,35 @@ export function setFramework(options: any, isRootApp: boolean) {
   else return noop;
 }
 
+export function setStateManagementToPackageJson(options: any): Rule {
+  if (!options.stateManagement || options.stateManagement === 'none') {
+    return noop;
+  }
+  
+  if (options.stateManagement === 'redux') {
+    return chain([
+      (tree: Tree) => {
+        tree = addPackageToPackageJson(tree, "react-redux", reactReduxVersion);
+        tree = addPackageToPackageJson(tree, "redux", reduxVersion);
+        return tree;
+      },
+    ]);
+  }
+  
+  if (options.stateManagement === 'zustand') {
+    return chain([
+      (tree: Tree) => {
+        tree = addPackageToPackageJson(tree, "zustand", zustandVersion);
+        return tree;
+      },
+    ]);
+  }
+  
+  return noop;
+}
+
 export function setReduxTpPackageJson(options: any): Rule {
+  // Kept for backward compatibility
   if (!options.redux) {
     return noop;
   }
