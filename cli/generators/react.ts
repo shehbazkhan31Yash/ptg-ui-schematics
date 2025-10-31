@@ -533,11 +533,11 @@ const createWorkspaceWithRetry = (workspacePath: string, a: any) => {
   
   const strategies = [
     {
-      cmd: `npx create-nx-workspace@latest ${a.workspace} --preset react-standalone --appName ${a.name} --style ${nxStyle} --nx-cloud skip --packageManager npm --routing ${a.routing} --bundler ${a.bundler} --unitTestRunner ${a.unitTestRunner} --e2eTestRunner ${a.e2eTestRunner}`,
+      cmd: `npx create-nx-workspace@latest ${a.workspace} --preset react-standalone --appName ${a.name} --style ${nxStyle} --nx-cloud skip --packageManager npm --routing ${a.routing} --bundler ${a.bundler} --unitTestRunner ${a.unitTestRunner} --e2eTestRunner ${a.e2eTestRunner} --no-interactive`,
       desc: "React standalone preset"
     },
     {
-      cmd: `npx create-nx-workspace@latest ${a.workspace} --preset node --nx-cloud skip --packageManager npm`,
+      cmd: `npx create-nx-workspace@latest ${a.workspace} --preset node --nx-cloud skip --packageManager npm --no-interactive`,
       desc: "Node preset"
     }
   ];
@@ -964,7 +964,7 @@ export function reactAppGenerator() {
         try {
           // Use Nx React generator to create the application
           execSync(
-            `npx nx generate @nx/react:application ${a.name} --style=${nxStyle} --routing=${a.routing} --bundler=${a.bundler} --unitTestRunner=${a.unitTestRunner} --e2eTestRunner=${a.e2eTestRunner} --linter=${a.linter !== 'none' ? 'eslint' : 'none'} --skipFormat=true`,
+            `npx nx generate @nx/react:application ${a.name} --style=${nxStyle} --routing=${a.routing} --bundler=${a.bundler} --unitTestRunner=${a.unitTestRunner} --e2eTestRunner=${a.e2eTestRunner} --linter=${a.linter !== 'none' ? 'eslint' : 'none'} --skipFormat=true --no-interactive`,
             {
               cwd: workspacePath,
               stdio: [0, 1, 2],
@@ -985,7 +985,7 @@ export function reactAppGenerator() {
           try {
             // Try without some optional parameters
             execSync(
-              `npx nx generate @nx/react:app ${a.name} --style=${nxStyle} --routing=${a.routing} --linter=${a.linter === 'none' ? 'none' : 'eslint'}`,
+              `npx nx generate @nx/react:app ${a.name} --style=${nxStyle} --routing=${a.routing} --linter=${a.linter === 'none' ? 'none' : 'eslint'} --no-interactive`,
               {
                 cwd: workspacePath,
                 stdio: [0, 1, 2],
@@ -1007,7 +1007,7 @@ export function reactAppGenerator() {
               // Try using the custom PTG React schematic
               // Note: PTG schematic handles the original style option internally
               execSync(
-                `npx nx generate @ptg-ui/react-schematics:application ${a.name} --style=${a.style} --routing=${a.routing} --framework=${a.framework} --auth=${a.auth} --redux=${a.redux} --i18n=${a.i18n} --linter=${a.linter}`,
+                `npx nx generate @ptg-ui/react-schematics:application ${a.name} --style=${a.style} --routing=${a.routing} --framework=${a.framework} --auth=${a.auth} --redux=${a.redux} --i18n=${a.i18n} --linter=${a.linter} --no-interactive`,
                 {
                   cwd: workspacePath,
                   stdio: [0, 1, 2],
