@@ -27,7 +27,7 @@ function addSEODependencies(seoType: string): Rule {
  if (seoType === 'ssr') {
   return addDepsToPackageJson({
    ...baseDeps,
-   "@nguniversal/express-engine": "^18.0.0",
+   "@angular/ssr": "^18.2.13",
    "express": "^4.18.0"
   });
  }
@@ -35,7 +35,7 @@ function addSEODependencies(seoType: string): Rule {
  if (seoType === 'ssg') {
   return addDepsToPackageJson({
    ...baseDeps,
-   "@angular/platform-server": "^18.2.13"
+   "@angular/ssr": "^18.2.13"
   });
  }
  
@@ -335,9 +335,10 @@ function addSSGSupport(): Rule {
     angularJson.projects[projectName].architect.server = {
      "builder": "@angular-devkit/build-angular:server",
      "options": {
-      "outputPath": `dist/${projectName}/server`,
+      "outputPath": `dist/${projectName}`,
       "main": "server.ts",
-      "tsConfig": "tsconfig.server.json"
+      "tsConfig": "tsconfig.server.json",
+      "externalDependencies": ["express"]
      },
      "configurations": {
       "production": {
@@ -354,44 +355,85 @@ function addSSGSupport(): Rule {
    tree.overwrite(angularJsonPath, JSON.stringify(angularJson, null, 2));
   }
   
-  const serverContent = `import 'zone.js/dist/zone-node';
-import { ngExpressEngine } from '@nguniversal/express-engine';
+  const serverContent = `import { APP_BASE_HREF } from '@angular/common';
+import { CommonEngine } from '@angular/ssr';
 import express from 'express';
-import { join } from 'path';
-import { AppServerModule } from './src/main.server';
-import { APP_BASE_HREF } from '@angular/common';
-import { existsSync } from 'fs';
+import { fileURLToPath } from 'node:url';
+import { dirname, join, resolve } from 'node:path';
+import bootstrap from './src/main.server';
 
-const app = express();
-const PORT = process.env['PORT'] || 4000;
-const DIST_FOLDER = join(process.cwd(), 'dist');
+const server = express();
+const serverDistFolder = dirname(fileURLToPath(import.meta.url));
+const browserDistFolder = resolve(serverDistFolder, '../browser');
+const indexHtml = join(serverDistFolder, 'index.server.html');
 
-app.engine('html', ngExpressEngine({
-  bootstrap: AppServerModule,
+const commonEngine = new CommonEngine();
+
+server.set('view engine', 'html');
+server.set('views', browserDistFolder);
+
+server.get('*.*', express.static(browserDistFolder, {
+  maxAge: '1y'
 }));
 
-app.set('view engine', 'html');
-app.set('views', DIST_FOLDER);
+server.get('*', (req, res, next) => {
+  const { protocol, originalUrl, baseUrl, headers } = req;
 
-app.get('*.*', express.static(DIST_FOLDER));
-
-app.get('*', (req, res) => {
-  res.render('index', { req, providers: [{ provide: APP_BASE_HREF, useValue: req.baseUrl }] });
+  commonEngine
+    .render({
+      bootstrap,
+      documentFilePath: indexHtml,
+      url: \`\${protocol}://\${headers.host}\${originalUrl}\`,
+      publicPath: browserDistFolder,
+      providers: [{ provide: APP_BASE_HREF, useValue: baseUrl }],
+    })
+    .then((html) => res.send(html))
+    .catch((err) => next(err));
 });
 
-app.listen(PORT, () => {
-  console.log(\`Server ready at http://localhost:\${PORT}\`);
+const port = process.env['PORT'] || 4000;
+
+server.listen(port, () => {
+  console.log(\`Node Express server listening on http://localhost:\${port}\`);
 });
 `;
   
   tree.create('server.ts', serverContent);
+  
+  // Create main.server.ts
+  const mainServerContent = `import { bootstrapApplication } from '@angular/platform-browser';
+import { AppComponent } from './app/app.component';
+import { config } from './app/app.config.server';
+
+const bootstrap = () => bootstrapApplication(AppComponent, config);
+
+export default bootstrap;`;
+  
+  tree.create('src/main.server.ts', mainServerContent);
+  
+  // Create app.config.server.ts
+  const appConfigServerContent = `import { mergeApplicationConfig, ApplicationConfig } from '@angular/core';
+import { provideServerRendering } from '@angular/platform-server';
+import { appConfig } from './app.config';
+
+const serverConfig: ApplicationConfig = {
+  providers: [
+    provideServerRendering()
+  ]
+};
+
+export const config = mergeApplicationConfig(appConfig, serverConfig);`;
+  
+  tree.create('src/app/app.config.server.ts', appConfigServerContent);
   
   const tsConfigServer = {
    "extends": "./tsconfig.json",
    "compilerOptions": {
     "outDir": "./out-tsc/server",
     "target": "es2022",
-    "types": ["node"]
+    "types": ["node"],
+    "module": "ESNext",
+    "moduleResolution": "bundler"
    },
    "files": ["src/main.server.ts", "server.ts"]
   };
@@ -420,7 +462,7 @@ function addSSRSupport(): Rule {
    packageJson.scripts = packageJson.scripts || {};
    const projectName = Object.keys(JSON.parse(tree.read('angular.json')!.toString()).projects)[0];
    packageJson.scripts['build:ssr'] = `ng build && ng run ${projectName}:server`;
-   packageJson.scripts['serve:ssr'] = 'node dist/server';
+   packageJson.scripts['serve:ssr'] = `node dist/${projectName}/server/server.mjs`;
    tree.overwrite(packageJsonPath, JSON.stringify(packageJson, null, 2));
   }
   
