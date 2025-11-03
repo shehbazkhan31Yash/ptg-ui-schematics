@@ -170,25 +170,7 @@
       "type": "string",
       "description": "The linting style to use",
       "enum": ["airbnb", "standard", "custom"],
-      "default": "airbnb",
-      "x-prompt": {
-        "message": "Which ESLint configuration would you like to use?",
-        "type": "list",
-        "items": [
-          {
-            "value": "airbnb",
-            "label": "Airbnb - Strict and comprehensive rules"
-          },
-          {
-            "value": "standard",
-            "label": "Standard - Popular JavaScript style guide"
-          },
-          {
-            "value": "custom",
-            "label": "Custom - Basic TypeScript ESLint setup"
-          }
-        ]
-      }
+      "default": "airbnb"
     },
     "husky": {
       "type": "boolean",
@@ -206,25 +188,7 @@
       "type": "string",
       "description": "SEO implementation type",
       "enum": ["basic", "ssg", "ssr"],
-      "default": "basic",
-      "x-prompt": {
-        "message": "Which SEO implementation would you like?",
-        "type": "list",
-        "items": [
-          {
-            "value": "basic",
-            "label": "Basic - Meta tags and SEO service only"
-          },
-          {
-            "value": "ssg",
-            "label": "SSG - Static Site Generation with Angular Universal prerendering"
-          },
-          {
-            "value": "ssr",
-            "label": "SSR - Server-Side Rendering with Angular Universal"
-          }
-        ]
-      }
+      "default": "basic"
     }
   },
   "required": ["name"]
