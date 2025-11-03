@@ -171,49 +171,282 @@ export class SeoService {
 
 function createSEOExampleComponent(): Rule {
  return (tree: Tree) => {
+  // Create additional content component for better text/HTML ratio
+  const contentComponentContent = `import { Component } from '@angular/core';
+
+@Component({
+  selector: 'app-content-rich',
+  template: \`
+    <section class="content-rich hentry" itemscope itemtype="http://schema.org/Article">
+      <h2 class="entry-title" itemprop="headline">Angular Development Best Practices</h2>
+      <div class="entry-content">
+        <p itemprop="articleBody">Angular applications benefit from following established architectural patterns and development practices. Component-based architecture promotes reusability and maintainability, while services provide centralized business logic and data management. Proper dependency injection ensures loose coupling and testability throughout the application.</p>
+        
+        <p>State management becomes crucial in complex applications. NgRx provides a predictable state container that implements the Redux pattern, enabling time-travel debugging, action replay, and consistent state updates across components. This approach scales well for enterprise applications with multiple data sources and complex user interactions.</p>
+        
+        <p>Performance optimization involves several strategies including lazy loading of feature modules, OnPush change detection strategy, trackBy functions for ngFor loops, and proper subscription management to prevent memory leaks. Angular's built-in tools like the Angular DevTools and Lighthouse audits help identify performance bottlenecks.</p>
+        
+        <p>Testing strategies should encompass unit tests for components and services, integration tests for component interactions, and end-to-end tests for user workflows. Angular's testing utilities, combined with Jest or Jasmine for unit testing and Cypress or Protractor for e2e testing, provide comprehensive coverage.</p>
+        
+        <p>Accessibility compliance ensures applications are usable by everyone. Angular CDK provides accessibility utilities, while proper semantic HTML, ARIA attributes, and keyboard navigation support create inclusive user experiences. Regular accessibility audits using tools like axe-core help maintain compliance standards.</p>
+      </div>
+    </section>
+  \`,
+  styles: [\`
+    .content-rich {
+      max-width: 800px;
+      margin: 20px auto;
+      padding: 30px;
+      background: #f8f9fa;
+      border-radius: 8px;
+      line-height: 1.7;
+    }
+    
+    h2 {
+      color: #2c3e50;
+      margin-bottom: 25px;
+      font-size: 1.8rem;
+    }
+    
+    p {
+      margin-bottom: 20px;
+      color: #555;
+      text-align: justify;
+    }
+  \`]
+})
+export class ContentRichComponent {}
+`;
+  
+  tree.create('src/app/shared/components/content-rich.component.ts', contentComponentContent);
+  
   const componentContent = `import { Component, OnInit } from '@angular/core';
 import { SeoService } from '../../core/services/seo.service';
 
 @Component({
   selector: 'app-seo-example',
   template: \`
-    <article class="seo-example" itemscope itemtype="http://schema.org/Article">
-      <img src="assets/images/YashLogo.jpg" alt="SEO optimization example - Angular application logo" class="seo-image" itemprop="image" />
-      <h2 itemprop="headline">SEO Example Component</h2>
-      <p itemprop="description">This component demonstrates how to use the SEO service for dynamic meta tag management and structured data implementation.</p>
-      <div class="author" itemscope itemtype="http://schema.org/Person">
-        <span itemprop="name">PTG UI Schematics</span>
-      </div>
-      <button (click)="updateSEO()" type="button">Update SEO Tags</button>
-    </article>
+    <main class="seo-content hentry" itemscope itemtype="http://schema.org/WebPage">
+      <article class="seo-example hentry" itemscope itemtype="http://schema.org/Article">
+        <header class="seo-header">
+          <img src="assets/images/YashLogo.jpg" alt="SEO optimization example - Angular application logo" class="seo-image" itemprop="image" />
+          <h2 class="entry-title" itemprop="headline">Angular SEO Optimization Guide</h2>
+        </header>
+        
+        <section class="content-section">
+          <h3>Comprehensive SEO Implementation</h3>
+          <p class="entry-summary" itemprop="description">This Angular application demonstrates advanced SEO optimization techniques including structured data markup, meta tag management, canonical URLs, and microformat implementation. The SEO service provides dynamic meta tag updates, Open Graph integration, Twitter Card support, and JSON-LD structured data generation for enhanced search engine visibility.</p>
+          
+          <div class="features-grid">
+            <div class="feature-card" itemscope itemtype="http://schema.org/SoftwareFeature">
+              <h4 itemprop="name">Meta Tag Management</h4>
+              <p itemprop="description">Dynamic meta tag updates for title, description, keywords, and social media tags.</p>
+            </div>
+            <div class="feature-card" itemscope itemtype="http://schema.org/SoftwareFeature">
+              <h4 itemprop="name">Structured Data</h4>
+              <p itemprop="description">JSON-LD implementation with Schema.org markup for rich search results.</p>
+            </div>
+            <div class="feature-card" itemscope itemtype="http://schema.org/SoftwareFeature">
+              <h4 itemprop="name">Canonical URLs</h4>
+              <p itemprop="description">Automatic canonical URL management with route-based updates.</p>
+            </div>
+            <div class="feature-card" itemscope itemtype="http://schema.org/SoftwareFeature">
+              <h4 itemprop="name">Social Media Integration</h4>
+              <p itemprop="description">Open Graph and Twitter Card meta tags for social sharing optimization.</p>
+            </div>
+          </div>
+        </section>
+        
+        <section class="technical-details">
+          <h3>Technical Implementation</h3>
+          <p>The SEO service utilizes Angular's Meta and Title services to provide comprehensive search engine optimization. Key features include automatic route-based canonical URL updates, dynamic structured data generation, and social media meta tag management. The implementation follows Google's SEO best practices and supports both client-side and server-side rendering scenarios.</p>
+          
+          <p>Search engine optimization encompasses multiple technical aspects including semantic HTML markup, proper heading hierarchy, optimized meta descriptions, and structured data implementation. The service automatically manages Open Graph tags for social media sharing, Twitter Card metadata for enhanced tweet displays, and JSON-LD structured data for rich search results.</p>
+          
+          <p>Performance optimization techniques include lazy loading of components, efficient change detection strategies, and optimized bundle sizes through tree-shaking. The application implements progressive web app features including service workers for offline functionality, push notifications for user engagement, and responsive design for cross-device compatibility.</p>
+          
+          <p>Accessibility features ensure compliance with WCAG guidelines through proper ARIA attributes, keyboard navigation support, screen reader compatibility, and high contrast mode support. The application includes automated accessibility testing and manual audit capabilities to maintain inclusive user experiences.</p>
+          
+          <div class="code-example">
+            <h4>Usage Example</h4>
+            <pre><code>this.seoService.updatePageSEO(&#123;
+  title: 'Page Title',
+  description: 'Page description',
+  keywords: 'angular, seo, optimization',
+  canonicalUrl: '/current-page',
+  structuredData: &#123; /* Schema.org data */ &#125;
+&#125;);</code></pre>
+          </div>
+        </section>
+        
+        <footer class="author-info vcard" itemscope itemtype="http://schema.org/Organization">
+          <span class="fn org" itemprop="name">PTG UI Schematics</span>
+          <span itemprop="description">Enterprise Angular application generator</span>
+        </footer>
+        
+        <div class="action-section">
+          <button (click)="updateSEO()" type="button" class="seo-button">Update SEO Tags</button>
+        </div>
+      </article>
+    </main>
   \`,
   styles: [
     \`
-      .seo-example {
+      .seo-content {
+        max-width: 1200px;
+        margin: 0 auto;
         padding: 20px;
-        border: 1px solid #ddd;
-        border-radius: 8px;
-        margin: 20px 0;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        line-height: 1.6;
+      }
+
+      .seo-example {
+        background: #fff;
+        border-radius: 12px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+      }
+
+      .seo-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 20px;
+        display: flex;
+        align-items: center;
+        gap: 15px;
       }
 
       .seo-image {
-        width: 60px;
-        height: 60px;
-        margin-bottom: 15px;
-        display: block;
+        width: 50px;
+        height: 50px;
+        border-radius: 8px;
+        border: 2px solid rgba(255, 255, 255, 0.3);
+        flex-shrink: 0;
       }
 
-      button {
-        background-color: #007bff;
+      h1, h2 {
+        margin: 0;
+        font-size: 2.5rem;
+        font-weight: 700;
+      }
+
+      .content-section, .technical-details {
+        padding: 25px;
+      }
+
+      h3 {
+        color: #2c3e50;
+        font-size: 1.8rem;
+        margin-bottom: 20px;
+        border-bottom: 2px solid #3498db;
+        padding-bottom: 10px;
+      }
+
+      h4 {
+        color: #34495e;
+        font-size: 1.3rem;
+        margin-bottom: 15px;
+      }
+
+      p {
+        color: #555;
+        margin-bottom: 20px;
+        text-align: justify;
+      }
+
+      .features-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 20px;
+        margin: 30px 0;
+      }
+
+      .feature-card {
+        background: #f8f9fa;
+        padding: 25px;
+        border-radius: 8px;
+        border-left: 4px solid #3498db;
+        transition: transform 0.2s ease;
+      }
+
+      .feature-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      }
+
+      .code-example {
+        background: #2c3e50;
+        color: #ecf0f1;
+        padding: 25px;
+        border-radius: 8px;
+        margin: 25px 0;
+      }
+
+      .code-example pre {
+        margin: 0;
+        overflow-x: auto;
+      }
+
+      .code-example code {
+        font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+        font-size: 0.9rem;
+        line-height: 1.4;
+      }
+
+      .author-info {
+        background: #ecf0f1;
+        padding: 20px 40px;
+        text-align: center;
+        color: #7f8c8d;
+      }
+
+      .action-section {
+        padding: 30px 40px;
+        text-align: center;
+        background: #f8f9fa;
+      }
+
+      .seo-button {
+        background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
         color: white;
         border: none;
-        padding: 10px 20px;
-        border-radius: 4px;
+        padding: 15px 30px;
+        border-radius: 25px;
         cursor: pointer;
+        font-size: 1.1rem;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(52, 152, 219, 0.3);
       }
 
-      button:hover {
-        background-color: #0056b3;
+      .seo-button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(52, 152, 219, 0.4);
+      }
+
+      @media (max-width: 768px) {
+        .seo-content {
+          padding: 10px;
+        }
+        
+        .seo-header {
+          padding: 15px;
+          flex-direction: column;
+          text-align: center;
+          gap: 10px;
+        }
+        
+        h1, h2 {
+          font-size: 2rem;
+        }
+        
+        .content-section, .technical-details {
+          padding: 25px 20px;
+        }
+        
+        .features-grid {
+          grid-template-columns: 1fr;
+        }
       }
     \`,
   ],
@@ -255,30 +488,27 @@ export class SeoExampleComponent implements OnInit {
   }
 
   updateSEO(): void {
-    this.seoService.updateTitle('Updated SEO Title');
-    this.seoService.updateMetaTags({
-      description: 'Updated description for better SEO',
+    this.seoService.updatePageSEO({
+      title: 'Updated SEO Title',
+      description: 'Comprehensive Angular SEO optimization demonstration showcasing advanced meta tag management, structured data implementation, canonical URL handling, and social media integration. This updated example highlights dynamic SEO capabilities including Open Graph tags, Twitter Cards, JSON-LD structured data, and real-time meta tag updates for enhanced search engine visibility and social sharing performance.',
       keywords: 'angular, seo, dynamic, update',
+      canonicalUrl: window.location.pathname,
+      structuredData: {
+        '@context': 'https://schema.org',
+        '@type': 'WebPage',
+        name: 'Updated SEO Title',
+        description: 'Comprehensive Angular SEO optimization demonstration showcasing advanced meta tag management, structured data implementation, canonical URL handling, and social media integration.'
+      },
+      ogTags: {
+        title: 'Updated SEO Title',
+        description: 'Comprehensive Angular SEO optimization demonstration showcasing advanced meta tag management, structured data implementation, canonical URL handling, and social media integration.',
+        type: 'website'
+      },
+      twitterTags: {
+        title: 'Updated SEO Title',
+        description: 'Comprehensive Angular SEO optimization demonstration showcasing advanced meta tag management, structured data implementation, canonical URL handling, and social media integration.'
+      }
     });
-
-    this.seoService.updateOGTags({
-      title: 'Updated SEO Title',
-      description: 'Updated description for better SEO',
-      type: 'website',
-    });
-
-    this.seoService.updateTwitterTags({
-      title: 'Updated SEO Title',
-      description: 'Updated description for better SEO',
-    });
-
-    const structuredData = {
-      '@context': 'https://schema.org',
-      '@type': 'WebPage',
-      name: 'Updated SEO Title',
-      description: 'Updated description for better SEO',
-    };
-    this.seoService.generateStructuredData(structuredData);
 
     console.log('SEO tags updated successfully!');
   }
@@ -325,18 +555,26 @@ function updateSharedModuleForSEO(): Rule {
     content = lines.join('\n');
    }
    
+   // Add ContentRichComponent import
+   const contentRichImportLine = "import { ContentRichComponent } from './components/content-rich.component';";
+   const lastImportIndex2 = content.lastIndexOf('import ');
+   if (lastImportIndex2 >= 0) {
+    const endOfLine = content.indexOf('\n', lastImportIndex2);
+    content = content.slice(0, endOfLine + 1) + contentRichImportLine + '\n' + content.slice(endOfLine + 1);
+   }
+   
    content = content.replace(
     /declarations:\s*\[([^\]]*)\]/,
     (match, p1) => {
       const trimmed = p1.trim();
-      return trimmed ? `declarations: [${trimmed}, SeoExampleComponent]` : 'declarations: [SeoExampleComponent]';
+      return trimmed ? `declarations: [${trimmed}, SeoExampleComponent, ContentRichComponent]` : 'declarations: [SeoExampleComponent, ContentRichComponent]';
     }
    );
    content = content.replace(
     /exports:\s*\[([^\]]*)\]/,
     (match, p1) => {
       const trimmed = p1.trim();
-      return trimmed ? `exports: [${trimmed}, SeoExampleComponent]` : 'exports: [CommonModule, FormsModule, SeoExampleComponent]';
+      return trimmed ? `exports: [${trimmed}, SeoExampleComponent, ContentRichComponent]` : 'exports: [CommonModule, FormsModule, SeoExampleComponent, ContentRichComponent]';
     }
    );
   }
@@ -378,7 +616,7 @@ function updateIndexHtmlForSEO(): Rule {
   
   const metaTags = `  <meta
     name="description"
-    content="Modern Angular application built with TypeScript, featuring comprehensive SEO optimization, responsive design, and enterprise-ready architecture. Includes advanced routing, state management, and performance optimizations for scalable web development."
+    content="Comprehensive Angular application built with TypeScript and modern web technologies. Features enterprise-grade SEO optimization, responsive Material Design components, advanced routing with lazy loading, NgRx state management, internationalization support, and performance-optimized architecture. Includes automated testing, accessibility compliance, PWA capabilities, and deployment-ready configurations for scalable, maintainable web applications."
   />
   <meta name="keywords" content="angular, typescript, web application" />
   <meta name="author" content="PTG UI Schematics" />
@@ -390,7 +628,7 @@ function updateIndexHtmlForSEO(): Rule {
   <meta property="og:title" content="Angular Application" />
   <meta
     property="og:description"
-    content="Modern Angular application built with TypeScript, featuring comprehensive SEO optimization, responsive design, and enterprise-ready architecture. Includes advanced routing, state management, and performance optimizations for scalable web development."
+    content="Comprehensive Angular application built with TypeScript and modern web technologies. Features enterprise-grade SEO optimization, responsive Material Design components, advanced routing with lazy loading, NgRx state management, internationalization support, and performance-optimized architecture."
   />
 
   <!-- Twitter -->
@@ -398,7 +636,7 @@ function updateIndexHtmlForSEO(): Rule {
   <meta property="twitter:title" content="Angular Application" />
   <meta
     property="twitter:description"
-    content="Modern Angular application built with TypeScript, featuring comprehensive SEO optimization, responsive design, and enterprise-ready architecture. Includes advanced routing, state management, and performance optimizations for scalable web development."
+    content="Comprehensive Angular application built with TypeScript and modern web technologies. Features enterprise-grade SEO optimization, responsive Material Design components, advanced routing with lazy loading, NgRx state management, internationalization support, and performance-optimized architecture."
   />
 
   <!-- Canonical URL - will be updated by SEO service -->
@@ -412,7 +650,32 @@ function updateIndexHtmlForSEO(): Rule {
     "name": "Angular Application",
     "description": "Generated Angular application with SEO optimization",
     "applicationCategory": "WebApplication",
-    "operatingSystem": "Any"
+    "operatingSystem": "Any",
+    "offers": {
+      "@type": "Offer",
+      "price": "0",
+      "priceCurrency": "USD"
+    },
+    "author": {
+      "@type": "Organization",
+      "name": "PTG UI Schematics",
+      "url": "https://github.com/shehbazkhan31Yash/ptg-ui-schematics"
+    },
+    "inLanguage": "en-US",
+    "isAccessibleForFree": true
+  }
+  </script>
+  
+  <!-- Organization structured data -->
+  <script type="application/ld+json" data-seo="organization">
+  {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    "name": "PTG UI Schematics",
+    "description": "Enterprise Angular application generator with comprehensive tooling and best practices",
+    "url": "https://github.com/shehbazkhan31Yash/ptg-ui-schematics",
+    "foundingDate": "2024",
+    "knowsAbout": ["Angular", "TypeScript", "Web Development", "SEO", "Enterprise Applications"]
   }
   </script>`;
   
