@@ -26,7 +26,7 @@ export class AppComponent<% if (seo) { %> implements OnInit<% } %> {
     // Initialize SEO for the main application
     this.seoService.updatePageSEO({
       title: '<%= appName %>',
-      description: 'Generated Angular application with SEO optimization',
+      description: 'Modern Angular application built with TypeScript, featuring comprehensive SEO optimization, responsive design, and enterprise-ready architecture. Includes advanced routing, state management, and performance optimizations for scalable web development.',
       keywords: 'angular, typescript, web application',
       canonicalUrl: window.location.pathname,
       structuredData: {

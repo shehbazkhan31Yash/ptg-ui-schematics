@@ -176,11 +176,14 @@ import { SeoService } from '../../core/services/seo.service';
 @Component({
   selector: 'app-seo-example',
   template: \`
-    <div class="seo-example">
-      <h2>SEO Example Component</h2>
-      <p>This component demonstrates how to use the SEO service.</p>
-      <button (click)="updateSEO()">Update SEO Tags</button>
-    </div>
+    <article class="seo-example" itemscope itemtype="http://schema.org/Article">
+      <h2 itemprop="headline">SEO Example Component</h2>
+      <p itemprop="description">This component demonstrates how to use the SEO service for dynamic meta tag management and structured data implementation.</p>
+      <div class="author" itemscope itemtype="http://schema.org/Person">
+        <span itemprop="name">PTG UI Schematics</span>
+      </div>
+      <button (click)="updateSEO()" type="button">Update SEO Tags</button>
+    </article>
   \`,
   styles: [
     \`
@@ -343,7 +346,7 @@ function updateIndexHtmlForSEO(): Rule {
   
   const metaTags = `  <meta
     name="description"
-    content="Generated Angular application with SEO optimization"
+    content="Modern Angular application built with TypeScript, featuring comprehensive SEO optimization, responsive design, and enterprise-ready architecture. Includes advanced routing, state management, and performance optimizations for scalable web development."
   />
   <meta name="keywords" content="angular, typescript, web application" />
   <meta name="author" content="PTG UI Schematics" />
@@ -355,7 +358,7 @@ function updateIndexHtmlForSEO(): Rule {
   <meta property="og:title" content="Angular Application" />
   <meta
     property="og:description"
-    content="Generated Angular application with SEO optimization"
+    content="Modern Angular application built with TypeScript, featuring comprehensive SEO optimization, responsive design, and enterprise-ready architecture. Includes advanced routing, state management, and performance optimizations for scalable web development."
   />
 
   <!-- Twitter -->
@@ -363,7 +366,7 @@ function updateIndexHtmlForSEO(): Rule {
   <meta property="twitter:title" content="Angular Application" />
   <meta
     property="twitter:description"
-    content="Generated Angular application with SEO optimization"
+    content="Modern Angular application built with TypeScript, featuring comprehensive SEO optimization, responsive design, and enterprise-ready architecture. Includes advanced routing, state management, and performance optimizations for scalable web development."
   />
 
   <!-- Canonical URL - will be updated by SEO service -->
