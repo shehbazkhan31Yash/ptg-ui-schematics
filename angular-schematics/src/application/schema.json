@@ -217,7 +217,7 @@
           },
           {
             "value": "ssg",
-            "label": "SSG - Static Site Generation with prerendering"
+            "label": "SSG - Static Site Generation with Angular Universal prerendering"
           },
           {
             "value": "ssr",
