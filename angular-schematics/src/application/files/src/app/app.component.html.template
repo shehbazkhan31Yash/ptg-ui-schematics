@@ -1,5 +1,6 @@
 <div class="container" itemscope itemtype="http://schema.org/WebApplication">
   <header>
+    <img src="assets/images/YashLogo.jpg" alt="Application logo - <%= name %> Angular application" class="app-logo" />
     <h1 itemprop="name">Welcome to {{ title }}!</h1>
   </header>
 

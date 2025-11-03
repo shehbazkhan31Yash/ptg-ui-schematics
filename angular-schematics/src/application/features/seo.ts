@@ -14,6 +14,7 @@ export function setSEO(options: ApplicationOptions): Rule {
   updateAppModuleForSEO(),
   updateSharedModuleForSEO(),
   updateIndexHtmlForSEO(),
+  ensureAssetsInBuild(),
   createRobotsTxt(),
   createXMLSitemap(),
   seoType === 'ssg' ? addSSGSupport() : noop,
@@ -177,6 +178,7 @@ import { SeoService } from '../../core/services/seo.service';
   selector: 'app-seo-example',
   template: \`
     <article class="seo-example" itemscope itemtype="http://schema.org/Article">
+      <img src="assets/images/YashLogo.jpg" alt="SEO optimization example - Angular application logo" class="seo-image" itemprop="image" />
       <h2 itemprop="headline">SEO Example Component</h2>
       <p itemprop="description">This component demonstrates how to use the SEO service for dynamic meta tag management and structured data implementation.</p>
       <div class="author" itemscope itemtype="http://schema.org/Person">
@@ -192,6 +194,13 @@ import { SeoService } from '../../core/services/seo.service';
         border: 1px solid #ddd;
         border-radius: 8px;
         margin: 20px 0;
+      }
+
+      .seo-image {
+        width: 60px;
+        height: 60px;
+        margin-bottom: 15px;
+        display: block;
       }
 
       button {
@@ -333,6 +342,29 @@ function updateSharedModuleForSEO(): Rule {
   }
   
   tree.overwrite(sharedModulePath, content);
+  return tree;
+ };
+}
+
+function ensureAssetsInBuild(): Rule {
+ return (tree: Tree) => {
+  const angularJsonPath = 'angular.json';
+  if (!tree.exists(angularJsonPath)) return tree;
+  
+  const angularJson = JSON.parse(tree.read(angularJsonPath)!.toString());
+  const projectName = Object.keys(angularJson.projects)[0];
+  
+  if (projectName && angularJson.projects[projectName]) {
+   const buildOptions = angularJson.projects[projectName].architect.build.options;
+   if (buildOptions.assets) {
+    const assetsFolder = 'src/assets';
+    if (!buildOptions.assets.includes(assetsFolder)) {
+     buildOptions.assets.push(assetsFolder);
+    }
+   }
+  }
+  
+  tree.overwrite(angularJsonPath, JSON.stringify(angularJson, null, 2));
   return tree;
  };
 }
