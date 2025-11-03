@@ -1,0 +1,35 @@
+import { Component } from '@angular/core';
+
+@Component({
+  selector: 'app-content-rich',
+  template: `
+    <article class="content-rich" itemscope itemtype="http://schema.org/Article">
+      <header>
+        <h3 itemprop="headline">Rich Content Example</h3>
+        <time itemprop="datePublished" [attr.datetime]="publishDate">{{ publishDate | date }}</time>
+      </header>
+      <div itemprop="articleBody">
+        <p>This component demonstrates structured data and rich content for SEO optimization.</p>
+        <p>It includes proper schema.org markup for better search engine understanding.</p>
+      </div>
+    </article>
+  `,
+  styles: [`
+    .content-rich {
+      padding: 1rem;
+      background: #f9f9f9;
+      border-radius: 4px;
+      margin: 1rem 0;
+    }
+    header {
+      margin-bottom: 1rem;
+    }
+    time {
+      color: #666;
+      font-size: 0.9em;
+    }
+  `]
+})
+export class ContentRichComponent {
+  publishDate = new Date();
+}

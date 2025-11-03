@@ -1,0 +1,34 @@
+import { Injectable } from '@angular/core';
+import { Meta, Title } from '@angular/platform-browser';
+
+@Injectable({
+  providedIn: 'root',
+})
+export class SeoService {
+  constructor(
+    private meta: Meta,
+    private title: Title
+  ) {}
+
+  updateTitle(title: string): void {
+    this.title.setTitle(title);
+  }
+
+  updateDescription(description: string): void {
+    this.meta.updateTag({ name: 'description', content: description });
+  }
+
+  updateKeywords(keywords: string): void {
+    this.meta.updateTag({ name: 'keywords', content: keywords });
+  }
+
+  updatePageSEO(config: {
+    title?: string;
+    description?: string;
+    keywords?: string;
+  }): void {
+    if (config.title) this.updateTitle(config.title);
+    if (config.description) this.updateDescription(config.description);
+    if (config.keywords) this.updateKeywords(config.keywords);
+  }
+}

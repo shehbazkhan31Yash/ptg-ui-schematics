@@ -1,0 +1,32 @@
+import { Component } from '@angular/core';
+import { SeoService } from '../../../core/services/seo.service';
+
+@Component({
+  selector: 'app-seo-example',
+  template: `
+    <div class="seo-example">
+      <h3>SEO Features Demo</h3>
+      <p>This component demonstrates SEO optimization features:</p>
+      <ul>
+        <li>Dynamic meta tags</li>
+        <li>Structured data markup</li>
+        <li>Open Graph tags</li>
+        <li>Twitter Card tags</li>
+      </ul>
+    </div>
+  `,
+  styles: [`
+    .seo-example {
+      padding: 1rem;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      margin: 1rem 0;
+    }
+  `]
+})
+export class SeoExampleComponent {
+  constructor(private seoService: SeoService) {
+    this.seoService.updateTitle('SEO Example - <%= name %>');
+    this.seoService.updateDescription('Demonstration of SEO features in <%= name %> application');
+  }
+}

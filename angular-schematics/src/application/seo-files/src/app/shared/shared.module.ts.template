@@ -1,0 +1,19 @@
+import { NgModule } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { SeoExampleComponent } from './components/seo-example/seo-example.component';
+import { ContentRichComponent } from './components/content-rich/content-rich.component';
+
+@NgModule({
+  declarations: [
+    SeoExampleComponent,
+    ContentRichComponent
+  ],
+  imports: [
+    CommonModule
+  ],
+  exports: [
+    SeoExampleComponent,
+    ContentRichComponent
+  ]
+})
+export class SharedModule { }
