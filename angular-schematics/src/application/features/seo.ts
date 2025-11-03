@@ -14,6 +14,8 @@ export function setSEO(options: ApplicationOptions): Rule {
   updateAppModuleForSEO(),
   updateSharedModuleForSEO(),
   updateIndexHtmlForSEO(),
+  createRobotsTxt(),
+  createXMLSitemap(),
   seoType === 'ssg' ? addSSGSupport() : noop,
   seoType === 'ssr' ? addSSRSupport() : noop,
  ]);
@@ -385,6 +387,50 @@ function updateIndexHtmlForSEO(): Rule {
   }
   
   tree.overwrite(indexPath, content);
+  return tree;
+ };
+}
+
+function createRobotsTxt(): Rule {
+ return (tree: Tree) => {
+  const robotsContent = `User-agent: *\nAllow: /\n\nSitemap: /sitemap.xml`;
+  tree.create('src/robots.txt', robotsContent);
+  
+  const angularJsonPath = 'angular.json';
+  if (tree.exists(angularJsonPath)) {
+   const angularJson = JSON.parse(tree.read(angularJsonPath)!.toString());
+   const projectName = Object.keys(angularJson.projects)[0];
+   if (projectName && angularJson.projects[projectName]) {
+    const assets = angularJson.projects[projectName].architect.build.options.assets;
+    if (assets && !assets.includes('src/robots.txt')) {
+     assets.push('src/robots.txt');
+    }
+   }
+   tree.overwrite(angularJsonPath, JSON.stringify(angularJson, null, 2));
+  }
+  
+  return tree;
+ };
+}
+
+function createXMLSitemap(): Rule {
+ return (tree: Tree) => {
+  const sitemapContent = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n  <url>\n    <loc>/</loc>\n    <lastmod>${new Date().toISOString().split('T')[0]}</lastmod>\n    <changefreq>weekly</changefreq>\n    <priority>1.0</priority>\n  </url>\n</urlset>`;
+  tree.create('src/sitemap.xml', sitemapContent);
+  
+  const angularJsonPath = 'angular.json';
+  if (tree.exists(angularJsonPath)) {
+   const angularJson = JSON.parse(tree.read(angularJsonPath)!.toString());
+   const projectName = Object.keys(angularJson.projects)[0];
+   if (projectName && angularJson.projects[projectName]) {
+    const assets = angularJson.projects[projectName].architect.build.options.assets;
+    if (assets && !assets.includes('src/sitemap.xml')) {
+     assets.push('src/sitemap.xml');
+    }
+   }
+   tree.overwrite(angularJsonPath, JSON.stringify(angularJson, null, 2));
+  }
+  
   return tree;
  };
 }
