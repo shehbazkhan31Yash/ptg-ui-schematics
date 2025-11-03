@@ -46,6 +46,8 @@ function createSEOService(): Rule {
  return (tree: Tree) => {
   const seoServiceContent = `import { Injectable } from '@angular/core';
 import { Meta, Title } from '@angular/platform-browser';
+import { Router, NavigationEnd } from '@angular/router';
+import { filter } from 'rxjs/operators';
 
 @Injectable({
   providedIn: 'root',
@@ -53,8 +55,16 @@ import { Meta, Title } from '@angular/platform-browser';
 export class SeoService {
   constructor(
     private meta: Meta,
-    private title: Title
-  ) {}
+    private title: Title,
+    private router: Router
+  ) {
+    // Update canonical URL on route changes
+    this.router.events
+      .pipe(filter(event => event instanceof NavigationEnd))
+      .subscribe((event: NavigationEnd) => {
+        this.updateCanonicalUrl(event.url);
+      });
+  }
 
   updateTitle(title: string): void {
     this.title.setTitle(title);
@@ -87,31 +97,62 @@ export class SeoService {
   }
 
   updateCanonicalUrl(url: string): void {
+    // Ensure URL is absolute and properly formatted
+    let absoluteUrl: string;
+    if (url.startsWith('http')) {
+      absoluteUrl = url;
+    } else {
+      // Remove leading slash if present to avoid double slashes
+      const cleanUrl = url.startsWith('/') ? url : '/' + url;
+      absoluteUrl = \`\${window.location.origin}\${cleanUrl}\`;
+    }
+    
     let link: HTMLLinkElement = document.querySelector(
       "link[rel='canonical']"
     ) as HTMLLinkElement;
     if (link) {
-      link.setAttribute('href', url);
+      link.setAttribute('href', absoluteUrl);
     } else {
       link = document.createElement('link');
       link.setAttribute('rel', 'canonical');
-      link.setAttribute('href', url);
+      link.setAttribute('href', absoluteUrl);
       document.head.appendChild(link);
     }
   }
 
   generateStructuredData(data: any): void {
-    let script = document.querySelector(
-      'script[type="application/ld+json"]'
+    // Remove existing dynamic structured data
+    const existingScript = document.querySelector(
+      'script[type="application/ld+json"][data-seo="dynamic"]'
     ) as HTMLScriptElement;
-    if (script) {
-      script.innerHTML = JSON.stringify(data);
-    } else {
-      script = document.createElement('script');
-      (script as HTMLScriptElement).type = 'application/ld+json';
-      script.innerHTML = JSON.stringify(data);
-      document.head.appendChild(script);
+    if (existingScript) {
+      existingScript.remove();
     }
+    
+    // Add new structured data
+    const script = document.createElement('script');
+    script.type = 'application/ld+json';
+    script.setAttribute('data-seo', 'dynamic');
+    script.innerHTML = JSON.stringify(data);
+    document.head.appendChild(script);
+  }
+
+  updatePageSEO(config: {
+    title?: string;
+    description?: string;
+    keywords?: string;
+    canonicalUrl?: string;
+    structuredData?: any;
+    ogTags?: { [key: string]: string };
+    twitterTags?: { [key: string]: string };
+  }): void {
+    if (config.title) this.updateTitle(config.title);
+    if (config.description) this.updateDescription(config.description);
+    if (config.keywords) this.updateKeywords(config.keywords);
+    if (config.canonicalUrl) this.updateCanonicalUrl(config.canonicalUrl);
+    if (config.ogTags) this.updateOGTags(config.ogTags);
+    if (config.twitterTags) this.updateTwitterTags(config.twitterTags);
+    if (config.structuredData) this.generateStructuredData(config.structuredData);
   }
 }
 `;
@@ -167,11 +208,36 @@ export class SeoExampleComponent implements OnInit {
   constructor(private seoService: SeoService) {}
 
   ngOnInit(): void {
-    this.seoService.updateTitle('Angular SEO Example');
-    this.seoService.updateDescription(
-      'This is an example of SEO optimization in Angular'
-    );
-    this.seoService.updateKeywords('angular, seo, optimization, example');
+    // Use the new updatePageSEO method for comprehensive SEO setup
+    this.seoService.updatePageSEO({
+      title: 'Angular SEO Example',
+      description: 'This is an example of SEO optimization in Angular',
+      keywords: 'angular, seo, optimization, example',
+      canonicalUrl: window.location.pathname,
+      structuredData: {
+        '@context': 'https://schema.org',
+        '@type': 'WebPage',
+        name: 'Angular SEO Example',
+        description: 'This is an example of SEO optimization in Angular',
+        url: window.location.href,
+        isPartOf: {
+          '@type': 'WebSite',
+          name: 'Angular Application',
+          url: window.location.origin
+        }
+      },
+      ogTags: {
+        title: 'Angular SEO Example',
+        description: 'This is an example of SEO optimization in Angular',
+        type: 'website',
+        url: window.location.href
+      },
+      twitterTags: {
+        card: 'summary',
+        title: 'Angular SEO Example',
+        description: 'This is an example of SEO optimization in Angular'
+      }
+    });
   }
 
   updateSEO(): void {
@@ -298,8 +364,20 @@ function updateIndexHtmlForSEO(): Rule {
     content="Generated Angular application with SEO optimization"
   />
 
-  <!-- Canonical URL -->
-  <link rel="canonical" href="/" />`;
+  <!-- Canonical URL - will be updated by SEO service -->
+  <link rel="canonical" href="" />
+  
+  <!-- Base Schema.org structured data -->
+  <script type="application/ld+json" data-seo="base">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "Angular Application",
+    "description": "Generated Angular application with SEO optimization",
+    "applicationCategory": "WebApplication",
+    "operatingSystem": "Any"
+  }
+  </script>`;
   
   const headEndIndex = content.indexOf('</head>');
   if (headEndIndex > 0) {
