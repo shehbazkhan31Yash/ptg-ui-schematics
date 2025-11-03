@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title><%= appName %></title>
+  <base href="/">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  
+  <!-- SEO Meta Tags -->
+  <meta name="description" content="<%= appName %> - Modern Angular application with comprehensive SEO optimization, responsive design, and enterprise-grade features.">
+  <meta name="keywords" content="angular, typescript, web application, seo, responsive design">
+  <meta name="author" content="PTG UI Schematics">
+  
+  <!-- Open Graph Meta Tags -->
+  <meta property="og:title" content="<%= appName %>">
+  <meta property="og:description" content="Modern Angular application with comprehensive SEO optimization">
+  <meta property="og:image" content="/assets/images/YashLogo.jpg">
+  <meta property="og:url" content="">
+  <meta property="og:type" content="website">
+  
+  <!-- Twitter Card Meta Tags -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="<%= appName %>">
+  <meta name="twitter:description" content="Modern Angular application with comprehensive SEO optimization">
+  <meta name="twitter:image" content="/assets/images/YashLogo.jpg">
+  
+  <!-- Favicon -->
+  <link rel="icon" type="image/x-icon" href="/assets/images/YashLogo.png">
+  <link rel="apple-touch-icon" href="/assets/images/YashLogo.png">
+  
+  <!-- Structured Data -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "name": "<%= appName %>",
+    "description": "Modern Angular application with comprehensive SEO optimization",
+    "url": "",
+    "logo": "/assets/images/YashLogo.jpg",
+    "potentialAction": {
+      "@type": "SearchAction",
+      "target": "/search?q={search_term_string}",
+      "query-input": "required name=search_term_string"
+    }
+  }
+  </script>
+</head>
+<body>
+  <app-root></app-root>
+</body>
+</html>

@@ -19,7 +19,10 @@ function updateAngularJsonAssets(tree: Tree, assetPath: string): void {
 }
 
 function updateIndexHtmlForSEO(): Rule {
- return noop; // Index.html is now handled by template files
+ return (tree: Tree) => {
+  // Index.html template is included in seo-files
+  return tree;
+ };
 }
 
 

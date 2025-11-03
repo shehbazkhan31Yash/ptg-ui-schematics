@@ -2,14 +2,18 @@
   <header class="app-header vcard" itemscope itemtype="http://schema.org/WPHeader">
     <img src="assets/images/YashLogo.jpg" alt="Application logo - <%= name %> Angular application" class="app-logo" itemprop="logo" />
     <h1 class="entry-title" itemprop="name">Welcome to {{ title }}!</h1>
+    <div class="author vcard">
+      <span class="fn org">PTG UI Schematics</span>
+    </div>
+    <time class="published" datetime="{{ getCurrentDate() }}">{{ getCurrentDate() }}</time>
     <nav class="main-navigation" itemscope itemtype="http://schema.org/SiteNavigationElement">
       <span itemprop="name">Main Navigation</span>
     </nav>
   </header>
 
   <main class="main-content" itemscope itemtype="http://schema.org/WebPageElement">
-    <section class="intro" itemscope itemtype="http://schema.org/Article">
-      <p itemprop="description">Congratulations! Your Angular application is running successfully. This modern web application is built with the latest Angular framework, providing a robust foundation for scalable enterprise applications.</p>
+    <section class="intro entry-content" itemscope itemtype="http://schema.org/Article">
+      <p class="entry-summary" itemprop="description">Congratulations! Your Angular application is running successfully. This modern web application is built with the latest Angular framework, providing a robust foundation for scalable enterprise applications.</p>
       
       <p>This application demonstrates best practices in modern web development, including component-based architecture, reactive programming patterns, and comprehensive testing strategies. The codebase follows Angular style guide recommendations and implements industry-standard development workflows for enterprise-grade applications.</p>
       

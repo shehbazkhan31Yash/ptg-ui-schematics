@@ -28,7 +28,7 @@ export class AppComponent<% if (seo) { %> implements OnInit<% } %> {
       title: '<%= appName %>',
       description: 'Comprehensive Angular application built with TypeScript and modern web technologies. Features enterprise-grade SEO optimization, responsive Material Design components, advanced routing with lazy loading, NgRx state management, internationalization support, and performance-optimized architecture. Includes automated testing, accessibility compliance, PWA capabilities, and deployment-ready configurations for scalable, maintainable web applications.',
       keywords: 'angular, typescript, web application',
-      canonicalUrl: window.location.pathname,
+      canonicalUrl: window.location.href,
       structuredData: {
         '@context': 'https://schema.org',
         '@type': 'WebSite',
@@ -45,17 +45,23 @@ export class AppComponent<% if (seo) { %> implements OnInit<% } %> {
         title: '<%= appName %>',
         description: 'Generated Angular application with SEO optimization',
         type: 'website',
-        url: window.location.href
+        url: window.location.href,
+        image: window.location.origin + '/assets/images/YashLogo.jpg'
       },
       twitterTags: {
         card: 'summary_large_image',
         title: '<%= appName %>',
-        description: 'Generated Angular application with SEO optimization'
+        description: 'Generated Angular application with SEO optimization',
+        image: window.location.origin + '/assets/images/YashLogo.jpg'
       }
     });
   }
 
 <% } %>
+  getCurrentDate(): string {
+    return new Date().toISOString().split('T')[0];
+  }
+
 <% if (i18n) { %>
   switchLanguage(language: string): void {
     this.translateService.use(language);

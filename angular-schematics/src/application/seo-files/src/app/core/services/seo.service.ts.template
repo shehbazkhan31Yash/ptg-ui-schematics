@@ -1,5 +1,37 @@
-import { Injectable } from '@angular/core';
+import { Injectable, Inject } from '@angular/core';
 import { Meta, Title } from '@angular/platform-browser';
+import { DOCUMENT } from '@angular/common';
+
+interface StructuredData {
+  '@context': string;
+  '@type': string;
+  [key: string]: any;
+}
+
+interface OgTags {
+  title?: string;
+  description?: string;
+  type?: string;
+  url?: string;
+  image?: string;
+}
+
+interface TwitterTags {
+  card?: string;
+  title?: string;
+  description?: string;
+  image?: string;
+}
+
+interface SeoConfig {
+  title?: string;
+  description?: string;
+  keywords?: string;
+  canonicalUrl?: string;
+  structuredData?: StructuredData;
+  ogTags?: OgTags;
+  twitterTags?: TwitterTags;
+}
 
 @Injectable({
   providedIn: 'root',
@@ -7,7 +39,8 @@ import { Meta, Title } from '@angular/platform-browser';
 export class SeoService {
   constructor(
     private meta: Meta,
-    private title: Title
+    private title: Title,
+    @Inject(DOCUMENT) private document: Document
   ) {}
 
   updateTitle(title: string): void {
@@ -22,13 +55,59 @@ export class SeoService {
     this.meta.updateTag({ name: 'keywords', content: keywords });
   }
 
-  updatePageSEO(config: {
-    title?: string;
-    description?: string;
-    keywords?: string;
-  }): void {
+  updateCanonicalUrl(url: string): void {
+    // Remove existing canonical link
+    const existingCanonical = this.document.querySelector('link[rel="canonical"]');
+    if (existingCanonical) {
+      existingCanonical.remove();
+    }
+
+    // Add new canonical link
+    const link = this.document.createElement('link');
+    link.setAttribute('rel', 'canonical');
+    link.setAttribute('href', url);
+    this.document.head.appendChild(link);
+  }
+
+  updateStructuredData(data: StructuredData): void {
+    // Remove existing structured data
+    const existingScript = this.document.querySelector('script[type="application/ld+json"]');
+    if (existingScript) {
+      existingScript.remove();
+    }
+
+    // Add new structured data
+    const script = this.document.createElement('script');
+    script.type = 'application/ld+json';
+    script.text = JSON.stringify(data);
+    this.document.head.appendChild(script);
+  }
+
+  updateOgTags(ogTags: OgTags): void {
+    Object.keys(ogTags).forEach(key => {
+      const value = ogTags[key as keyof OgTags];
+      if (value) {
+        this.meta.updateTag({ property: `og:${key}`, content: value });
+      }
+    });
+  }
+
+  updateTwitterTags(twitterTags: TwitterTags): void {
+    Object.keys(twitterTags).forEach(key => {
+      const value = twitterTags[key as keyof TwitterTags];
+      if (value) {
+        this.meta.updateTag({ name: `twitter:${key}`, content: value });
+      }
+    });
+  }
+
+  updatePageSEO(config: SeoConfig): void {
     if (config.title) this.updateTitle(config.title);
     if (config.description) this.updateDescription(config.description);
     if (config.keywords) this.updateKeywords(config.keywords);
+    if (config.canonicalUrl) this.updateCanonicalUrl(config.canonicalUrl);
+    if (config.structuredData) this.updateStructuredData(config.structuredData);
+    if (config.ogTags) this.updateOgTags(config.ogTags);
+    if (config.twitterTags) this.updateTwitterTags(config.twitterTags);
   }
 }
