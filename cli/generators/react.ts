@@ -504,9 +504,10 @@ export default App;`,
   color: #666;
 }`,
 
-  getViteConfig: (appName: string) => `/// <reference types="vitest" />
+  getViteConfig: (appName: string, seoEnabled: boolean = false, bundler: string = 'vite') => `/// <reference types="vitest" />
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
+${seoEnabled && bundler === 'vite' ? "import ssr from 'vite-plugin-ssr/plugin';" : ''}
 
 export default defineConfig({
   root: __dirname,
@@ -526,7 +527,10 @@ export default defineConfig({
     host: 'localhost',
   },
 
-  plugins: [react()],
+  plugins: [
+    react(),
+    ${seoEnabled && bundler === 'vite' ? 'ssr({ prerender: true }), // Enable SSR/SSG for better SEO' : ''}
+  ],
 
   build: {
     outDir: '../../dist/apps/${appName}',
@@ -564,6 +568,7 @@ interface SEOProps {
   url?: string;
   type?: string;
   twitterCard?: string;
+  structuredData?: Record<string, any>;
 }
 
 export const SEO: React.FC<SEOProps> = ({
@@ -575,6 +580,7 @@ export const SEO: React.FC<SEOProps> = ({
   url = typeof window !== 'undefined' ? window.location.href : '',
   type = 'website',
   twitterCard = 'summary_large_image',
+  structuredData,
 }) => {
   const fullTitle = title === '${a.name}' ? title : \`\${title} | ${a.name}\`;
 
@@ -625,7 +631,37 @@ export const SEO: React.FC<SEOProps> = ({
     }
     canonicalLink.setAttribute('href', url);
 
-  }, [fullTitle, description, keywords, author, image, url, type, twitterCard]);
+    // Add Schema.org structured data (JSON-LD)
+    const defaultStructuredData = {
+      '@context': 'https://schema.org',
+      '@type': 'WebApplication',
+      name: '${a.name}',
+      description: description,
+      url: url,
+      image: image,
+      author: {
+        '@type': 'Organization',
+        name: author,
+      },
+      applicationCategory: 'WebApplication',
+      operatingSystem: 'Any',
+    };
+
+    const jsonLdData = structuredData || defaultStructuredData;
+
+    // Remove existing JSON-LD script if present
+    const existingScript = document.querySelector('script[type="application/ld+json"]');
+    if (existingScript) {
+      existingScript.remove();
+    }
+
+    // Add new JSON-LD script
+    const script = document.createElement('script');
+    script.type = 'application/ld+json';
+    script.text = JSON.stringify(jsonLdData);
+    document.head.appendChild(script);
+
+  }, [fullTitle, description, keywords, author, image, url, type, twitterCard, structuredData]);
 
   // This component doesn't render anything
   return null;
@@ -633,28 +669,85 @@ export const SEO: React.FC<SEOProps> = ({
 
 export default SEO;`,
 
-  getRobotsTxt: () => `# https://www.robotstxt.org/robotstxt.html
+  getRobotsTxt: (hostname: string = 'https://yourdomain.com') => `# https://www.robotstxt.org/robotstxt.html
 User-agent: *
 Disallow:
 
 # Sitemap
-Sitemap: https://yourdomain.com/sitemap.xml`,
+Sitemap: ${hostname}/sitemap.xml`,
+
+  getSitemapXml: (hostname: string = 'https://yourdomain.com') => {
+    const currentDate = new Date().toISOString().split('T')[0];
+    return `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9
+        http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd">
+  <!-- Homepage -->
+  <url>
+    <loc>${hostname}/</loc>
+    <lastmod>${currentDate}</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>1.0</priority>
+  </url>
+  <!-- About Page -->
+  <url>
+    <loc>${hostname}/about</loc>
+    <lastmod>${currentDate}</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <!-- Add more URLs here as you create new pages -->
+  <!-- 
+  <url>
+    <loc>${hostname}/contact</loc>
+    <lastmod>${currentDate}</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  -->
+</urlset>`;
+  },
 
   getSitemapConfig: (a: any) => `// Sitemap configuration
-// For production, you can use tools like:
-// - react-router-sitemap for client-side apps
-// - next-sitemap for Next.js apps
-// - Manual sitemap.xml generation
-
 export const sitemapConfig = {
   hostname: 'https://yourdomain.com',
   routes: [
-    '/',
-    '/about',
+    { path: '/', priority: 1.0, changefreq: 'daily' },
+    { path: '/about', priority: 0.8, changefreq: 'monthly' },
     // Add more routes here
   ],
   exclude: ['/admin', '/private'],
 };
+
+/**
+ * Generate sitemap.xml content
+ * @returns XML string for sitemap
+ */
+export function generateSitemap(): string {
+  const { hostname, routes } = sitemapConfig;
+  const currentDate = new Date().toISOString().split('T')[0];
+
+  const urlEntries = routes
+    .map((route) => {
+      const url = typeof route === 'string' ? route : route.path;
+      const priority = typeof route === 'object' ? route.priority || 0.5 : 0.5;
+      const changefreq = typeof route === 'object' ? route.changefreq || 'weekly' : 'weekly';
+
+      return \`  <url>
+    <loc>\${hostname}\${url}</loc>
+    <lastmod>\${currentDate}</lastmod>
+    <changefreq>\${changefreq}</changefreq>
+    <priority>\${priority}</priority>
+  </url>\`;
+    })
+    .join('\\n');
+
+  return \`<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+\${urlEntries}
+</urlset>\`;
+}
 
 export default sitemapConfig;`,
 
@@ -665,6 +758,7 @@ export interface PageMeta {
   keywords?: string;
   image?: string;
   url?: string;
+  structuredData?: Record<string, any>;
 }
 
 // Default meta tags for the application
@@ -706,17 +800,125 @@ export function getPageMeta(page: string): PageMeta {
 }
 
 /**
- * Generate structured data for SEO (JSON-LD)
+ * Generate WebApplication structured data (JSON-LD)
  */
-export function getStructuredData() {
+export function getWebApplicationStructuredData() {
   return {
     '@context': 'https://schema.org',
     '@type': 'WebApplication',
     name: '${a.name}',
     description: defaultMeta.description,
     url: defaultMeta.url,
+    image: defaultMeta.image,
     applicationCategory: 'WebApplication',
     operatingSystem: 'Any',
+    offers: {
+      '@type': 'Offer',
+      price: '0',
+      priceCurrency: 'USD',
+    },
+  };
+}
+
+/**
+ * Generate Organization structured data (JSON-LD)
+ */
+export function getOrganizationStructuredData() {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'Organization',
+    name: '${a.name}',
+    url: defaultMeta.url,
+    logo: defaultMeta.image,
+    description: defaultMeta.description,
+  };
+}
+
+/**
+ * Generate Article structured data (JSON-LD) for blog posts
+ */
+export function getArticleStructuredData(article: {
+  title: string;
+  description: string;
+  image: string;
+  datePublished: string;
+  dateModified?: string;
+  author: string;
+  url: string;
+}) {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'Article',
+    headline: article.title,
+    description: article.description,
+    image: article.image,
+    datePublished: article.datePublished,
+    dateModified: article.dateModified || article.datePublished,
+    author: {
+      '@type': 'Person',
+      name: article.author,
+    },
+    publisher: {
+      '@type': 'Organization',
+      name: '${a.name}',
+      logo: {
+        '@type': 'ImageObject',
+        url: defaultMeta.image,
+      },
+    },
+    mainEntityOfPage: {
+      '@type': 'WebPage',
+      '@id': article.url,
+    },
+  };
+}
+
+/**
+ * Generate BreadcrumbList structured data (JSON-LD)
+ */
+export function getBreadcrumbStructuredData(breadcrumbs: Array<{ name: string; url: string }>) {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: breadcrumbs.map((crumb, index) => ({
+      '@type': 'ListItem',
+      position: index + 1,
+      name: crumb.name,
+      item: crumb.url,
+    })),
+  };
+}
+
+/**
+ * Generate Product structured data (JSON-LD) for e-commerce
+ */
+export function getProductStructuredData(product: {
+  name: string;
+  description: string;
+  image: string;
+  brand: string;
+  price: number;
+  currency: string;
+  availability: 'InStock' | 'OutOfStock' | 'PreOrder';
+  url: string;
+}) {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'Product',
+    name: product.name,
+    description: product.description,
+    image: product.image,
+    brand: {
+      '@type': 'Brand',
+      name: product.brand,
+    },
+    offers: {
+      '@type': 'Offer',
+      price: product.price,
+      priceCurrency: product.currency,
+      availability: \`https://schema.org/\${product.availability}\`,
+      url: product.url,
+    },
   };
 }
 
@@ -724,7 +926,11 @@ export default {
   defaultMeta,
   pageMeta,
   getPageMeta,
-  getStructuredData,
+  getWebApplicationStructuredData,
+  getOrganizationStructuredData,
+  getArticleStructuredData,
+  getBreadcrumbStructuredData,
+  getProductStructuredData,
 };`
 };
 
@@ -878,6 +1084,7 @@ const getDependenciesByFeature = (a: any) => {
     "vite@latest",
     ...(a.style === 'scss' ? ["sass@latest"] : []),
     ...(a.style === 'styl' ? ["stylus@latest"] : []),
+    ...(a.seo && a.bundler === 'vite' ? ["vite-plugin-ssr@latest"] : []), // Add SSR/SSG plugin for SEO (Vite only)
   ];
 
   // Add linting packages
@@ -1297,7 +1504,15 @@ export function reactAppGenerator() {
       
       // Add specific note for SEO
       if (a.seo) {
-        console.log("✅ Using custom SEO hook (no external dependencies, React 19 compatible)\n");
+        if (a.bundler === 'vite') {
+          console.log("✅ SEO enabled with custom React hook + vite-plugin-ssr for SSR/SSG");
+          console.log("   - Client-side: Custom hook for dynamic meta tags");
+          console.log("   - Server-side: vite-plugin-ssr for prerendering and SSR\n");
+        } else {
+          console.log("✅ SEO enabled with custom React hook (client-side only)");
+          console.log("   - Dynamic meta tags via custom hook");
+          console.log(`   - Note: SSR/SSG requires Vite bundler (you selected ${a.bundler})\n`);
+        }
       }
       
       installPackagesWithRetry(dependencies.production, false, workspacePath, "production dependencies");
@@ -1318,8 +1533,8 @@ export function reactAppGenerator() {
       console.log(`🧭 Routing: ${a.routing ? "Yes" : "No"}`);
       console.log(`📦 State Management: ${a.stateManagement === 'redux' ? 'Redux Toolkit' : a.stateManagement === 'zustand' ? 'Zustand' : 'None'}`);
       console.log(`🌐 i18n: ${a.i18n ? "Yes" : "No"}`);
-      console.log(`� SEO: ${a.seo ? "Yes (with react-helmet-async)" : "No"}`);
-      console.log(`�🔧 Linter: ${a.linter === 'none' ? 'None' : a.linter === 'airbnb' ? 'ESLint with Airbnb' : a.linter === 'custom' ? 'ESLint with Custom Rules' : 'ESLint'}`);
+      console.log(`🔍 SEO: ${a.seo ? (a.bundler === 'vite' ? "Yes (with vite-plugin-ssr for SSR/SSG)" : "Yes (client-side only)") : "No"}`);
+      console.log(`🔧 Linter: ${a.linter === 'none' ? 'None' : a.linter === 'airbnb' ? 'ESLint with Airbnb' : a.linter === 'custom' ? 'ESLint with Custom Rules' : 'ESLint'}`);
       console.log(`✨ Prettier: ${a.prettier ? "Yes" : "No"}`);
       console.log(`🐶 Husky: ${a.husky ? "Yes" : "No"}`);
       console.log("━".repeat(50));
@@ -1336,6 +1551,15 @@ export function reactAppGenerator() {
         console.log("   - Meta tags configured in src/app/components/SEO.tsx");
         console.log("   - Customize defaults in src/app/utils/seo.ts");
         console.log("   - robots.txt available in public/robots.txt");
+        console.log("   - sitemap.xml available in public/sitemap.xml");
+        console.log("   - Schema.org structured data (JSON-LD) included");
+        if (a.bundler === 'vite') {
+          console.log("   - SSR/SSG enabled via vite-plugin-ssr (prerendering)");
+          console.log("   - Run 'npm run build' to generate static HTML with meta tags");
+        } else {
+          console.log(`   - Note: Using ${a.bundler} bundler (SSR/SSG requires Vite)`);
+          console.log("   - Meta tags updated dynamically on client-side");
+        }
         console.log("   - See SEO_INTEGRATION_GUIDE.md for detailed usage\n");
       }
     } catch (error) {
@@ -1699,7 +1923,7 @@ function createManualReactApp(workspacePath: string, a: any) {
   );
 
   // Create vite.config.ts
-  const viteConfig = TEMPLATES.getViteConfig(a.name);
+  const viteConfig = TEMPLATES.getViteConfig(a.name, a.seo, a.bundler);
 
   fs.writeFileSync(path.join(appPath, "vite.config.ts"), viteConfig);
 
@@ -1933,15 +2157,21 @@ function applyPTGCustomizations(workspacePath: string, a: any) {
       const sitemapConfigContent = TEMPLATES.getSitemapConfig(a);
       createFileWithErrorHandling(sitemapConfigPath, sitemapConfigContent, "Sitemap configuration");
       
-      // Create robots.txt in public folder
+      // Create public folder for SEO files
       const publicPath = path.join(appPath, "public");
       fs.mkdirSync(publicPath, { recursive: true });
       
+      // Create robots.txt
       const robotsTxtPath = path.join(publicPath, "robots.txt");
-      const robotsTxtContent = TEMPLATES.getRobotsTxt();
+      const robotsTxtContent = TEMPLATES.getRobotsTxt('https://yourdomain.com');
       createFileWithErrorHandling(robotsTxtPath, robotsTxtContent, "robots.txt");
       
-      console.log("✅ SEO setup completed with meta tags, Open Graph, and Twitter Cards support");
+      // Create sitemap.xml
+      const sitemapXmlPath = path.join(publicPath, "sitemap.xml");
+      const sitemapXmlContent = TEMPLATES.getSitemapXml('https://yourdomain.com');
+      createFileWithErrorHandling(sitemapXmlPath, sitemapXmlContent, "sitemap.xml");
+      
+      console.log("✅ SEO setup completed with meta tags, Open Graph, Twitter Cards, sitemap.xml, and robots.txt");
     }
 
     // Add enhanced styling
