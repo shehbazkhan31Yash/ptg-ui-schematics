@@ -1,6 +1,10 @@
 import { Injectable, Inject } from '@angular/core';
 import { Meta, Title } from '@angular/platform-browser';
 import { DOCUMENT } from '@angular/common';
+import { NavigationEnd, Router } from '@angular/router';
+import { filter } from 'rxjs/operators';
+
+declare let gtag: Function;
 
 interface StructuredData {
   '@context': string;
@@ -33,13 +37,23 @@ interface SeoConfig {
   twitterTags?: TwitterTags;
 }
 
+interface GAConfig {
+  trackingId: string;
+  anonymizeIp?: boolean;
+  customDimensions?: { [key: string]: any };
+}
+
 @Injectable({
   providedIn: 'root',
 })
 export class SeoService {
+  private gaInitialized = false;
+  private gaTrackingId = 'GA_MEASUREMENT_ID'; // Replace with your GA4 Measurement ID
+
   constructor(
     private meta: Meta,
     private title: Title,
+    private router: Router,
     @Inject(DOCUMENT) private document: Document
   ) {}
 
@@ -109,5 +123,83 @@ export class SeoService {
     if (config.structuredData) this.updateStructuredData(config.structuredData);
     if (config.ogTags) this.updateOgTags(config.ogTags);
     if (config.twitterTags) this.updateTwitterTags(config.twitterTags);
+  }
+
+  // Google Analytics Integration
+  initializeGA(config?: GAConfig): void {
+    if (this.gaInitialized) return;
+
+    const trackingId = config?.trackingId || this.gaTrackingId;
+    
+    // Load Google Analytics script
+    const gtagScript = this.document.createElement('script');
+    gtagScript.async = true;
+    gtagScript.src = `https://www.googletagmanager.com/gtag/js?id=${trackingId}`;
+    this.document.head.appendChild(gtagScript);
+
+    // Initialize gtag
+    const gtagConfig = this.document.createElement('script');
+    gtagConfig.innerHTML = `
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', '${trackingId}', {
+        page_title: document.title,
+        page_location: window.location.href,
+        ${config?.anonymizeIp ? 'anonymize_ip: true,' : ''}
+        ${config?.customDimensions ? Object.entries(config.customDimensions).map(([key, value]) => `'${key}': '${value}'`).join(',') : ''}
+      });
+    `;
+    this.document.head.appendChild(gtagConfig);
+
+    this.gaInitialized = true;
+    this.setupRouterTracking();
+  }
+
+  private setupRouterTracking(): void {
+    this.router.events
+      .pipe(filter(event => event instanceof NavigationEnd))
+      .subscribe((event: NavigationEnd) => {
+        this.trackPageView(event.urlAfterRedirects);
+      });
+  }
+
+  trackPageView(path: string, title?: string): void {
+    if (typeof gtag !== 'undefined') {
+      gtag('config', this.gaTrackingId, {
+        page_path: path,
+        page_title: title || this.document.title
+      });
+    }
+  }
+
+  trackEvent(action: string, category: string, label?: string, value?: number): void {
+    if (typeof gtag !== 'undefined') {
+      gtag('event', action, {
+        event_category: category,
+        event_label: label,
+        value: value
+      });
+    }
+  }
+
+  trackCustomEvent(eventName: string, parameters?: { [key: string]: any }): void {
+    if (typeof gtag !== 'undefined') {
+      gtag('event', eventName, parameters);
+    }
+  }
+
+  setUserId(userId: string): void {
+    if (typeof gtag !== 'undefined') {
+      gtag('config', this.gaTrackingId, {
+        user_id: userId
+      });
+    }
+  }
+
+  setUserProperties(properties: { [key: string]: any }): void {
+    if (typeof gtag !== 'undefined') {
+      gtag('set', 'user_properties', properties);
+    }
   }
 }

@@ -50,6 +50,7 @@
     <section class="seo-demo">
       <app-seo-example></app-seo-example>
       <app-content-rich></app-content-rich>
+      <app-ga-example></app-ga-example>
     </section>
     <% } %>
 

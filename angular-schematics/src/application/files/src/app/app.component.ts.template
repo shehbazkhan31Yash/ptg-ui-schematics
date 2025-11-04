@@ -23,17 +23,23 @@ export class AppComponent<% if (seo) { %> implements OnInit<% } %> {
 
 <% if (seo) { %>
   ngOnInit(): void {
+    // Initialize Google Analytics
+    this.seoService.initializeGA({
+      trackingId: 'GA_MEASUREMENT_ID', // Replace with your actual GA4 Measurement ID
+      anonymizeIp: true
+    });
+
     // Initialize SEO for the main application
     this.seoService.updatePageSEO({
       title: '<%= appName %>',
       description: 'Comprehensive Angular application built with TypeScript and modern web technologies. Features enterprise-grade SEO optimization, responsive Material Design components, advanced routing with lazy loading, NgRx state management, internationalization support, and performance-optimized architecture. Includes automated testing, accessibility compliance, PWA capabilities, and deployment-ready configurations for scalable, maintainable web applications.',
-      keywords: 'angular, typescript, web application',
+      keywords: 'angular, typescript, web application, google analytics, seo',
       canonicalUrl: window.location.href,
       structuredData: {
         '@context': 'https://schema.org',
         '@type': 'WebSite',
         name: '<%= appName %>',
-        description: 'Generated Angular application with SEO optimization',
+        description: 'Generated Angular application with SEO optimization and Google Analytics',
         url: window.location.origin,
         potentialAction: {
           '@type': 'SearchAction',
@@ -43,7 +49,7 @@ export class AppComponent<% if (seo) { %> implements OnInit<% } %> {
       },
       ogTags: {
         title: '<%= appName %>',
-        description: 'Generated Angular application with SEO optimization',
+        description: 'Generated Angular application with SEO optimization and Google Analytics',
         type: 'website',
         url: window.location.href,
         image: window.location.origin + '/assets/images/YashLogo.jpg'
@@ -51,10 +57,13 @@ export class AppComponent<% if (seo) { %> implements OnInit<% } %> {
       twitterTags: {
         card: 'summary_large_image',
         title: '<%= appName %>',
-        description: 'Generated Angular application with SEO optimization',
+        description: 'Generated Angular application with SEO optimization and Google Analytics',
         image: window.location.origin + '/assets/images/YashLogo.jpg'
       }
     });
+
+    // Track initial page view
+    this.seoService.trackPageView('/', '<%= appName %>');
   }
 
 <% } %>
