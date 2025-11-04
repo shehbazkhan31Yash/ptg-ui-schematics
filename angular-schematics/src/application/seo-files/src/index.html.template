@@ -7,21 +7,21 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   
   <!-- SEO Meta Tags -->
-  <meta name="description" content="<%= appName %> - Modern Angular application with comprehensive SEO optimization, responsive design, and enterprise-grade features.">
-  <meta name="keywords" content="angular, typescript, web application, seo, responsive design">
+  <meta name="description" content="<%= appName %> - Enterprise-grade Angular application built with TypeScript, featuring responsive design, comprehensive SEO optimization, modern UI components, state management, and robust security. Powered by PTG UI Schematics for scalable web development.">
+  <meta name="keywords" content="angular, typescript, web application, seo, responsive design, enterprise, pwa, state management, modern ui">
   <meta name="author" content="PTG UI Schematics">
   
   <!-- Open Graph Meta Tags -->
-  <meta property="og:title" content="<%= appName %>">
-  <meta property="og:description" content="Modern Angular application with comprehensive SEO optimization">
+  <meta property="og:title" content="<%= appName %> - Modern Angular Application">
+  <meta property="og:description" content="Enterprise-grade Angular application with comprehensive SEO optimization, responsive design, and modern UI components. Built with TypeScript and best practices for scalable web development.">
   <meta property="og:image" content="/assets/images/YashLogo.jpg">
   <meta property="og:url" content="">
   <meta property="og:type" content="website">
   
   <!-- Twitter Card Meta Tags -->
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="<%= appName %>">
-  <meta name="twitter:description" content="Modern Angular application with comprehensive SEO optimization">
+  <meta name="twitter:title" content="<%= appName %> - Modern Angular Application">
+  <meta name="twitter:description" content="Enterprise-grade Angular application with comprehensive SEO optimization, responsive design, and modern UI components. Built with TypeScript and best practices.">
   <meta name="twitter:image" content="/assets/images/YashLogo.jpg">
   
   <!-- Favicon -->
@@ -34,7 +34,7 @@
     "@context": "https://schema.org",
     "@type": "WebSite",
     "name": "<%= appName %>",
-    "description": "Modern Angular application with comprehensive SEO optimization",
+    "description": "Enterprise-grade Angular application with comprehensive SEO optimization, responsive design, and modern UI components. Built with TypeScript and best practices for scalable web development.",
     "url": "",
     "logo": "/assets/images/YashLogo.jpg",
     "potentialAction": {
