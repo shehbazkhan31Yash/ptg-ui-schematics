@@ -1,0 +1,35 @@
+<div class="about-container">
+  <header class="about-header">
+    <h1>About <%= appName %></h1>
+  </header>
+  
+  <main class="about-content">
+    <section class="about-info">
+      <h2>Application Information</h2>
+      <p>This is a modern Angular application generated using PTG UI Schematics. Built with the latest Angular framework and best practices for enterprise-grade development.</p>
+      
+      <div class="tech-stack">
+        <h3>Technology Stack</h3>
+        <ul>
+          <li>Angular 18+</li>
+          <li>TypeScript</li>
+          <li>SCSS</li>
+          <% if (framework !== 'none') { %>
+          <li><%= framework.charAt(0).toUpperCase() + framework.slice(1) %> UI Framework</li>
+          <% } %>
+          <% if (ngrx) { %>
+          <li>NgRx State Management</li>
+          <% } %>
+          <% if (i18n) { %>
+          <li>Internationalization (i18n)</li>
+          <% } %>
+        </ul>
+      </div>
+    </section>
+    
+    <section class="contact-info">
+      <h3>Contact</h3>
+      <p>For more information about this application, please contact the development team.</p>
+    </section>
+  </main>
+</div>

@@ -5,9 +5,10 @@
     <div class="author vcard">
       <span class="fn org">PTG UI Schematics</span>
     </div>
-    <time class="published" datetime="{{ getCurrentDate() }}">{{ getCurrentDate() }}</time>
+    <time class="published" [attr.datetime]="getCurrentDate()">{{ getCurrentDate() }}</time>
     <nav class="main-navigation" itemscope itemtype="http://schema.org/SiteNavigationElement">
       <span itemprop="name">Main Navigation</span>
+      <a routerLink="/about" class="nav-link">About</a>
     </nav>
   </header>
 

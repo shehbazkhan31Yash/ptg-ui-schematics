@@ -30,7 +30,7 @@ export function addI18nFiles(options: ApplicationOptions, appDir: string, isRoot
    }),
    move(appDir),
   ]),
-  MergeStrategy.Overwrite
+  MergeStrategy.Default
  );
 }
 
