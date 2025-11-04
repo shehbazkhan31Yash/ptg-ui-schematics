@@ -46,7 +46,7 @@ export class SeoExampleComponent {
   constructor(private seoService: SeoService) {
     this.seoService.updatePageSEO({
       title: 'SEO Example - <%= name %>',
-      description: 'Demonstration of SEO features in <%= name %> application with canonical URL and Schema.org markup',
+      description: '<%= name %> - Advanced Angular application showcasing comprehensive SEO optimization with structured data markup, canonical URLs, Open Graph tags, Twitter Cards, and Google Analytics integration for enhanced search visibility.',
       keywords: 'seo, angular, schema.org, canonical, meta tags',
       canonicalUrl: window.location.href,
       structuredData: {

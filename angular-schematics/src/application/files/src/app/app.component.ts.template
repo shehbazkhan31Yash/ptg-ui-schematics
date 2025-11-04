@@ -32,7 +32,7 @@ export class AppComponent<% if (seoType && seoType !== 'none') { %> implements O
     // Initialize SEO for the main application
     this.seoService.updatePageSEO({
       title: '<%= appName %>',
-      description: 'Comprehensive Angular application built with TypeScript and modern web technologies. Features enterprise-grade SEO optimization, responsive Material Design components, advanced routing with lazy loading, NgRx state management, internationalization support, and performance-optimized architecture. Includes automated testing, accessibility compliance, PWA capabilities, and deployment-ready configurations for scalable, maintainable web applications.',
+      description: '<%= appName %> - Modern Angular application built with TypeScript featuring responsive design, comprehensive SEO optimization, enterprise-grade security, state management, and performance optimization. Scalable architecture for professional web development.',
       keywords: 'angular, typescript, web application, google analytics, seo',
       canonicalUrl: window.location.href,
       structuredData: {
