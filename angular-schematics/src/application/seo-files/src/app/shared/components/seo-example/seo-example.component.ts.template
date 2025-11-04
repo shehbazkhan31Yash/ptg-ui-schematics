@@ -1,30 +1,61 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { SeoService } from '../../../core/services/seo.service';
 
 @Component({
   selector: 'app-seo-example',
   template: `
     <div class="seo-example">
-      <h3>SEO Features Demo</h3>
-      <img 
-        src="assets/images/YashLogo.jpg" 
-        alt="Yash Technologies logo - Enterprise software development company specializing in modern web applications"
-        title="Yash Technologies - Leading technology solutions provider"
-        loading="lazy"
-        width="200"
-        height="100"
-        itemprop="image"
-      />
-      <p>This component demonstrates SEO optimization features:</p>
-      <ul>
-        <li>✅ Dynamic meta tags</li>
-        <li>✅ Canonical URL (accessible)</li>
-        <li>✅ Schema.org structured data markup</li>
-        <li>✅ Open Graph tags</li>
-        <li>✅ Twitter Card tags</li>
-        <li>✅ Image SEO optimization (ALT, title, lazy loading, dimensions)</li>
-      </ul>
-      <p><strong>SEO Status:</strong> All major SEO requirements implemented</p>
+      <h2>SEO & Google Analytics Integration</h2>
+      
+      <div class="seo-section">
+        <h3>SEO Features</h3>
+        <img 
+          src="assets/images/YashLogo.jpg" 
+          alt="Yash Technologies logo - Enterprise software development company specializing in modern web applications"
+          title="Yash Technologies - Leading technology solutions provider"
+          loading="lazy"
+          width="200"
+          height="100"
+          itemprop="image"
+        />
+        <ul>
+          <li>✅ Dynamic meta tags</li>
+          <li>✅ Canonical URL</li>
+          <li>✅ Schema.org structured data</li>
+          <li>✅ Open Graph tags</li>
+          <li>✅ Twitter Card tags</li>
+          <li>✅ Google Analytics integration</li>
+        </ul>
+      </div>
+      
+      <div class="analytics-section">
+        <h3>Google Analytics Demo</h3>
+        <p>Test Google Analytics tracking with these interactive buttons:</p>
+        
+        <div class="button-group">
+          <button (click)="trackButtonClick()" class="btn btn-primary">
+            Track Button Click
+          </button>
+          
+          <button (click)="trackCustomEvent()" class="btn btn-secondary">
+            Track Custom Event
+          </button>
+          
+          <button (click)="updateSEO()" class="btn btn-success">
+            Update SEO Meta Tags
+          </button>
+        </div>
+        
+        <div class="info-box">
+          <h4>Available Analytics Methods:</h4>
+          <ul>
+            <li><code>trackEvent(action, category, label?, value?)</code></li>
+            <li><code>trackCustomEvent(eventName, parameters?)</code></li>
+            <li><code>trackPageView(path, title?)</code></li>
+            <li><code>setUserId(userId)</code></li>
+          </ul>
+        </div>
+      </div>
     </div>
   `,
   styles: [`
@@ -42,38 +73,73 @@ import { SeoService } from '../../../core/services/seo.service';
     }
   `]
 })
-export class SeoExampleComponent {
-  constructor(private seoService: SeoService) {
+export class SeoExampleComponent implements OnInit {
+  constructor(private seoService: SeoService) {}
+  
+  ngOnInit(): void {
+    // Initialize Google Analytics
+    this.seoService.initializeGA({
+      trackingId: 'GA_MEASUREMENT_ID', // Replace with your actual GA4 Measurement ID
+      anonymizeIp: true
+    });
+    
+    // Update SEO meta tags
     this.seoService.updatePageSEO({
-      title: 'SEO Example - <%= name %>',
-      description: '<%= name %> - Advanced Angular application showcasing comprehensive SEO optimization with structured data markup, canonical URLs, Open Graph tags, Twitter Cards, and Google Analytics integration for enhanced search visibility.',
-      keywords: 'seo, angular, schema.org, canonical, meta tags',
+      title: 'SEO & Analytics Example - <%= name %>',
+      description: '<%= name %> - Advanced Angular application showcasing comprehensive SEO optimization with Google Analytics, structured data markup, canonical URLs, Open Graph tags, and Twitter Cards for enhanced search visibility and user tracking.',
+      keywords: 'seo, google analytics, angular, schema.org, canonical, meta tags, web analytics',
       canonicalUrl: window.location.href,
       structuredData: {
         '@context': 'https://schema.org',
         '@type': 'WebPage',
-        name: 'SEO Example Page',
-        description: 'Example page demonstrating SEO implementation',
+        name: 'SEO & Analytics Example Page',
+        description: 'Example page demonstrating SEO and Google Analytics implementation',
         url: window.location.href,
         mainEntity: {
           '@type': 'Article',
-          headline: 'SEO Features Demo',
-          description: 'Complete SEO implementation with canonical URLs and structured data'
+          headline: 'SEO & Google Analytics Integration Demo',
+          description: 'Complete SEO implementation with Google Analytics tracking'
         }
       },
       ogTags: {
-        title: 'SEO Example - <%= name %>',
-        description: 'SEO features demonstration page',
+        title: 'SEO & Analytics Example - <%= name %>',
+        description: 'SEO and Google Analytics integration demonstration',
         type: 'website',
         url: window.location.href,
         image: window.location.origin + '/assets/images/YashLogo.jpg'
       },
       twitterTags: {
-        card: 'summary',
-        title: 'SEO Example - <%= name %>',
-        description: 'SEO features demonstration page',
+        card: 'summary_large_image',
+        title: 'SEO & Analytics Example - <%= name %>',
+        description: 'SEO and Google Analytics integration demonstration',
         image: window.location.origin + '/assets/images/YashLogo.jpg'
       }
     });
+  }
+  
+  trackButtonClick(): void {
+    this.seoService.trackEvent('click', 'button', 'seo-example-button', 1);
+    console.log('Button click tracked!');
+  }
+  
+  trackCustomEvent(): void {
+    this.seoService.trackCustomEvent('seo_interaction', {
+      event_category: 'engagement',
+      event_label: 'seo-example-component',
+      value: 42,
+      page_section: 'seo_demo'
+    });
+    console.log('Custom event tracked!');
+  }
+  
+  updateSEO(): void {
+    this.seoService.updatePageSEO({
+      title: 'Updated SEO Title - <%= name %>',
+      description: 'This page title and description were dynamically updated using the SEO service with Google Analytics tracking.',
+      keywords: 'updated, seo, dynamic, google analytics'
+    });
+    
+    this.seoService.trackEvent('seo_update', 'page_optimization', 'dynamic-update');
+    console.log('SEO meta tags updated and tracked!');
   }
 }

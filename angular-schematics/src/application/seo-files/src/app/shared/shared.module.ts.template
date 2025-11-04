@@ -1,22 +1,16 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { SeoExampleComponent } from './components/seo-example/seo-example.component';
-import { ContentRichComponent } from './components/content-rich/content-rich.component';
-import { GaExampleComponent } from './components/ga-example/ga-example.component';
 
 @NgModule({
   declarations: [
-    SeoExampleComponent,
-    ContentRichComponent,
-    GaExampleComponent
+    SeoExampleComponent
   ],
   imports: [
     CommonModule
   ],
   exports: [
-    SeoExampleComponent,
-    ContentRichComponent,
-    GaExampleComponent
+    SeoExampleComponent
   ]
 })
 export class SharedModule { }
