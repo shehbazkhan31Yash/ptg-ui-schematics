@@ -160,17 +160,33 @@
       "default": false,
       "x-prompt": "Would you like to configure i18n for this application?"
     },
-    "enableLinting": {
-      "type": "boolean",
-      "description": "Enable code linting for the project",
-      "default": true,
-      "x-prompt": "Would you like to enable ESLint for code quality?"
-    },
     "lintingStyle": {
       "type": "string",
       "description": "The linting style to use",
-      "enum": ["airbnb", "standard", "custom"],
-      "default": "airbnb"
+      "enum": ["none", "airbnb", "standard", "custom"],
+      "default": "none",
+      "x-prompt": {
+        "message": "Which ESLint configuration would you like to use?",
+        "type": "list",
+        "items": [
+          {
+            "value": "none",
+            "label": "None - Skip ESLint setup"
+          },
+          {
+            "value": "airbnb",
+            "label": "Airbnb - Strict and comprehensive rules"
+          },
+          {
+            "value": "standard",
+            "label": "Standard - Popular JavaScript style guide"
+          },
+          {
+            "value": "custom",
+            "label": "Custom - Basic TypeScript ESLint setup"
+          }
+        ]
+      }
     },
     "husky": {
       "type": "boolean",
@@ -178,17 +194,33 @@
       "default": false,
       "x-prompt": "Would you like to add Husky pre-commit hooks?"
     },
-    "seo": {
-      "type": "boolean",
-      "description": "Enable SEO optimization features",
-      "default": false,
-      "x-prompt": "Enable SEO features? (Meta tags, SSG/SSR options)"
-    },
     "seoType": {
       "type": "string",
       "description": "SEO implementation type",
-      "enum": ["basic", "ssg", "ssr"],
-      "default": "basic"
+      "enum": ["none", "basic", "ssg", "ssr"],
+      "default": "none",
+      "x-prompt": {
+        "message": "Which SEO implementation would you like?",
+        "type": "list",
+        "items": [
+          {
+            "value": "none",
+            "label": "None - Skip SEO setup"
+          },
+          {
+            "value": "basic",
+            "label": "Basic - Meta tags and SEO service only"
+          },
+          {
+            "value": "ssg",
+            "label": "SSG - Static Site Generation with Angular Universal prerendering"
+          },
+          {
+            "value": "ssr",
+            "label": "SSR - Server-Side Rendering with Angular Universal"
+          }
+        ]
+      }
     }
   },
   "required": ["name"]

@@ -4,9 +4,9 @@ export interface ApplicationOptions {
  ngrx?: boolean;
  i18n?: boolean;
  seo?: boolean;
- seoType?: 'basic' | 'ssg' | 'ssr';
+ seoType?: 'none' | 'basic' | 'ssg' | 'ssr';
  enableLinting?: boolean;
- lintingStyle?: string;
+ lintingStyle?: 'none' | 'airbnb' | 'standard' | 'custom';
  husky?: boolean;
  appDir?: string;
  [key: string]: any;
