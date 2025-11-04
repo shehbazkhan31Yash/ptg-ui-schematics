@@ -27,18 +27,25 @@
   <div class="features" itemscope itemtype="http://schema.org/ItemList">
     <h2 itemprop="name">Features included:</h2>
     <ul>
+      <li>✅ Angular 18+ with TypeScript</li>
       <li>✅ Angular Routing</li>
       <li>✅ SCSS Styling</li>
       <li>✅ Shared Module</li>
       <li>✅ Core Module</li>
-      <% if (i18n) { %>
-      <li>✅ Internationalization (i18n)</li>
+      <% if (framework !== 'none') { %>
+      <li>✅ <%= framework.charAt(0).toUpperCase() + framework.slice(1) %> UI Framework</li>
       <% } %>
       <% if (ngrx) { %>
       <li>✅ NgRx State Management</li>
       <% } %>
-      <% if (framework !== 'none') { %>
-      <li>✅ <%= framework %> UI Framework</li>
+      <% if (i18n) { %>
+      <li>✅ Internationalization (i18n)</li>
+      <% } %>
+      <% if (lintingStyle && lintingStyle !== 'none') { %>
+      <li>✅ ESLint (<%= lintingStyle.charAt(0).toUpperCase() + lintingStyle.slice(1) %> Configuration)</li>
+      <% } %>
+      <% if (husky) { %>
+      <li>✅ Husky Git Hooks</li>
       <% } %>
       <% if (seoType && seoType !== 'none') { %>
       <li>✅ SEO Optimization with Google Analytics (<%= seoType.toUpperCase() %>)</li>
