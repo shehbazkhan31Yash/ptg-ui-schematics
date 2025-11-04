@@ -1,8 +1,8 @@
-import { Component<% if (seo) { %>, OnInit<% } %> } from '@angular/core';
+import { Component<% if (seoType && seoType !== 'none') { %>, OnInit<% } %> } from '@angular/core';
 <% if (i18n) { %>
 import { TranslateService } from '@ngx-translate/core';
 <% } %>
-<% if (seo) { %>
+<% if (seoType && seoType !== 'none') { %>
 import { SeoService } from './core/services/seo.service';
 <% } %>
 
@@ -11,17 +11,17 @@ import { SeoService } from './core/services/seo.service';
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.scss'],
 })
-export class AppComponent<% if (seo) { %> implements OnInit<% } %> {
+export class AppComponent<% if (seoType && seoType !== 'none') { %> implements OnInit<% } %> {
   title = '<%= appName %>';
 
-  constructor(<% if (i18n && seo) { %>private translateService: TranslateService, private seoService: SeoService<% } else if (i18n) { %>private translateService: TranslateService<% } else if (seo) { %>private seoService: SeoService<% } %>) {
+  constructor(<% if (i18n && seoType && seoType !== 'none') { %>private translateService: TranslateService, private seoService: SeoService<% } else if (i18n) { %>private translateService: TranslateService<% } else if (seoType && seoType !== 'none') { %>private seoService: SeoService<% } %>) {
 <% if (i18n) { %>
     this.translateService.addLangs(['en', 'de']);
     this.translateService.setDefaultLang('en');
 <% } %>
   }
 
-<% if (seo) { %>
+<% if (seoType && seoType !== 'none') { %>
   ngOnInit(): void {
     // Initialize Google Analytics
     this.seoService.initializeGA({

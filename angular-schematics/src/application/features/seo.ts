@@ -62,7 +62,7 @@ function addSSGArchitectConfig(angularJson: any, projectName: string): void {
 }
 
 export function setSEO(options: ApplicationOptions): Rule {
- if (!options.seo) return noop;
+ if (!options.seoType || options.seoType === 'none') return noop;
 
  const seoType = options.seoType || 'basic';
  

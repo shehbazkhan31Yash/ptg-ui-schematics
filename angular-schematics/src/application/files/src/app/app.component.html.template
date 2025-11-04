@@ -40,13 +40,13 @@
       <% if (framework !== 'none') { %>
       <li>✅ <%= framework %> UI Framework</li>
       <% } %>
-      <% if (seo) { %>
-      <li>✅ SEO Optimization (<%= seoType.toUpperCase() %>)</li>
+      <% if (seoType && seoType !== 'none') { %>
+      <li>✅ SEO Optimization with Google Analytics (<%= seoType.toUpperCase() %>)</li>
       <% } %>
     </ul>
-    </section>
+  </div>
 
-    <% if (seo) { %>
+    <% if (seoType && seoType !== 'none') { %>
     <section class="seo-demo">
       <app-seo-example></app-seo-example>
       <app-content-rich></app-content-rich>
