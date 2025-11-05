@@ -1,12 +1,12 @@
-import { Component } from '@angular/core';
+<% if (i18n) { %>import { Component } from '@angular/core';
 import { TranslateService } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-locale-selector',
   template: `
     <div class="language-switcher">
-      <h3>{{ 'LANGUAGE_OPTIONS' | translate }}</h3>
-      <p>{{ 'CURRENT_LANGUAGE' | translate }}: {{ 'LANGUAGE_NAME' | translate }}</p>
+      <h3>Language Options</h3>
+      <p>Current Language: {{ getCurrentLanguage() }}</p>
       <button
         type="button"
         class="btn"
@@ -22,8 +22,8 @@ import { TranslateService } from '@ngx-translate/core';
         German
       </button>
       <div class="demo-text">
-        <p>{{ 'DEMO_TEXT' | translate }}</p>
-        <p><strong>{{ 'WELCOME_MESSAGE' | translate }}</strong></p>
+        <p>This text changes based on selected language</p>
+        <p><strong>Welcome to our application!</strong></p>
       </div>
     </div>
   `,
@@ -86,4 +86,9 @@ export class LocaleSelectorComponent {
   switchLanguage(language: string): void {
     this.translateService.use(language);
   }
+
+  getCurrentLanguage(): string {
+    return this.translateService.currentLang || 'en';
+  }
 }
+<% } %>

@@ -2,23 +2,32 @@ import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
+<% if (i18n) { %>
+import { TranslateModule } from '@ngx-translate/core';
+import { LocaleSelectorComponent } from './components/locale-selector/locale-selector.component';
+<% } %>
 <% if (seoType && seoType !== 'none') { %>
 import { SeoExampleComponent } from './components/seo-example/seo-example.component';
 <% } %>
 
 @NgModule({
-  declarations: [<% if (seoType && seoType !== 'none') { %>
+  declarations: [<% if (i18n) { %>
+    LocaleSelectorComponent<% if (seoType && seoType !== 'none') { %>,<% } %>
+<% } %><% if (seoType && seoType !== 'none') { %>
     SeoExampleComponent
 <% } %>],
   imports: [
     CommonModule, 
     FormsModule, 
-    RouterModule
+    RouterModule<% if (i18n) { %>,
+    TranslateModule<% } %>
   ],
   exports: [
     CommonModule, 
     FormsModule, 
-    RouterModule<% if (seoType && seoType !== 'none') { %>,
+    RouterModule<% if (i18n) { %>,
+    TranslateModule,
+    LocaleSelectorComponent<% } %><% if (seoType && seoType !== 'none') { %>,
     SeoExampleComponent<% } %>
   ],
 })
