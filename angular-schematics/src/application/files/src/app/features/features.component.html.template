@@ -7,10 +7,13 @@
   <main class="features-content">
     <section class="feature-usage">
       <% if (seoType && seoType !== 'none') { %>
-      <div class="usage-example setup-required">
+      <div class="usage-example">
         <h3>🔧 Google Analytics Setup</h3>
         <div class="setup-step">1. Add your Measurement ID in <code>src/environments/environment.ts</code></div>
-        <code>googleAnalyticsId: 'G-XXXXXXXXXX' // Replace with your GA4 ID</code>
+        <code>export const environment = &#123;
+  production: false,
+  googleAnalyticsId: 'G-XXXXXXXXXX' // Replace with your actual GA4 ID
+&#125;;</code>
         <div class="setup-step">2. Usage:</div>
         <code>gtag('event', 'page_view', &#123; page_title: 'Home' &#125;);</code>
       </div>
@@ -26,10 +29,10 @@
       <% } %>
       
       <% if (i18n) { %>
-      <div class="usage-example setup-required">
+      <div class="usage-example">
         <h3>🔧 i18n Setup</h3>
         <div class="setup-step">1. Extract messages:</div>
-        <code>ng extract-i18n</code>
+        <code>npm run extract-i18n</code>
         <div class="setup-step">2. Usage:</div>
         <code>&#123;&#123; 'HELLO_WORLD' | translate &#125;&#125;</code>
         <code>this.translate.get('HELLO_WORLD').subscribe()</code>
@@ -55,8 +58,8 @@
       <% if (lintingStyle && lintingStyle !== 'none') { %>
       <div class="usage-example">
         <h3>ESLint</h3>
-        <code>ng lint // Check for linting errors</code>
-        <code>ng lint --fix // Auto-fix linting issues</code>
+        <code>npm run lint // Check for linting errors</code>
+        <code>npm run lint:fix // Auto-fix linting issues</code>
       </div>
       <% } %>
       
