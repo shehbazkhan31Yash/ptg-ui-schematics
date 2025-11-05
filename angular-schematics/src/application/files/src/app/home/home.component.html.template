@@ -1,4 +1,4 @@
-<div class="container hentry" itemscope itemtype="http://schema.org/WebApplication">
+<div class="container-full hentry" itemscope itemtype="http://schema.org/WebApplication">
   <header class="app-header vcard" itemscope itemtype="http://schema.org/WPHeader">
     <h1 class="entry-title" itemprop="name">Welcome to {{ title }}!</h1>
     <div class="author vcard">

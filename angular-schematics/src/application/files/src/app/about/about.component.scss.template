@@ -1,6 +1,6 @@
 .about-container {
-  max-width: 800px;
-  margin: 0 auto;
+  width: 100%;
+  margin: 0;
   padding: 2rem;
 }
 
@@ -55,18 +55,23 @@
   }
   
   .contact-info {
-    background-color: #f8f9fa;
-    padding: 1.5rem;
-    border-radius: 8px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    padding: 2rem;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    border-left: 4px solid #007bff;
     
     h3 {
-      color: #333;
+      color: #fff;
       margin-bottom: 1rem;
+      font-weight: 600;
     }
     
     p {
       margin: 0;
       line-height: 1.6;
+      color: #f8f9fa;
+      font-size: 1.1rem;
     }
   }
 }

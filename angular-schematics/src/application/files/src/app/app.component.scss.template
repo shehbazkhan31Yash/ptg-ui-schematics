@@ -29,11 +29,13 @@ body {
   position: sticky;
   top: 0;
   z-index: 1000;
+  width: 100%;
+  margin: 0;
 }
 
 .nav-container {
-  max-width: 1200px;
-  margin: 0 auto;
+  width: 100%;
+  margin: 0;
   padding: 0 1rem;
   display: flex;
   justify-content: space-between;
