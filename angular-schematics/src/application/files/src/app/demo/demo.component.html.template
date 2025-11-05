@@ -1,0 +1,107 @@
+<div class="demo-container">
+  <header class="demo-header">
+    <h1>Live Demos</h1>
+    <p>Interactive examples of all included features</p>
+  </header>
+  
+  <main class="demo-content">
+    <% if (i18n) { %>
+    <section class="demo-section">
+      <h2>Internationalization Demo</h2>
+      <div class="demo-examples">
+        <div class="i18n-demo">
+          <p>Welcome Message in Current Language</p>
+          <p>Current Language: {{ getCurrentLanguage() }}</p>
+          <app-locale-selector></app-locale-selector>
+        </div>
+      </div>
+    </section>
+    <% } %>
+
+    <% if (seoType && seoType !== 'none') { %>
+    <section class="demo-section">
+      <h2>SEO Features Demo</h2>
+      <div class="demo-examples">
+        <app-seo-example></app-seo-example>
+        <div class="seo-info">
+          <p>This page includes:</p>
+          <ul>
+            <li>Meta tags for description and keywords</li>
+            <li>Open Graph tags for social sharing</li>
+            <li>Structured data markup</li>
+            <li>Google Analytics tracking</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+    <% } %>
+
+    <% if (framework === 'material') { %>
+    <section class="demo-section">
+      <h2>Angular Material Demo</h2>
+      <div class="demo-examples">
+        <div class="material-demo">
+          <button mat-raised-button color="primary">Primary Button</button>
+          <button mat-raised-button color="accent">Accent Button</button>
+          <button mat-stroked-button>Outlined Button</button>
+        </div>
+      </div>
+    </section>
+    <% } %>
+
+    <% if (ngrx) { %>
+    <section class="demo-section">
+      <h2>NgRx State Demo</h2>
+      <div class="demo-examples">
+        <div class="ngrx-demo">
+          <p>Counter: {{ counter }}</p>
+          <button (click)="increment()">+</button>
+          <button (click)="decrement()">-</button>
+          <button (click)="reset()">Reset</button>
+        </div>
+      </div>
+    </section>
+    <% } %>
+
+    <section class="demo-section">
+      <h2>HTTP Client Demo</h2>
+      <div class="demo-examples">
+        <div class="http-demo">
+          <button (click)="loadUsers()">Load Sample Data</button>
+          <div *ngIf="loading">Loading...</div>
+          <div *ngIf="users.length > 0">
+            <h4>Sample Users:</h4>
+            <ul>
+              <li *ngFor="let user of users">{{ user.name }} - {{ user.email }}</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="demo-section">
+      <h2>Routing Demo</h2>
+      <div class="demo-examples">
+        <div class="routing-demo">
+          <p>Navigate between pages:</p>
+          <button routerLink="/">Home</button>
+          <button routerLink="/about">About</button>
+          <button routerLink="/features">Features</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="demo-section">
+      <h2>Responsive Grid Demo</h2>
+      <div class="demo-examples">
+        <div class="grid-demo">
+          <div class="grid-item">Item 1</div>
+          <div class="grid-item">Item 2</div>
+          <div class="grid-item">Item 3</div>
+          <div class="grid-item">Item 4</div>
+        </div>
+        <p>Resize browser to see responsive behavior</p>
+      </div>
+    </section>
+  </main>
+</div>

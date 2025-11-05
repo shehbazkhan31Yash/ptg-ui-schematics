@@ -8,6 +8,7 @@
       <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" class="nav-link">Home</a>
       <a routerLink="/about" routerLinkActive="active" class="nav-link">About</a>
       <a routerLink="/features" routerLinkActive="active" class="nav-link">Features</a>
+      <a routerLink="/demo" routerLinkActive="active" class="nav-link">Demo</a>
     </div>
   </div>
 </nav>

@@ -49,15 +49,7 @@
     </ul>
   </div>
 
-  <% if (seoType && seoType !== 'none') { %>
-  <section class="seo-demo">
-    <app-seo-example></app-seo-example>
-  </section>
-  <% } %>
 
-  <% if (i18n) { %>
-  <app-locale-selector></app-locale-selector>
-  <% } %>
 
     <section class="getting-started">
       <h2>Getting Started</h2>
