@@ -1,10 +1,85 @@
-import { Component } from '@angular/core';
+import { Component<% if (seoType && seoType !== 'none') { %>, OnInit<% } %> } from '@angular/core';
+<% if (i18n) { %>
+import { TranslateService } from '@ngx-translate/core';
+<% } %>
+<% if (seoType && seoType !== 'none') { %>
+import { SeoService } from '../core/services/seo.service';
+<% } %>
 
 @Component({
   selector: 'app-home',
   templateUrl: './home.component.html',
   styleUrls: ['./home.component.scss']
 })
-export class HomeComponent {
+export class HomeComponent<% if (seoType && seoType !== 'none') { %> implements OnInit<% } %> {
+  title = '<%= name %>';
 
+  constructor(<% if (i18n && seoType && seoType !== 'none') { %>private translateService: TranslateService, private seoService: SeoService<% } else if (i18n) { %>private translateService: TranslateService<% } else if (seoType && seoType !== 'none') { %>private seoService: SeoService<% } %>) {
+<% if (i18n) { %>
+    this.translateService.addLangs(['en', 'de']);
+    this.translateService.setDefaultLang('en');
+<% } %>
+  }
+
+<% if (seoType && seoType !== 'none') { %>
+  ngOnInit(): void {
+    // Initialize Google Analytics
+    this.seoService.initializeGA({
+      trackingId: 'GA_MEASUREMENT_ID', // Replace with your actual GA4 Measurement ID
+      anonymizeIp: true
+    });
+
+    // Initialize SEO for the main application
+    this.seoService.updatePageSEO({
+      title: '<%= name %>',
+      description: 'Modern Angular application built with TypeScript featuring enterprise-grade SEO optimization, Material Design components, NgRx state management, and internationalization support for scalable web development.',
+      keywords: 'angular, typescript, web application, google analytics, seo',
+      canonicalUrl: window.location.href,
+      structuredData: {
+        '@context': 'https://schema.org',
+        '@type': 'WebSite',
+        name: '<%= name %>',
+        description: 'Generated Angular application with SEO optimization and Google Analytics',
+        url: window.location.origin,
+        potentialAction: {
+          '@type': 'SearchAction',
+          target: window.location.origin + '/search?q={search_term_string}',
+          'query-input': 'required name=search_term_string'
+        }
+      },
+      ogTags: {
+        title: '<%= name %>',
+        description: 'Modern Angular application with comprehensive SEO optimization, Google Analytics integration, and enterprise-ready features for scalable web development.',
+        type: 'website',
+        url: window.location.href,
+        image: window.location.origin + '/assets/images/YashLogo.jpg'
+      },
+      twitterTags: {
+        card: 'summary_large_image',
+        title: '<%= name %>',
+        description: 'Modern Angular application with comprehensive SEO optimization, Google Analytics integration, and enterprise-ready features for scalable web development.',
+        image: window.location.origin + '/assets/images/YashLogo.jpg'
+      }
+    });
+
+    // Track initial page view
+    this.seoService.trackPageView('/', '<%= name %>');
+  }
+
+<% } %>
+  getCurrentDate(): string {
+    const date = new Date();
+    const options: Intl.DateTimeFormatOptions = { 
+      day: 'numeric', 
+      month: 'long', 
+      year: 'numeric' 
+    };
+    return date.toLocaleDateString('en-US', options);
+  }
+
+<% if (i18n) { %>
+  switchLanguage(language: string): void {
+    this.translateService.use(language);
+  }
+<% } %>
 }

@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+<% if (seoType && seoType !== 'none') { %>import { Component, OnInit } from '@angular/core';
 import { SeoService } from '../../../core/services/seo.service';
 
 @Component({
@@ -56,25 +56,17 @@ import { SeoService } from '../../../core/services/seo.service';
       border-radius: 4px;
       margin: 1rem 0;
     }
-    .seo-example img {
-      display: block;
-      margin: 1rem 0;
-      border-radius: 4px;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    }
   `]
 })
 export class SeoExampleComponent implements OnInit {
   constructor(private seoService: SeoService) {}
   
   ngOnInit(): void {
-    // Initialize Google Analytics
     this.seoService.initializeGA({
-      trackingId: 'GA_MEASUREMENT_ID', // Replace with your actual GA4 Measurement ID
+      trackingId: 'GA_MEASUREMENT_ID',
       anonymizeIp: true
     });
     
-    // Update SEO meta tags
     this.seoService.updatePageSEO({
       title: 'SEO & Analytics Example - <%= name %>',
       description: '<%= name %> - Angular application demonstrating SEO optimization with Google Analytics integration, structured data markup, and social media tags for enhanced search visibility.',
@@ -134,3 +126,4 @@ export class SeoExampleComponent implements OnInit {
     console.log('SEO meta tags updated and tracked!');
   }
 }
+<% } %>

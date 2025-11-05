@@ -1,16 +1,31 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { RouterModule } from '@angular/router';
 import { SeoExampleComponent } from './components/seo-example/seo-example.component';
+<% if (i18n) { %>
+import { TranslateModule } from '@ngx-translate/core';
+import { LocaleSelectorComponent } from './components/locale-selector/locale-selector.component';
+<% } %>
 
 @NgModule({
   declarations: [
-    SeoExampleComponent
+    SeoExampleComponent<% if (i18n) { %>,
+    LocaleSelectorComponent<% } %>
   ],
   imports: [
-    CommonModule
+    CommonModule,
+    FormsModule,
+    RouterModule<% if (i18n) { %>,
+    TranslateModule<% } %>
   ],
   exports: [
-    SeoExampleComponent
+    SeoExampleComponent,
+    CommonModule,
+    FormsModule,
+    RouterModule<% if (i18n) { %>,
+    TranslateModule,
+    LocaleSelectorComponent<% } %>
   ]
 })
 export class SharedModule { }

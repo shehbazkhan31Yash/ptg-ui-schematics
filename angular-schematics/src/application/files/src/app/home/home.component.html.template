@@ -1,4 +1,78 @@
-<div class="home-container">
-  <h1>Home</h1>
-  <p>home works!</p>
+<div class="container hentry" itemscope itemtype="http://schema.org/WebApplication">
+  <header class="app-header vcard" itemscope itemtype="http://schema.org/WPHeader">
+    <h1 class="entry-title" itemprop="name">Welcome to {{ title }}!</h1>
+    <div class="author vcard">
+      <span class="fn org">PTG UI Schematics</span>
+    </div>
+    <time class="published" [attr.datetime]="getCurrentDate()">{{ getCurrentDate() }}</time>
+  </header>
+
+  <main class="main-content" itemscope itemtype="http://schema.org/WebPageElement">
+    <section class="intro entry-content" itemscope itemtype="http://schema.org/Article">
+      <p class="entry-summary" itemprop="description">Congratulations! Your Angular application is running successfully. This modern web application is built with the latest Angular framework, providing a robust foundation for scalable enterprise applications.</p>
+      
+      <p>This application demonstrates best practices in modern web development, including component-based architecture, reactive programming patterns, and comprehensive testing strategies. The codebase follows Angular style guide recommendations and implements industry-standard development workflows for enterprise-grade applications.</p>
+      
+      <p>Built with performance and maintainability in mind, this application includes optimized build processes, lazy loading capabilities, and progressive web app features to ensure excellent user experience across all devices and network conditions. The architecture supports scalable development with modular design patterns, dependency injection, and reactive state management.</p>
+      
+      <p>Advanced features include comprehensive SEO optimization with structured data markup, internationalization support for global applications, accessibility compliance following WCAG guidelines, and robust error handling mechanisms. The application leverages modern TypeScript features for type safety and developer productivity.</p>
+      
+      <p>Performance optimizations encompass tree-shaking for smaller bundle sizes, OnPush change detection strategies, virtual scrolling for large datasets, and service worker implementation for offline capabilities. The build system includes automated testing, code quality checks, and continuous integration workflows.</p>
+    </section>
+
+  <div class="features" itemscope itemtype="http://schema.org/ItemList">
+    <h2 itemprop="name">Features included:</h2>
+    <ul>
+      <li>✅ Angular 18+ with TypeScript</li>
+      <li>✅ Angular Routing</li>
+      <li>✅ SCSS Styling</li>
+      <li>✅ Shared Module</li>
+      <li>✅ Core Module</li>
+      <% if (framework !== 'none') { %>
+      <li>✅ <%= framework.charAt(0).toUpperCase() + framework.slice(1) %> UI Framework</li>
+      <% } %>
+      <% if (ngrx) { %>
+      <li>✅ NgRx State Management</li>
+      <% } %>
+      <% if (i18n) { %>
+      <li>✅ Internationalization (i18n)</li>
+      <% } %>
+      <% if (lintingStyle && lintingStyle !== 'none') { %>
+      <li>✅ ESLint (<%= lintingStyle.charAt(0).toUpperCase() + lintingStyle.slice(1) %> Configuration)</li>
+      <% } %>
+      <% if (husky) { %>
+      <li>✅ Husky Git Hooks</li>
+      <% } %>
+      <% if (seoType && seoType !== 'none') { %>
+      <li>✅ SEO Optimization with Google Analytics (<%= seoType.toUpperCase() %>)</li>
+      <% } %>
+    </ul>
+  </div>
+
+  <% if (seoType && seoType !== 'none') { %>
+  <section class="seo-demo">
+    <app-seo-example></app-seo-example>
+  </section>
+  <% } %>
+
+  <% if (i18n) { %>
+  <app-locale-selector></app-locale-selector>
+  <% } %>
+
+    <section class="getting-started" itemscope itemtype="http://schema.org/HowTo">
+      <h2 itemprop="name">Getting Started</h2>
+      <p itemprop="description">Ready to start building your application! This foundation provides everything you need to develop modern, scalable web applications with confidence.</p>
+      
+      <div class="development-info" itemscope itemtype="http://schema.org/TechArticle">
+        <h3 itemprop="headline">Development Guidelines</h3>
+        <p>Follow Angular best practices for component development, service architecture, and state management. Utilize the provided folder structure and coding conventions to maintain consistency across your development team. Implement reactive programming patterns using RxJS observables for efficient data flow and asynchronous operations.</p>
+        
+        <p>The application includes comprehensive tooling for development, testing, and deployment. Take advantage of the integrated linting, formatting, and testing utilities to maintain high code quality throughout the development lifecycle. Automated code analysis ensures adherence to coding standards and identifies potential issues early in the development process.</p>
+        
+        <p>Security considerations include proper input validation, XSS protection, CSRF prevention, and secure authentication mechanisms. The application follows OWASP security guidelines and implements content security policies for enhanced protection against common web vulnerabilities.</p>
+        
+        <p>Deployment strategies support multiple environments with environment-specific configurations, automated build pipelines, and containerization options. The application can be deployed to various platforms including cloud services, traditional servers, and content delivery networks for optimal performance and availability.</p>
+      </div>
+    </section>
+  </main>
 </div>
