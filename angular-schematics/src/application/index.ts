@@ -16,7 +16,7 @@ import {
 
 import { getWorkspace } from "@schematics/angular/utility/workspace";
 import { join, normalize } from "path";
-import { addImportToAppModule } from "../utils/utils";
+import { addImportToAppModule, ensureAssetsInBuild } from "../utils/utils";
 
 // Types
 import { ApplicationOptions } from "./types";
@@ -78,6 +78,9 @@ export function application(options: ApplicationOptions): Rule {
     ]),
     MergeStrategy.Overwrite
    ),
+   
+   // Ensure assets are always included
+   ensureAssetsInBuild(),
    
    // Configure optional features
    originalOptions.i18n ? addI18n() : noop,
