@@ -55,7 +55,7 @@ function updateStyles(options: ApplicationOptions): Rule {
     content = `@import "@angular/material/prebuilt-themes/indigo-pink.css";\n\nbody {\n  height: 100%;\n  margin: 0;\n  font-family: Roboto, "Helvetica Neue", sans-serif;\n}\n\n${content}`;
     break;
    case "bootstrap":
-    content = `@import "~bootstrap/dist/css/bootstrap.css";\n\n${content}`;
+    content = `@import "bootstrap/dist/css/bootstrap.css";\n\n${content}`;
     break;
    case "tailwind":
     content = `@import 'tailwindcss/base';\n@import 'tailwindcss/components';\n@import 'tailwindcss/utilities';\n\n${content}`;
