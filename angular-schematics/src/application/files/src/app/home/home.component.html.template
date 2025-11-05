@@ -59,20 +59,9 @@
   <app-locale-selector></app-locale-selector>
   <% } %>
 
-    <section class="getting-started" itemscope itemtype="http://schema.org/HowTo">
-      <h2 itemprop="name">Getting Started</h2>
-      <p itemprop="description">Ready to start building your application! This foundation provides everything you need to develop modern, scalable web applications with confidence.</p>
-      
-      <div class="development-info" itemscope itemtype="http://schema.org/TechArticle">
-        <h3 itemprop="headline">Development Guidelines</h3>
-        <p>Follow Angular best practices for component development, service architecture, and state management. Utilize the provided folder structure and coding conventions to maintain consistency across your development team. Implement reactive programming patterns using RxJS observables for efficient data flow and asynchronous operations.</p>
-        
-        <p>The application includes comprehensive tooling for development, testing, and deployment. Take advantage of the integrated linting, formatting, and testing utilities to maintain high code quality throughout the development lifecycle. Automated code analysis ensures adherence to coding standards and identifies potential issues early in the development process.</p>
-        
-        <p>Security considerations include proper input validation, XSS protection, CSRF prevention, and secure authentication mechanisms. The application follows OWASP security guidelines and implements content security policies for enhanced protection against common web vulnerabilities.</p>
-        
-        <p>Deployment strategies support multiple environments with environment-specific configurations, automated build pipelines, and containerization options. The application can be deployed to various platforms including cloud services, traditional servers, and content delivery networks for optimal performance and availability.</p>
-      </div>
+    <section class="getting-started">
+      <h2>Getting Started</h2>
+      <p>Ready to start building your application! Visit the <a routerLink="/features">Features page</a> to learn how to setup and use all included features.</p>
     </section>
   </main>
 </div>

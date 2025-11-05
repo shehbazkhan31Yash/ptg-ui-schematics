@@ -7,3 +7,27 @@
   margin: 0;
   padding: 2rem;
 }
+
+.getting-started {
+  margin: 2rem 0;
+  text-align: center;
+  
+  h2 {
+    color: #333;
+    margin-bottom: 1rem;
+  }
+  
+  p {
+    font-size: 1.1rem;
+    
+    a {
+      color: #007bff;
+      text-decoration: none;
+      font-weight: 600;
+      
+      &:hover {
+        text-decoration: underline;
+      }
+    }
+  }
+}
