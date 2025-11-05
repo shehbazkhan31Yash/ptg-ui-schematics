@@ -9,11 +9,7 @@
     <section class="demo-section">
       <h2>Internationalization Demo</h2>
       <div class="demo-examples">
-        <div class="i18n-demo">
-          <p>Welcome Message in Current Language</p>
-          <p>Current Language: {{ getCurrentLanguage() }}</p>
-          <app-locale-selector></app-locale-selector>
-        </div>
+        <app-language-example></app-language-example>
       </div>
     </section>
     <% } %>

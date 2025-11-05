@@ -4,7 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 <% if (i18n) { %>
 import { TranslateModule } from '@ngx-translate/core';
-import { LocaleSelectorComponent } from './components/locale-selector/locale-selector.component';
+import { LanguageExampleComponent } from './components/language-example/language-example.component';
 <% } %>
 <% if (seoType && seoType !== 'none') { %>
 import { SeoExampleComponent } from './components/seo-example/seo-example.component';
@@ -12,7 +12,7 @@ import { SeoExampleComponent } from './components/seo-example/seo-example.compon
 
 @NgModule({
   declarations: [<% if (i18n) { %>
-    LocaleSelectorComponent<% if (seoType && seoType !== 'none') { %>,<% } %>
+    LanguageExampleComponent<% if (seoType && seoType !== 'none') { %>,<% } %>
 <% } %><% if (seoType && seoType !== 'none') { %>
     SeoExampleComponent
 <% } %>],
@@ -27,7 +27,7 @@ import { SeoExampleComponent } from './components/seo-example/seo-example.compon
     FormsModule, 
     RouterModule<% if (i18n) { %>,
     TranslateModule,
-    LocaleSelectorComponent<% } %><% if (seoType && seoType !== 'none') { %>,
+    LanguageExampleComponent<% } %><% if (seoType && seoType !== 'none') { %>,
     SeoExampleComponent<% } %>
   ],
 })

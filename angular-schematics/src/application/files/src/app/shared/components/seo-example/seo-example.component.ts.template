@@ -3,60 +3,8 @@ import { SeoService } from '../../../core/services/seo.service';
 
 @Component({
   selector: 'app-seo-example',
-  template: `
-    <div class="seo-example">
-      <h2>SEO & Google Analytics Integration</h2>
-      
-      <div class="seo-section">
-        <h3>SEO Features</h3>
-        <ul>
-          <li>✅ Dynamic meta tags</li>
-          <li>✅ Canonical URL</li>
-          <li>✅ Schema.org structured data</li>
-          <li>✅ Open Graph tags</li>
-          <li>✅ Twitter Card tags</li>
-          <li>✅ Google Analytics integration</li>
-        </ul>
-      </div>
-      
-      <div class="analytics-section">
-        <h3>Google Analytics Demo</h3>
-        <p>Test Google Analytics tracking with these interactive buttons:</p>
-        
-        <div class="button-group">
-          <button (click)="trackButtonClick()" class="btn btn-primary">
-            Track Button Click
-          </button>
-          
-          <button (click)="trackCustomEvent()" class="btn btn-secondary">
-            Track Custom Event
-          </button>
-          
-          <button (click)="updateSEO()" class="btn btn-success">
-            Update SEO Meta Tags
-          </button>
-        </div>
-        
-        <div class="info-box">
-          <h4>Available Analytics Methods:</h4>
-          <ul>
-            <li><code>trackEvent(action, category, label?, value?)</code></li>
-            <li><code>trackCustomEvent(eventName, parameters?)</code></li>
-            <li><code>trackPageView(path, title?)</code></li>
-            <li><code>setUserId(userId)</code></li>
-          </ul>
-        </div>
-      </div>
-    </div>
-  `,
-  styles: [`
-    .seo-example {
-      padding: 1rem;
-      border: 1px solid #ddd;
-      border-radius: 4px;
-      margin: 1rem 0;
-    }
-  `]
+  templateUrl: './seo-example.component.html',
+  styleUrls: ['./seo-example.component.scss']
 })
 export class SeoExampleComponent implements OnInit {
   constructor(private seoService: SeoService) {}
