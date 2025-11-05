@@ -1,6 +1,7 @@
 export const reactRouterDomVersion = "^6.28.0";
 export const reactReduxVersion = "^7.2.6";
 export const reduxVersion = "^4.1.2";
+export const zustandVersion = "^4.4.7";
 export const i18nextVersion = "^21.6.3";
 export const i18nextBrowserLanguagedetectorVersion = "^6.1.2";
 export const reactI18nextVersion = "^11.15.1";
