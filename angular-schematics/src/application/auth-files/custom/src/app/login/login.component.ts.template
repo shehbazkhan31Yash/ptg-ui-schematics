@@ -60,7 +60,7 @@ import { AuthService } from '../core/services/auth.service';
             <img [src]="user.image" [alt]="user.firstName" class="avatar">
           </div>
           <p>Welcome, {{ user.firstName }} {{ user.lastName }}!</p>
-          <p class="user-details">@{{ user.username }} • {{ user.email }}</p>
+          <p class="user-details">{{ '@' + user.username }} • {{ user.email }}</p>
           <button class="btn btn-secondary" (click)="logout()">Sign Out</button>
         </div>
       </div>

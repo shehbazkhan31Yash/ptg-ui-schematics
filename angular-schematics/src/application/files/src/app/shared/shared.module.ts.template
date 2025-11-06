@@ -1,15 +1,15 @@
-import { NgModule } from '@angular/core';
+import { NgModule, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 <% if (i18n) { %>import { TranslateModule } from '@ngx-translate/core';<% } %>
-import { LanguageExampleComponent } from './components/language-example/language-example.component';
-import { SeoExampleComponent } from './components/seo-example/seo-example.component';
+<% if (i18n) { %>import { LanguageExampleComponent } from './components/language-example/language-example.component';<% } %>
+<% if (seoType && seoType !== 'none') { %>import { SeoExampleComponent } from './components/seo-example/seo-example.component';<% } %>
 
 @NgModule({
   declarations: [
-    LanguageExampleComponent,
-    SeoExampleComponent
+    <% if (i18n) { %>LanguageExampleComponent<% if (seoType && seoType !== 'none') { %>,<% } %><% } %>
+    <% if (seoType && seoType !== 'none') { %>SeoExampleComponent<% } %>
   ],
   imports: [
     CommonModule, 
@@ -21,10 +21,11 @@ import { SeoExampleComponent } from './components/seo-example/seo-example.compon
     CommonModule, 
     FormsModule, 
     RouterModule<% if (i18n) { %>,
-    TranslateModule<% } %>,
-    LanguageExampleComponent,
-    SeoExampleComponent
+    TranslateModule<% } %><% if (i18n) { %>,
+    LanguageExampleComponent<% } %><% if (seoType && seoType !== 'none') { %>,
+    SeoExampleComponent<% } %>
   ],
+  schemas: [CUSTOM_ELEMENTS_SCHEMA]
 })
 /**
  * Shares common components, directives, and pipes that
