@@ -1,0 +1,79 @@
+<div class="features-container">
+  <header class="features-header">
+    <h1>Features & Setup Guide</h1>
+    <p>Learn how to setup and use all the features included in your application</p>
+  </header>
+  
+  <main class="features-content">
+    <section class="feature-usage">
+      <% if (seoType && seoType !== 'none') { %>
+      <div class="usage-example">
+        <h3>🔧 Google Analytics Setup</h3>
+        <div class="setup-step">1. Add your Measurement ID in <code>src/environments/environment.ts</code></div>
+        <code>export const environment = &#123;
+  production: false,
+  googleAnalyticsId: 'G-XXXXXXXXXX' // Replace with your actual GA4 ID
+&#125;;</code>
+        <div class="setup-step">2. Usage:</div>
+        <code>gtag('event', 'page_view', &#123; page_title: 'Home' &#125;);</code>
+      </div>
+      <% } %>
+      
+      <% if (husky) { %>
+      <div class="usage-example setup-required">
+        <h3>🔧 Husky Git Hooks Setup</h3>
+        <div class="setup-step">1. Enable Husky:</div>
+        <code>npm run prepare</code>
+        <div class="setup-step">2. Hooks are now active for pre-commit and pre-push</div>
+      </div>
+      <% } %>
+      
+      <% if (i18n) { %>
+      <div class="usage-example">
+        <h3>🔧 i18n Setup</h3>
+        <div class="setup-step">1. Extract messages:</div>
+        <code>npm run extract-i18n</code>
+        <div class="setup-step">2. Usage:</div>
+        <code>&#123;&#123; 'HELLO_WORLD' | translate &#125;&#125;</code>
+        <code>this.translate.get('HELLO_WORLD').subscribe()</code>
+      </div>
+      <% } %>
+      
+      <% if (ngrx) { %>
+      <div class="usage-example">
+        <h3>NgRx State Management</h3>
+        <code>this.store.dispatch(loadItems()); // Dispatch action</code>
+        <code>items$ = this.store.select(selectItems); // Select state</code>
+      </div>
+      <% } %>
+      
+      <% if (framework === 'material') { %>
+      <div class="usage-example">
+        <h3>Angular Material</h3>
+        <code>&lt;mat-button color="primary"&gt;Click me&lt;/mat-button&gt;</code>
+        <code>&lt;mat-form-field&gt;&lt;input matInput&gt;&lt;/mat-form-field&gt;</code>
+      </div>
+      <% } %>
+      
+      <% if (lintingStyle && lintingStyle !== 'none') { %>
+      <div class="usage-example">
+        <h3>ESLint</h3>
+        <code>npm run lint // Check for linting errors</code>
+        <code>npm run lint:fix // Auto-fix linting issues</code>
+      </div>
+      <% } %>
+      
+      <div class="usage-example">
+        <h3>Routing</h3>
+        <code>this.router.navigate(['/about']);</code>
+        <code>&lt;a routerLink="/about"&gt;About&lt;/a&gt;</code>
+      </div>
+      
+      <div class="usage-example">
+        <h3>HTTP Client</h3>
+        <code>this.http.get&lt;User[]&gt;('/api/users').subscribe();</code>
+        <code>this.http.post('/api/users', userData).subscribe();</code>
+      </div>
+    </section>
+  </main>
+</div>

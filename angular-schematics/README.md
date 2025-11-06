@@ -1,6 +1,6 @@
 # PTG UI Angular Schematics
 
-A comprehensive schematic collection for generating modern Angular applications with PTG UI's enterprise-ready configurations and best practices. This tool is part of the PTG UI Schematics suite, providing a robust way to scaffold Angular applications with various features and configurations.
+A comprehensive schematic collection for generating modern Angular applications with enterprise-ready configurations and best practices. This package provides Angular-specific schematics for the PTG UI CLI tool.
 
 ## 🚀 Quick Start
 
@@ -8,221 +8,249 @@ A comprehensive schematic collection for generating modern Angular applications 
 
 1. **Install the PTG UI CLI globally:**
 ```bash
-npm install -g @ptg-ui/schematics-cli
+npm install -g @ptg-ui/cli
 ```
 
-2. **Generate a new application:**
+2. **Generate a new Angular application:**
 ```bash
 ptg-ui-cli
 ```
 
-3. **Follow the CLI prompts:**
+3. **Select Angular and configure your application:**
 ```bash
 ? Select Application Type › 
-  React    Generate a new React application
 ❯ Angular  Generate a new Angular application
+  React    Generate a new React application  
   Vue      Generate a new Vue application
 ```
-
-4. **Select 'Angular' and continue with the configuration prompts**
 
 ## ⚙️ Features
 
 ### Core Features
-- Modern Angular 16+ setup with TypeScript
-- Nx workspace architecture for scalability
-- NgRx integration for state management
-- Standalone components support
-- Multiple authentication options
-- Comprehensive testing setup
+- **Modern Angular 18+** with TypeScript
+- **Standalone Components** support
+- **Routing** with lazy loading
+- **Shared & Core Modules** architecture
+- **Demo Pages** with interactive examples
+- **Responsive Design** with mobile-first approach
 
-### Build & Development Tools
-- **Build Configuration**:
-  - Development and production builds
-  - Advanced optimization options
-  - Source maps configuration
-  - Asset management
+### Framework Options
+- **Angular Material** - Material Design components
+- **Bootstrap** - Popular CSS framework
+- **Tailwind CSS** - Utility-first CSS framework
+- **None** - Custom styling
 
-- **Testing Infrastructure**:
-  - Unit Testing with Jasmine
-  - E2E Testing with Cypress/Protractor
-  - Code coverage reporting
-  - Component testing utilities
-
-- **Code Quality**:
-  - ESLint configuration
-  - Prettier formatting
-  - TypeScript strict mode
-  - Angular coding standards
+### Styling Options
+- **SCSS/Sass** - Enhanced CSS with variables and mixins
+- **CSS** - Standard CSS
+- **Less** - Dynamic stylesheet language
+- **Stylus** - Expressive CSS preprocessor
 
 ### Optional Features
-- NgRx for state management
-- Internationalization (i18n)
-- PWA support
-- Authentication integrations
-- Dynamic form generation
+- **NgRx** - State management with Redux pattern
+- **Internationalization (i18n)** - Multi-language support
+- **SEO Optimization** - Meta tags, structured data, analytics
+- **ESLint** - Code quality and consistency
+- **Husky** - Git hooks for code quality
+
+### Authentication Options
+- **MSAL** - Microsoft Authentication Library
+- **Okta** - Enterprise identity platform
+- **Custom** - Custom authentication implementation
 
 ## 🔧 Configuration Options
-
-After selecting "Angular" as your application type, you'll be prompted to configure:
-
-1. **Project Structure**
-   - Workspace name
-   - Application name
-   - Standalone vs NgModule-based
-   - Directory structure preferences
-
-2. **Features**
-   - Routing configuration
-   - State management (NgRx)
-   - Internationalization (i18n)
-   - PWA features
-
-3. **Authentication**
-   - Custom implementation
-   - MSAL (Microsoft Authentication)
-   - Okta
-   - Auth0
-
-4. **Styling**
-   - CSS
-   - SCSS
-   - Less
-   - Tailwind CSS
 
 ### Example Configuration Flow
 ```bash
 $ ptg-ui-cli
 
 ? Select Application Type › 
-  React    Generate a new React application
 ❯ Angular  Generate a new Angular application
+  React    Generate a new React application  
   Vue      Generate a new Vue application
 
 ? Workspace name (e.g., org name) › my-company
 ? What name would you like to use for the application? › dashboard
 ? Would you like to use standalone components? › Yes
 ? Would you like to add NgRx for state management? › Yes
-? Which Authentication you would like to add to this Application? › MSAL
+? Which Authentication you would like to add? › MSAL
 ? Which stylesheet format would you like to use? › SCSS
-? Would you like to add i18n support? › Yes
-? Would you like to add PWA support? › Yes
-? Would you like to use ESLint for linting? › Yes
-? Would you like to use Prettier for code formatting? › Yes
+? Which framework would you like to use? › Bootstrap
+? Enable SEO features? › Yes
+? Which SEO implementation would you like? › SSG - Static Site Generation
+? Which ESLint configuration would you like to use? › Standard
+? Would you like to add Husky for Git hooks? › Yes
+? Would you like to add internationalization (i18n) support? › Yes
 ```
 
-## 🔐 Authentication Setup
+## 📱 Generated Application Structure
 
-### MSAL Integration
-1. Select 'msal' when prompted for authentication
-2. Configure in `auth.config.ts`:
-   ```typescript
-   export const msalConfig = {
-     auth: {
-       clientId: '{your-client-id}',
-       authority: 'https://login.microsoftonline.com/{your-tenant-id}',
-       redirectUri: 'http://localhost:4200'
-     }
-   };
-   ```
+```
+my-workspace/
+├── src/
+│   ├── app/
+│   │   ├── core/                 # Core services and guards
+│   │   ├── shared/               # Shared components and modules
+│   │   │   └── components/
+│   │   │       ├── seo-example/  # SEO demonstration
+│   │   │       └── language-example/ # i18n demonstration
+│   │   ├── home/                 # Home page component
+│   │   ├── about/                # About page component
+│   │   ├── features/             # Features documentation
+│   │   ├── demo/                 # Interactive demo page
+│   │   ├── app-routing.module.ts # Application routing
+│   │   ├── app.component.*       # Root component
+│   │   └── app.module.ts         # Root module
+│   ├── assets/
+│   │   ├── images/               # Application images
+│   │   └── i18n/                 # Translation files (if i18n enabled)
+│   ├── environments/             # Environment configurations
+│   ├── styles.scss               # Global styles
+│   └── main.ts                   # Application bootstrap
+├── angular.json                  # Angular CLI configuration
+├── package.json                  # Dependencies and scripts
+└── tsconfig.json                 # TypeScript configuration
+```
 
-### Okta Integration
-1. Select 'okta' when prompted for authentication
-2. Configure in `okta.config.ts`:
-   ```typescript
-   export const oktaConfig = {
-     issuer: 'https://{yourOktaDomain}/oauth2/default',
-     clientId: '{clientId}',
-     redirectUri: window.location.origin + '/callback'
-   };
-   ```
+## 🎯 Demo Pages
 
-## 🛠️ Development
+Generated applications include interactive demo pages:
 
-### Local Development Setup
-1. **Install global dependencies:**
-   ```bash
-   npm install -g @angular/cli
-   npm install -g @angular-devkit/schematics-cli
-   npm install -g typescript
-   ```
+- **Home** (`/`) - Welcome page with feature overview
+- **About** (`/about`) - Application information and tech stack
+- **Features** (`/features`) - Setup guides and usage examples
+- **Demo** (`/demo`) - Interactive demonstrations of all features
 
-2. **Clone and setup the repository:**
-   ```bash
-   npm install
-   npm run build
-   npm link   # Run in a separate terminal
-   ```
+### Demo Features Include:
+- **Language Switching** - i18n demonstration (if enabled)
+- **SEO & Analytics** - Meta tags and Google Analytics (if enabled)
+- **Framework Components** - Material/Bootstrap examples
+- **State Management** - NgRx examples (if enabled)
+- **HTTP Client** - API interaction examples
+- **Routing** - Navigation demonstrations
 
-### Testing the Schematics
+## 🔧 Setup Instructions
+
+### Google Analytics (if SEO enabled)
+1. Add your Measurement ID in `src/environments/environment.ts`:
+```typescript
+export const environment = {
+  production: false,
+  googleAnalyticsId: 'G-XXXXXXXXXX' // Replace with your GA4 ID
+};
+```
+
+### Husky Git Hooks (if enabled)
+1. Enable Husky after installation:
 ```bash
-# Run unit tests
-npm test
-
-# Test schematic generation
-schematics @ptg/angular:application
-
-# Debug mode
-schematics @ptg/angular:application --debug=true
+npm run prepare
 ```
+
+### Internationalization (if enabled)
+1. Extract translation messages:
+```bash
+npm run extract-i18n
+```
+
+## 🛠️ Development Commands
 
 ### Running Generated Applications
 ```bash
 # Start development server
+ng serve
+# or
 npm start
 
 # Build for production
+ng build
+# or
 npm run build
 
-# Run tests
+# Run unit tests
+ng test
+# or
 npm test
 
-# Run e2e tests
-npm run e2e
+# Run linting (if ESLint enabled)
+npm run lint
+npm run lint:fix
 ```
 
-## 📦 Publishing
-
-1. **Update version in package.json**
-
-2. **Build the project:**
+### SEO Build Commands (if enabled)
 ```bash
+# Static Site Generation
+npm run build:ssg
+npm run serve:ssg
+
+# Server-Side Rendering
+npm run build:ssr
+npm run serve:ssr
+```
+
+### Local Schematic Development
+```bash
+# Install dependencies
+npm install
+
+# Build schematics
 npm run build
+
+# Link for local testing
+npm link
+
+# Test schematic generation
+schematics @ptg-ui/angular-schematics:application --name=test-app
 ```
 
-3. **Publish to NPM:**
-```bash
-npm publish --access public
-```
+## 🔍 Key Features Explained
 
-## 🔄 Workspace Structure
+### Framework Integration
+- **Bootstrap**: Responsive grid system, utility classes, component library
+- **Material**: Google's Material Design components and theming
+- **Tailwind**: Utility-first CSS with responsive design utilities
 
-Generated applications follow this structure:
-```
-my-workspace/
-├── apps/
-│   └── my-app/
-│       ├── src/
-│       │   ├── app/
-│       │   │   ├── app.component.ts
-│       │   │   ├── app.module.ts
-│       │   │   └── components/
-│       │   ├── assets/
-│       │   └── main.ts
-│       ├── project.json
-│       └── tsconfig.json
-├── libs/
-├── nx.json
-└── package.json
-```
+### SEO Optimization
+- **Meta Tags**: Dynamic title, description, keywords management
+- **Structured Data**: JSON-LD schema markup for rich snippets
+- **Social Media**: Open Graph and Twitter Card integration
+- **Analytics**: Google Analytics 4 integration with event tracking
 
+### State Management (NgRx)
+- **Actions**: Type-safe action creators
+- **Reducers**: Pure functions for state updates
+- **Selectors**: Memoized state selection
+- **Effects**: Side effect management
+
+### Internationalization
+- **Translation Files**: JSON-based translation management
+- **Language Switching**: Runtime language switching
+- **Locale Support**: Date, number, and currency formatting
+- **Extraction Tools**: Automated translation key extraction
+
+## 📚 Documentation
+
+For complete documentation, visit the [PTG UI Schematics Documentation](../documentations/)
+
+- [SEO Complete Guide](../documentations/SEO_COMPLETE_GUIDE.md)
+- [ESLint Fixes](../documentations/ESLINT_FIXES.md)
+- [Husky Integration](../documentations/HUSKY_INTEGRATION.md)
+- [Google Analytics Integration](../documentations/GOOGLE_ANALYTICS_INTEGRATION.md)
+
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Test with local development setup
+5. Submit a pull request
 
 ## 📝 License
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+MIT License - see LICENSE file for details.
 
- 
+## 🔗 Related Packages
 
-
-
-
+- [@ptg-ui/cli](../cli/) - Main CLI tool
+- [@ptg-ui/react-schematics](../react-schematics/) - React schematics
+- [PTG UI Schematics](../) - Complete documentation

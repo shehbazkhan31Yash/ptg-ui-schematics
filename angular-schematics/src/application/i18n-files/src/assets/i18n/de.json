@@ -1,4 +1,9 @@
 {
   "Title": "Übersetzung demo",
-  "WelcomeMessage": "Willkommen zur multilanguage Demo App"
+  "WelcomeMessage": "Willkommen zur multilanguage Demo App",
+  "LANGUAGE_OPTIONS": "Sprachoptionen",
+  "CURRENT_LANGUAGE": "Aktuelle Sprache",
+  "LANGUAGE_NAME": "Deutsch",
+  "DEMO_TEXT": "Dieser Text ändert sich beim Wechseln der Sprache, um die i18n-Funktionalität zu demonstrieren.",
+  "WELCOME_MESSAGE": "Willkommen! Diese Anwendung unterstützt mehrere Sprachen."
 }

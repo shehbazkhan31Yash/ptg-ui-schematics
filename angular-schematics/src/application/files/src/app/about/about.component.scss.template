@@ -1,0 +1,78 @@
+.about-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+  width: 100%;
+}
+
+.about-header {
+  text-align: center;
+  margin-bottom: 2rem;
+  
+  h1 {
+    color: #333;
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+  }
+}
+
+.about-content {
+  .about-info {
+    margin-bottom: 2rem;
+    
+    h2 {
+      color: #444;
+      margin-bottom: 1rem;
+    }
+    
+    p {
+      line-height: 1.6;
+      margin-bottom: 1rem;
+    }
+  }
+  
+  .tech-stack {
+    margin-top: 1.5rem;
+    
+    h3 {
+      color: #555;
+      margin-bottom: 0.5rem;
+    }
+    
+    ul {
+      list-style-type: none;
+      padding: 0;
+      
+      li {
+        padding: 0.25rem 0;
+        
+        &:before {
+          content: "✓ ";
+          color: #28a745;
+          font-weight: bold;
+        }
+      }
+    }
+  }
+  
+  .contact-info {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    padding: 2rem;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    border-left: 4px solid #007bff;
+    
+    h3 {
+      color: #fff;
+      margin-bottom: 1rem;
+      font-weight: 600;
+    }
+    
+    p {
+      margin: 0;
+      line-height: 1.6;
+      color: #f8f9fa;
+      font-size: 1.1rem;
+    }
+  }
+}

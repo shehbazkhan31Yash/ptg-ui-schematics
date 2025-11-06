@@ -1,0 +1,72 @@
+<% if (seoType && seoType !== 'none') { %><div class="seo-example">
+  <div class="features-list">
+    <p><strong>Included Features:</strong></p>
+    <ul>
+      <li>✅ Dynamic meta tags</li>
+      <li>✅ Canonical URL</li>
+      <li>✅ Schema.org structured data</li>
+      <li>✅ Open Graph tags</li>
+      <li>✅ Twitter Card tags</li>
+      <li>✅ Google Analytics integration</li>
+    </ul>
+  </div>
+  
+  <div class="demo-section">
+    <p>Test Google Analytics tracking with these interactive buttons:</p>
+    
+    <% if (framework === 'bootstrap') { %>
+    <div class="d-flex flex-wrap gap-2 mb-3">
+      <button (click)="trackButtonClick()" class="btn btn-primary me-2">
+        Track Button Click
+      </button>
+      
+      <button (click)="trackCustomEvent()" class="btn btn-secondary me-2">
+        Track Custom Event
+      </button>
+      
+      <button (click)="updateSEO()" class="btn btn-success">
+        Update SEO Meta Tags
+      </button>
+    </div>
+    <% } else if (framework === 'material') { %>
+    <div class="button-group">
+      <button mat-raised-button color="primary" (click)="trackButtonClick()">
+        Track Button Click
+      </button>
+      
+      <button mat-raised-button color="accent" (click)="trackCustomEvent()">
+        Track Custom Event
+      </button>
+      
+      <button mat-raised-button color="warn" (click)="updateSEO()">
+        Update SEO Meta Tags
+      </button>
+    </div>
+    <% } else { %>
+    <div class="button-group">
+      <button (click)="trackButtonClick()" class="btn btn-primary">
+        Track Button Click
+      </button>
+      
+      <button (click)="trackCustomEvent()" class="btn btn-secondary">
+        Track Custom Event
+      </button>
+      
+      <button (click)="updateSEO()" class="btn btn-success">
+        Update SEO Meta Tags
+      </button>
+    </div>
+    <% } %>
+    
+    <div class="methods-info">
+      <p><strong>Available Methods:</strong></p>
+      <ul>
+        <li><code>trackEvent(action, category, label?, value?)</code></li>
+        <li><code>trackCustomEvent(eventName, parameters?)</code></li>
+        <li><code>trackPageView(path, title?)</code></li>
+        <li><code>setUserId(userId)</code></li>
+      </ul>
+    </div>
+  </div>
+</div>
+<% } %>

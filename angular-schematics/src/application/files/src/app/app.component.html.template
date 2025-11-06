@@ -1,37 +1,15 @@
-<div class="container">
-  <h1>Welcome to {{ title }}!</h1>
-
-  <p>Congratulations! Your Angular application is running successfully.</p>
-
-  <div class="features">
-    <h2>Features included:</h2>
-    <ul>
-      <li>✅ Angular Routing</li>
-      <li>✅ SCSS Styling</li>
-      <li>✅ Shared Module</li>
-      <li>✅ Core Module</li>
-      <% if (i18n) { %>
-      <li>✅ Internationalization (i18n)</li>
-      <% } %>
-      <% if (ngrx) { %>
-      <li>✅ NgRx State Management</li>
-      <% } %>
-      <% if (framework !== 'none') { %>
-      <li>✅ <%= framework %> UI Framework</li>
-      <% } %>
-    </ul>
+<nav class="main-navigation">
+  <div class="nav-container">
+    <div class="nav-brand">
+      <img src="assets/images/YashLogo.jpg" alt="Logo" class="nav-logo">
+      <span class="brand-text">PTG UI - Angular Schematics</span>
+    </div>
+    <div class="nav-links">
+      <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" class="nav-link">Home</a>
+      <a routerLink="/about" routerLinkActive="active" class="nav-link">About</a>
+      <a routerLink="/features" routerLinkActive="active" class="nav-link">Features</a>
+      <a routerLink="/demo" routerLinkActive="active" class="nav-link">Demo</a>
+    </div>
   </div>
-
-  <% if (i18n) { %>
-  <div class="language-switcher">
-    <h3>Language Options:</h3>
-    <button class="btn" (click)="switchLanguage('en')">English</button>
-    <button class="btn" (click)="switchLanguage('de')">German</button>
-  </div>
-  <% } %>
-
-  <div class="actions">
-    <p>Ready to start building your application!</p>
-    <router-outlet></router-outlet>
-  </div>
-</div>
+</nav>
+<router-outlet></router-outlet>

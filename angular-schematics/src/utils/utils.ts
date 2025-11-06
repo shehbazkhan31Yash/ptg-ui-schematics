@@ -137,3 +137,26 @@ export function insertStatement(path: string, statement: string): Rule {
     return tree;
   };
 }
+
+export function ensureAssetsInBuild(): Rule {
+  return (tree: Tree) => {
+    const angularJsonPath = 'angular.json';
+    if (!tree.exists(angularJsonPath)) return tree;
+    
+    const angularJson = JSON.parse(tree.read(angularJsonPath)!.toString());
+    const projectName = Object.keys(angularJson.projects)[0];
+    
+    if (projectName && angularJson.projects[projectName]) {
+      const buildOptions = angularJson.projects[projectName].architect.build.options;
+      if (buildOptions.assets) {
+        const assetsFolder = 'src/assets';
+        if (!buildOptions.assets.includes(assetsFolder)) {
+          buildOptions.assets.push(assetsFolder);
+        }
+      }
+    }
+    
+    tree.overwrite(angularJsonPath, JSON.stringify(angularJson, null, 2));
+    return tree;
+  };
+}
