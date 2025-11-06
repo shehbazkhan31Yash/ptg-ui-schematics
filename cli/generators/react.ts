@@ -3020,7 +3020,8 @@ function applyPTGCustomizations(workspacePath: string, a: any) {
       fs.mkdirSync(assetsPath, { recursive: true });
       
       // Copy YashLogo from angular-schematics assets
-      const sourceLogoPath = path.join(__dirname, "..", "..", "angular-schematics", "src", "application", "files", "src", "assets", "images", "YashLogo.jpg");
+      // When compiled: __dirname is cli/dist/generators, need to go up 3 levels to root
+      const sourceLogoPath = path.join(__dirname, "..", "..", "..", "angular-schematics", "src", "application", "files", "src", "assets", "images", "YashLogo.jpg");
       const destLogoPath = path.join(assetsPath, "YashLogo.jpg");
       
       try {
@@ -3029,6 +3030,7 @@ function applyPTGCustomizations(workspacePath: string, a: any) {
           console.log("✅ Logo copied to assets/images/YashLogo.jpg");
         } else {
           console.warn("⚠️  Warning: YashLogo.jpg not found at source location");
+          console.warn(`   Searched at: ${sourceLogoPath}`);
         }
       } catch (error) {
         console.warn("⚠️  Warning: Could not copy logo:", error.message);
@@ -3068,7 +3070,8 @@ function applyPTGCustomizations(workspacePath: string, a: any) {
       fs.mkdirSync(assetsPath, { recursive: true });
       
       // Copy YashLogo from angular-schematics assets
-      const sourceLogoPath = path.join(__dirname, "..", "..", "angular-schematics", "src", "application", "files", "src", "assets", "images", "YashLogo.jpg");
+      // When compiled: __dirname is cli/dist/generators, need to go up 3 levels to root
+      const sourceLogoPath = path.join(__dirname, "..", "..", "..", "angular-schematics", "src", "application", "files", "src", "assets", "images", "YashLogo.jpg");
       const destLogoPath = path.join(assetsPath, "YashLogo.jpg");
       
       try {
@@ -3077,6 +3080,7 @@ function applyPTGCustomizations(workspacePath: string, a: any) {
           console.log("✅ Logo copied to public/assets/images/YashLogo.jpg");
         } else {
           console.warn("⚠️  Warning: YashLogo.jpg not found at source location");
+          console.warn(`   Searched at: ${sourceLogoPath}`);
         }
       } catch (error) {
         console.warn("⚠️  Warning: Could not copy logo:", error.message);
