@@ -2,6 +2,9 @@ import { Component } from '@angular/core';
 <% if (i18n) { %>
 import { TranslateService } from '@ngx-translate/core';
 <% } %>
+<% if (authentication && authentication !== 'none') { %>
+import { AuthService } from '../core/services/auth.service';
+<% } %>
 
 interface User {
   id: number;
@@ -23,7 +26,10 @@ export class DemoComponent {
 
   constructor(
     <% if (i18n) { %>
-    private translate: TranslateService
+    private translate: TranslateService<% if (authentication && authentication !== 'none') { %>,<% } %>
+    <% } %>
+    <% if (authentication && authentication !== 'none') { %>
+    private authService: AuthService
     <% } %>
   ) {}
 
@@ -44,6 +50,24 @@ export class DemoComponent {
   <% if (i18n) { %>
   getCurrentLanguage(): string {
     return this.translate.currentLang || 'en';
+  }
+  <% } %>
+
+  <% if (authentication === 'msal') { %>
+  testMSALAuth() {
+    if (this.authService.isLoggedIn()) {
+      alert('Already logged in with MSAL!');
+    } else {
+      this.authService.login();
+    }
+  }
+  <% } else if (authentication === 'okta') { %>
+  async testOktaAuth() {
+    if (await this.authService.isLoggedIn()) {
+      alert('Already logged in with Okta!');
+    } else {
+      await this.authService.login();
+    }
   }
   <% } %>
 

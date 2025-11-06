@@ -30,6 +30,67 @@
     </section>
 <% } %>
 
+<% if (authentication && authentication !== 'none') { %>    <section class="demo-section">
+      <h2>🔐 Authentication Demo</h2>
+      <div class="demo-examples">
+        <div class="auth-demo">
+          <% if (authentication === 'msal') { %>
+          <h4>Microsoft Authentication (MSAL)</h4>
+          <p>Click the button below to test Microsoft authentication:</p>
+          <button (click)="testMSALAuth()" class="auth-btn msal-btn">
+            Sign in with Microsoft
+          </button>
+          <div class="auth-info">
+            <p><strong>Features:</strong></p>
+            <ul>
+              <li>Azure AD integration</li>
+              <li>Popup-based authentication</li>
+              <li>Microsoft Graph API access</li>
+              <li>Automatic token refresh</li>
+            </ul>
+          </div>
+          <% } else if (authentication === 'okta') { %>
+          <h4>Okta Authentication</h4>
+          <p>Click the button below to test Okta authentication:</p>
+          <button (click)="testOktaAuth()" class="auth-btn okta-btn">
+            Sign in with Okta
+          </button>
+          <div class="auth-info">
+            <p><strong>Features:</strong></p>
+            <ul>
+              <li>Enterprise SSO</li>
+              <li>OIDC/OAuth2 support</li>
+              <li>Multi-factor authentication</li>
+              <li>PKCE security</li>
+            </ul>
+          </div>
+          <% } else if (authentication === 'custom') { %>
+          <h4>Custom Authentication (DummyJSON Demo)</h4>
+          <p>Try the working demo with real API:</p>
+          <div class="demo-credentials">
+            <p><strong>Demo Credentials:</strong></p>
+            <code>Username: kminchelle</code>
+            <code>Password: 0lelplR</code>
+          </div>
+          <button routerLink="/login" class="auth-btn custom-btn">
+            Go to Login Page
+          </button>
+          <div class="auth-info">
+            <p><strong>Features:</strong></p>
+            <ul>
+              <li>JWT token authentication</li>
+              <li>Custom login forms</li>
+              <li>Route guards</li>
+              <li>HTTP interceptors</li>
+              <li>Working with DummyJSON API</li>
+            </ul>
+          </div>
+          <% } %>
+        </div>
+      </div>
+    </section>
+<% } %>
+
     <% if (framework === 'material') { %>
     <section class="demo-section">
       <h2>Angular Material Demo</h2>
