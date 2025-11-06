@@ -7,9 +7,9 @@ import { RouterModule } from '@angular/router';
 <% if (seoType && seoType !== 'none') { %>import { SeoExampleComponent } from './components/seo-example/seo-example.component';<% } %>
 
 @NgModule({
-  declarations: [
-    <% if (i18n) { %>LanguageExampleComponent<% if (seoType && seoType !== 'none') { %>,<% } %><% } %>
-    <% if (seoType && seoType !== 'none') { %>SeoExampleComponent<% } %>
+  declarations: [<% if (i18n) { %>
+    LanguageExampleComponent<% } %><% if (seoType && seoType !== 'none') { %><% if (i18n) { %>,<% } %>
+    SeoExampleComponent<% } %>
   ],
   imports: [
     CommonModule, 
@@ -21,7 +21,7 @@ import { RouterModule } from '@angular/router';
     CommonModule, 
     FormsModule, 
     RouterModule<% if (i18n) { %>,
-    TranslateModule<% } %><% if (i18n) { %>,
+    TranslateModule,
     LanguageExampleComponent<% } %><% if (seoType && seoType !== 'none') { %>,
     SeoExampleComponent<% } %>
   ],

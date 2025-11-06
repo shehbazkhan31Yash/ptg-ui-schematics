@@ -1,20 +1,40 @@
-import { NgModule } from '@angular/core';
+import { NgModule, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 import { HTTP_INTERCEPTORS, HttpClientModule } from '@angular/common/http';
+<% if (i18n) { %>
+import { TranslateModule, TranslateLoader } from '@ngx-translate/core';
+import { TranslateHttpLoader } from '@ngx-translate/http-loader';
+import { HttpClient } from '@angular/common/http';
+<% } %>
 
 import { MsalModule, MsalRedirectComponent, MsalGuard, MsalInterceptor } from '@azure/msal-angular';
 import { InteractionType, PublicClientApplication } from '@azure/msal-browser';
 
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
+import { AboutComponent } from './about/about.component';
+import { HomeComponent } from './home/home.component';
+import { FeaturesComponent } from './features/features.component';
+import { DemoComponent } from './demo/demo.component';
 import { LoginComponent } from './login/login.component';
 import { CoreModule } from './core/core.module';
 import { SharedModule } from './shared/shared.module';
 import { msalConfig } from './core/services/auth.config';
 
+<% if (i18n) { %>
+// AoT requires an exported function for factories
+export function HttpLoaderFactory(http: HttpClient) {
+  return new TranslateHttpLoader(http, './assets/i18n/', '.json');
+}
+<% } %>
+
 @NgModule({
   declarations: [
     AppComponent,
+    AboutComponent,
+    HomeComponent,
+    FeaturesComponent,
+    DemoComponent,
     LoginComponent
   ],
   imports: [
@@ -22,7 +42,14 @@ import { msalConfig } from './core/services/auth.config';
     AppRoutingModule,
     HttpClientModule,
     CoreModule,
-    SharedModule,
+    SharedModule<% if (i18n) { %>,
+    TranslateModule.forRoot({
+      loader: {
+        provide: TranslateLoader,
+        useFactory: HttpLoaderFactory,
+        deps: [HttpClient]
+      }
+    })<% } %>,
     MsalModule.forRoot(new PublicClientApplication(msalConfig), {
       interactionType: InteractionType.Popup,
       authRequest: {
@@ -43,6 +70,7 @@ import { msalConfig } from './core/services/auth.config';
     },
     MsalGuard
   ],
-  bootstrap: [AppComponent, MsalRedirectComponent]
+  bootstrap: [AppComponent, MsalRedirectComponent],
+  schemas: [CUSTOM_ELEMENTS_SCHEMA]
 })
 export class AppModule { }
