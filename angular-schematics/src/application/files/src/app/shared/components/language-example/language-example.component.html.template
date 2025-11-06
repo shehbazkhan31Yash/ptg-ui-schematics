@@ -1,6 +1,7 @@
-<% if (i18n) { %><div class="language-switcher">
-  <h3>{{ 'LANGUAGE_OPTIONS' | translate }}</h3>
-  <% if (framework === 'bootstrap') { %>
+<div class="language-switcher">
+<% if (i18n) { %>  <h3>{{ 'LANGUAGE_OPTIONS' | translate }}</h3>
+<% } else { %>  <h3>Language Options</h3>
+<% } %>  <% if (framework === 'bootstrap') { %>
   <div class="btn-group mb-3" role="group">
     <button
       type="button"
@@ -57,8 +58,9 @@
   </div>
   <% } %>
   <div class="demo-text">
-    <p>{{ 'DEMO_TEXT' | translate }}</p>
+<% if (i18n) { %>    <p>{{ 'DEMO_TEXT' | translate }}</p>
     <p><strong>{{ 'WELCOME_MESSAGE' | translate }}</strong></p>
-  </div>
+<% } else { %>    <p>This is a demo text (i18n not enabled)</p>
+    <p><strong>Welcome to the application!</strong></p>
+<% } %>  </div>
 </div>
-<% } %>

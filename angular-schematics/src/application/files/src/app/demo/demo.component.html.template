@@ -5,17 +5,15 @@
   </header>
   
   <main class="demo-content">
-    <% if (i18n) { %>
-    <section class="demo-section">
+<% if (i18n) { %>    <section class="demo-section">
       <h2>Internationalization Demo</h2>
       <div class="demo-examples">
         <app-language-example></app-language-example>
       </div>
     </section>
-    <% } %>
+<% } %>
 
-    <% if (seoType && seoType !== 'none') { %>
-    <section class="demo-section">
+<% if (seoType && seoType !== 'none') { %>    <section class="demo-section">
       <h2>SEO Features Demo</h2>
       <div class="demo-examples">
         <app-seo-example></app-seo-example>
@@ -30,7 +28,7 @@
         </div>
       </div>
     </section>
-    <% } %>
+<% } %>
 
     <% if (framework === 'material') { %>
     <section class="demo-section">

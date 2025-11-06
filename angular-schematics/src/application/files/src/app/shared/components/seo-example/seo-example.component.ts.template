@@ -1,5 +1,5 @@
-<% if (seoType && seoType !== 'none') { %>import { Component, OnInit } from '@angular/core';
-import { SeoService } from '../../../core/services/seo.service';
+import { Component, OnInit } from '@angular/core';
+<% if (seoType && seoType !== 'none') { %>import { SeoService } from '../../../core/services/seo.service';<% } %>
 
 @Component({
   selector: 'app-seo-example',
@@ -7,7 +7,7 @@ import { SeoService } from '../../../core/services/seo.service';
   styleUrls: ['./seo-example.component.scss']
 })
 export class SeoExampleComponent implements OnInit {
-  constructor(private seoService: SeoService) {}
+<% if (seoType && seoType !== 'none') { %>  constructor(private seoService: SeoService) {}
   
   ngOnInit(): void {
     this.seoService.initializeGA({
@@ -73,5 +73,21 @@ export class SeoExampleComponent implements OnInit {
     this.seoService.trackEvent('seo_update', 'page_optimization', 'dynamic-update');
     console.log('SEO meta tags updated and tracked!');
   }
-}
-<% } %>
+<% } else { %>  constructor() {}
+  
+  ngOnInit(): void {
+    console.log('SEO features not enabled');
+  }
+  
+  trackButtonClick(): void {
+    console.log('SEO tracking not available - SEO features not enabled');
+  }
+  
+  trackCustomEvent(): void {
+    console.log('SEO tracking not available - SEO features not enabled');
+  }
+  
+  updateSEO(): void {
+    console.log('SEO features not available - SEO features not enabled');
+  }
+<% } %>}

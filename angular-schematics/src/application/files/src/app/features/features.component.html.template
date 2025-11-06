@@ -34,7 +34,7 @@
         <div class="setup-step">1. Extract messages:</div>
         <code>npm run extract-i18n</code>
         <div class="setup-step">2. Usage:</div>
-        <code>&#123;&#123; 'HELLO_WORLD' | translate &#125;&#125;</code>
+<% if (i18n) { %><code>&#123;&#123; 'HELLO_WORLD' | translate &#125;&#125;</code><% } else { %><code>Hello World</code><% } %>
         <code>this.translate.get('HELLO_WORLD').subscribe()</code>
       </div>
       <% } %>
