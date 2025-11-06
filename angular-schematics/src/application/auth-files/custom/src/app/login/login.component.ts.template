@@ -10,16 +10,23 @@ import { AuthService } from '../core/services/auth.service';
       <div class="login-card">
         <h2>Sign In</h2>
         <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" *ngIf="!(authService.currentUser$ | async)">
+          <div class="demo-info">
+            <p><strong>Demo Credentials:</strong></p>
+            <p>Username: <code>kminchelle</code></p>
+            <p>Password: <code>0lelplR</code></p>
+          </div>
+          
           <div class="form-group">
-            <label for="email">Email:</label>
+            <label for="username">Username:</label>
             <input 
-              type="email" 
-              id="email" 
-              formControlName="email" 
+              type="text" 
+              id="username" 
+              formControlName="username" 
               class="form-control"
-              [class.is-invalid]="loginForm.get('email')?.invalid && loginForm.get('email')?.touched">
-            <div class="invalid-feedback" *ngIf="loginForm.get('email')?.invalid && loginForm.get('email')?.touched">
-              Please enter a valid email address.
+              placeholder="Enter username"
+              [class.is-invalid]="loginForm.get('username')?.invalid && loginForm.get('username')?.touched">
+            <div class="invalid-feedback" *ngIf="loginForm.get('username')?.invalid && loginForm.get('username')?.touched">
+              Username is required.
             </div>
           </div>
           
@@ -49,7 +56,11 @@ import { AuthService } from '../core/services/auth.service';
         </form>
         
         <div *ngIf="authService.currentUser$ | async as user" class="user-info">
-          <p>Welcome, {{ user.name }}!</p>
+          <div class="user-avatar">
+            <img [src]="user.image" [alt]="user.firstName" class="avatar">
+          </div>
+          <p>Welcome, {{ user.firstName }} {{ user.lastName }}!</p>
+          <p class="user-details">@{{ user.username }} • {{ user.email }}</p>
           <button class="btn btn-secondary" (click)="logout()">Sign Out</button>
         </div>
       </div>
@@ -117,6 +128,33 @@ import { AuthService } from '../core/services/auth.service';
       background-color: #f8f9fa;
       border-radius: 4px;
     }
+    .demo-info {
+      background-color: #e7f3ff;
+      padding: 1rem;
+      border-radius: 4px;
+      margin-bottom: 1rem;
+      font-size: 0.875rem;
+    }
+    .demo-info code {
+      background-color: #fff;
+      padding: 0.2rem 0.4rem;
+      border-radius: 3px;
+      font-family: monospace;
+    }
+    .user-avatar {
+      margin-bottom: 1rem;
+    }
+    .avatar {
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      object-fit: cover;
+    }
+    .user-details {
+      color: #6c757d;
+      font-size: 0.875rem;
+      margin: 0.5rem 0;
+    }
     label {
       display: block;
       margin-bottom: 0.5rem;
@@ -135,8 +173,8 @@ export class LoginComponent {
     public authService: AuthService
   ) {
     this.loginForm = this.fb.group({
-      email: ['', [Validators.required, Validators.email]],
-      password: ['', Validators.required]
+      username: ['kminchelle', Validators.required],
+      password: ['0lelplR', Validators.required]
     });
   }
 
@@ -151,7 +189,7 @@ export class LoginComponent {
           if (success) {
             this.router.navigate(['/']);
           } else {
-            this.errorMessage = 'Invalid email or password';
+            this.errorMessage = 'Invalid username or password';
           }
         },
         error: (error) => {

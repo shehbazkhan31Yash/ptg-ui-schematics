@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpInterceptor, HttpRequest, HttpHandler, HttpEvent, HttpErrorResponse } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
-import { catchError, switchMap } from 'rxjs/operators';
+import { catchError } from 'rxjs/operators';
 import { AuthService } from './auth.service';
 import { Router } from '@angular/router';
 
@@ -14,9 +14,9 @@ export class AuthInterceptor implements HttpInterceptor {
   ) {}
 
   intercept(req: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
-    // Add auth token to request if available
+    // Add auth token to request if available and not a login request
     const token = this.authService.getToken();
-    if (token) {
+    if (token && !req.url.includes('/auth/login')) {
       req = req.clone({
         setHeaders: {
           Authorization: `Bearer ${token}`
@@ -26,26 +26,10 @@ export class AuthInterceptor implements HttpInterceptor {
 
     return next.handle(req).pipe(
       catchError((error: HttpErrorResponse) => {
-        if (error.status === 401) {
-          // Try to refresh token
-          return this.authService.refreshToken().pipe(
-            switchMap((success: boolean) => {
-              if (success) {
-                // Retry the original request with new token
-                const newToken = this.authService.getToken();
-                const newReq = req.clone({
-                  setHeaders: {
-                    Authorization: `Bearer ${newToken}`
-                  }
-                });
-                return next.handle(newReq);
-              } else {
-                // Refresh failed, redirect to login
-                this.router.navigate(['/login']);
-                return throwError(() => error);
-              }
-            })
-          );
+        if (error.status === 401 && !req.url.includes('/auth/login')) {
+          // Unauthorized, redirect to login
+          this.authService.logout();
+          this.router.navigate(['/login']);
         }
         return throwError(() => error);
       })

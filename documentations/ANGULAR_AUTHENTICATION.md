@@ -47,18 +47,19 @@ export const oktaConfig: OktaAuthOptions = {
 ### 3. Custom Authentication
 - **Package**: No external dependencies (uses Angular HttpClient)
 - **Use Case**: Applications with custom backend authentication
+- **Demo API**: Uses DummyJSON API for demonstration
 - **Features**:
   - JWT token-based authentication
   - Custom login form with validation
-  - Automatic token refresh
   - HTTP interceptor for token injection
   - Route guards for protected routes
+  - Working demo with real API
 
-#### API Endpoints Required
-Your backend should provide these endpoints:
-- `POST /api/auth/login` - Login with credentials
-- `POST /api/auth/refresh` - Refresh JWT token
-- `POST /api/auth/logout` - Logout (optional)
+#### Demo Credentials (DummyJSON API)
+- **Username**: `kminchelle`
+- **Password**: `0lelplR`
+- **API Endpoint**: `https://dummyjson.com/auth/login`
+- **Documentation**: [DummyJSON Auth Docs](https://dummyjson.com/docs/auth)
 
 ## Generated Files
 
@@ -151,8 +152,9 @@ constructor(private authService: AuthService) {
   this.currentUser$ = this.authService.currentUser$;
 }
 
-// Login
+// Login with DummyJSON API
 login(credentials: LoginCredentials) {
+  // credentials = { username: 'kminchelle', password: '0lelplR' }
   this.authService.login(credentials).subscribe(success => {
     if (success) {
       this.router.navigate(['/dashboard']);
@@ -163,6 +165,13 @@ login(credentials: LoginCredentials) {
 // Check if logged in
 isLoggedIn(): boolean {
   return this.authService.isLoggedIn();
+}
+
+// Get current user info
+getCurrentUser() {
+  this.authService.getCurrentUser().subscribe(user => {
+    console.log('Current user:', user);
+  });
 }
 
 // Logout
@@ -205,8 +214,8 @@ export const environment = {
     oktaDomain: 'your-okta-domain',
     oktaClientId: 'your-okta-client-id',
     
-    // For Custom
-    apiUrl: 'https://your-api-domain.com'
+    // For Custom (DummyJSON Demo)
+    apiUrl: 'https://dummyjson.com'
   }
 };
 ```
@@ -236,5 +245,6 @@ export const environment = {
 ### Custom Auth Issues
 - Verify API endpoints are accessible
 - Check network tab for HTTP errors
+- For DummyJSON demo, use provided credentials: `kminchelle` / `0lelplR`
 - Ensure JWT tokens are properly formatted
-- Verify CORS settings on your backend
+- DummyJSON API doesn't require CORS configuration

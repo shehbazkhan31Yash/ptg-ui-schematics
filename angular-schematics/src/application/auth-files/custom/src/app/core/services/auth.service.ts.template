@@ -4,20 +4,29 @@ import { BehaviorSubject, Observable, of } from 'rxjs';
 import { map, catchError } from 'rxjs/operators';
 
 export interface User {
-  id: string;
+  id: number;
+  username: string;
   email: string;
-  name: string;
-  roles: string[];
+  firstName: string;
+  lastName: string;
+  gender: string;
+  image: string;
 }
 
 export interface LoginCredentials {
-  email: string;
+  username: string;
   password: string;
 }
 
-export interface AuthResponse {
+export interface DummyAuthResponse {
+  id: number;
+  username: string;
+  email: string;
+  firstName: string;
+  lastName: string;
+  gender: string;
+  image: string;
   token: string;
-  user: User;
 }
 
 @Injectable({
@@ -26,6 +35,7 @@ export interface AuthResponse {
 export class AuthService {
   private readonly TOKEN_KEY = 'auth_token';
   private readonly USER_KEY = 'auth_user';
+  private readonly API_URL = 'https://dummyjson.com';
   
   private currentUserSubject = new BehaviorSubject<User | null>(this.getUserFromStorage());
   public currentUser$ = this.currentUserSubject.asObservable();
@@ -33,12 +43,20 @@ export class AuthService {
   constructor(private http: HttpClient) {}
 
   login(credentials: LoginCredentials): Observable<boolean> {
-    // Replace with your actual API endpoint
-    return this.http.post<AuthResponse>('/api/auth/login', credentials)
+    return this.http.post<DummyAuthResponse>(`${this.API_URL}/auth/login`, credentials)
       .pipe(
         map(response => {
-          if (response.token && response.user) {
-            this.setSession(response.token, response.user);
+          if (response.token) {
+            const user: User = {
+              id: response.id,
+              username: response.username,
+              email: response.email,
+              firstName: response.firstName,
+              lastName: response.lastName,
+              gender: response.gender,
+              image: response.image
+            };
+            this.setSession(response.token, user);
             return true;
           }
           return false;
@@ -58,7 +76,7 @@ export class AuthService {
 
   isLoggedIn(): boolean {
     const token = this.getToken();
-    return !!token && !this.isTokenExpired(token);
+    return !!token;
   }
 
   getToken(): string | null {
@@ -69,23 +87,25 @@ export class AuthService {
     return this.currentUserSubject.value;
   }
 
-  refreshToken(): Observable<boolean> {
-    // Replace with your actual refresh token endpoint
-    return this.http.post<AuthResponse>('/api/auth/refresh', {})
-      .pipe(
-        map(response => {
-          if (response.token && response.user) {
-            this.setSession(response.token, response.user);
-            return true;
-          }
-          return false;
-        }),
-        catchError(error => {
-          console.error('Token refresh error:', error);
-          this.logout();
-          return of(false);
-        })
-      );
+  getCurrentUser(): Observable<User | null> {
+    const token = this.getToken();
+    if (!token) {
+      return of(null);
+    }
+
+    return this.http.get<User>(`${this.API_URL}/auth/me`, {
+      headers: { Authorization: `Bearer ${token}` }
+    }).pipe(
+      map(user => {
+        this.currentUserSubject.next(user);
+        return user;
+      }),
+      catchError(error => {
+        console.error('Get current user error:', error);
+        this.logout();
+        return of(null);
+      })
+    );
   }
 
   private setSession(token: string, user: User): void {
@@ -97,15 +117,5 @@ export class AuthService {
   private getUserFromStorage(): User | null {
     const userStr = localStorage.getItem(this.USER_KEY);
     return userStr ? JSON.parse(userStr) : null;
-  }
-
-  private isTokenExpired(token: string): boolean {
-    try {
-      const payload = JSON.parse(atob(token.split('.')[1]));
-      const currentTime = Math.floor(Date.now() / 1000);
-      return payload.exp < currentTime;
-    } catch {
-      return true;
-    }
   }
 }
