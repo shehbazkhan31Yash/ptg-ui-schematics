@@ -1,0 +1,23 @@
+import { Configuration, BrowserCacheLocation } from '@azure/msal-browser';
+
+const isIE = window.navigator.userAgent.indexOf("MSIE ") > -1 || window.navigator.userAgent.indexOf("Trident/") > -1;
+
+export const msalConfig: Configuration = {
+  auth: {
+    clientId: 'YOUR_CLIENT_ID', // Replace with your client ID
+    authority: 'https://login.microsoftonline.com/YOUR_TENANT_ID', // Replace with your tenant ID
+    redirectUri: '/'
+  },
+  cache: {
+    cacheLocation: BrowserCacheLocation.LocalStorage,
+    storeAuthStateInCookie: isIE
+  }
+};
+
+export const loginRequest = {
+  scopes: ['user.read']
+};
+
+export const graphConfig = {
+  graphMeEndpoint: 'https://graph.microsoft.com/v1.0/me'
+};

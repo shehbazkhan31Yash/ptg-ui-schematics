@@ -1,0 +1,63 @@
+import { Injectable } from '@angular/core';
+import { MsalService, MsalBroadcastService } from '@azure/msal-angular';
+import { InteractionStatus, PopupRequest, RedirectRequest, SilentRequest } from '@azure/msal-browser';
+import { Observable, filter, takeUntil, Subject } from 'rxjs';
+
+@Injectable({
+  providedIn: 'root'
+})
+export class AuthService {
+  private readonly _destroying$ = new Subject<void>();
+
+  constructor(
+    private authService: MsalService,
+    private msalBroadcastService: MsalBroadcastService
+  ) {
+    this.msalBroadcastService.inProgress$
+      .pipe(
+        filter((status: InteractionStatus) => status === InteractionStatus.None),
+        takeUntil(this._destroying$)
+      )
+      .subscribe(() => {
+        this.setLoginDisplay();
+      });
+  }
+
+  setLoginDisplay() {
+    // Implementation for login display logic
+  }
+
+  login() {
+    const loginRequest: PopupRequest = {
+      scopes: ['user.read']
+    };
+
+    this.authService.loginPopup(loginRequest)
+      .subscribe({
+        next: (result) => {
+          console.log('Login successful', result);
+          this.setLoginDisplay();
+        },
+        error: (error) => console.log('Login failed', error)
+      });
+  }
+
+  logout() {
+    this.authService.logoutPopup({
+      mainWindowRedirectUri: "/"
+    });
+  }
+
+  isLoggedIn(): boolean {
+    return this.authService.instance.getActiveAccount() != null;
+  }
+
+  getUser() {
+    return this.authService.instance.getActiveAccount();
+  }
+
+  ngOnDestroy(): void {
+    this._destroying$.next(undefined);
+    this._destroying$.complete();
+  }
+}

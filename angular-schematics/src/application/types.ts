@@ -5,6 +5,7 @@ export interface ApplicationOptions {
  i18n?: boolean;
  seo?: boolean;
  seoType?: 'none' | 'basic' | 'ssg' | 'ssr';
+ authentication?: 'none' | 'msal' | 'okta' | 'custom';
  enableLinting?: boolean;
  lintingStyle?: 'none' | 'airbnb' | 'standard' | 'custom';
  husky?: boolean;

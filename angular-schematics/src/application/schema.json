@@ -221,6 +221,34 @@
           }
         ]
       }
+    },
+    "authentication": {
+      "type": "string",
+      "description": "Authentication implementation type",
+      "enum": ["none", "msal", "okta", "custom"],
+      "default": "none",
+      "x-prompt": {
+        "message": "Which Authentication you would like to add?",
+        "type": "list",
+        "items": [
+          {
+            "value": "none",
+            "label": "None - Skip authentication setup"
+          },
+          {
+            "value": "msal",
+            "label": "MSAL - Microsoft Authentication Library"
+          },
+          {
+            "value": "okta",
+            "label": "Okta - Enterprise identity platform"
+          },
+          {
+            "value": "custom",
+            "label": "Custom - Custom authentication implementation"
+          }
+        ]
+      }
     }
   },
   "required": ["name"]

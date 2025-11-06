@@ -1,0 +1,111 @@
+import { Injectable } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { BehaviorSubject, Observable, of } from 'rxjs';
+import { map, catchError } from 'rxjs/operators';
+
+export interface User {
+  id: string;
+  email: string;
+  name: string;
+  roles: string[];
+}
+
+export interface LoginCredentials {
+  email: string;
+  password: string;
+}
+
+export interface AuthResponse {
+  token: string;
+  user: User;
+}
+
+@Injectable({
+  providedIn: 'root'
+})
+export class AuthService {
+  private readonly TOKEN_KEY = 'auth_token';
+  private readonly USER_KEY = 'auth_user';
+  
+  private currentUserSubject = new BehaviorSubject<User | null>(this.getUserFromStorage());
+  public currentUser$ = this.currentUserSubject.asObservable();
+
+  constructor(private http: HttpClient) {}
+
+  login(credentials: LoginCredentials): Observable<boolean> {
+    // Replace with your actual API endpoint
+    return this.http.post<AuthResponse>('/api/auth/login', credentials)
+      .pipe(
+        map(response => {
+          if (response.token && response.user) {
+            this.setSession(response.token, response.user);
+            return true;
+          }
+          return false;
+        }),
+        catchError(error => {
+          console.error('Login error:', error);
+          return of(false);
+        })
+      );
+  }
+
+  logout(): void {
+    localStorage.removeItem(this.TOKEN_KEY);
+    localStorage.removeItem(this.USER_KEY);
+    this.currentUserSubject.next(null);
+  }
+
+  isLoggedIn(): boolean {
+    const token = this.getToken();
+    return !!token && !this.isTokenExpired(token);
+  }
+
+  getToken(): string | null {
+    return localStorage.getItem(this.TOKEN_KEY);
+  }
+
+  getUser(): User | null {
+    return this.currentUserSubject.value;
+  }
+
+  refreshToken(): Observable<boolean> {
+    // Replace with your actual refresh token endpoint
+    return this.http.post<AuthResponse>('/api/auth/refresh', {})
+      .pipe(
+        map(response => {
+          if (response.token && response.user) {
+            this.setSession(response.token, response.user);
+            return true;
+          }
+          return false;
+        }),
+        catchError(error => {
+          console.error('Token refresh error:', error);
+          this.logout();
+          return of(false);
+        })
+      );
+  }
+
+  private setSession(token: string, user: User): void {
+    localStorage.setItem(this.TOKEN_KEY, token);
+    localStorage.setItem(this.USER_KEY, JSON.stringify(user));
+    this.currentUserSubject.next(user);
+  }
+
+  private getUserFromStorage(): User | null {
+    const userStr = localStorage.getItem(this.USER_KEY);
+    return userStr ? JSON.parse(userStr) : null;
+  }
+
+  private isTokenExpired(token: string): boolean {
+    try {
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      const currentTime = Math.floor(Date.now() / 1000);
+      return payload.exp < currentTime;
+    } catch {
+      return true;
+    }
+  }
+}

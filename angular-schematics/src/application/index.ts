@@ -31,6 +31,7 @@ import { setLinting } from "./features/linting";
 import { setHusky } from "./features/husky";
 import { addI18n, addI18nFiles } from "./features/i18n";
 import { setSEO } from "./features/seo";
+import { setAuthentication } from "./features/authentication";
 
 export function application(options: ApplicationOptions): Rule {
  return async (host: Tree, context: SchematicContext) => {
@@ -48,7 +49,7 @@ export function application(options: ApplicationOptions): Rule {
   options.seo = options.seoType !== 'none';
   
   const originalOptions = JSON.parse(JSON.stringify(options));
-  const keysToDelete = ["framework", "ngrx", "i18n", "appDir", "enableLinting", "lintingStyle", "husky", "seo", "seoType"];
+  const keysToDelete = ["framework", "ngrx", "i18n", "appDir", "enableLinting", "lintingStyle", "husky", "seo", "seoType", "authentication"];
   const schemaCompatibleOptions = deleteKeys(options, keysToDelete);
 
   return chain([
@@ -90,6 +91,7 @@ export function application(options: ApplicationOptions): Rule {
    setLinting(originalOptions),
    setHusky(originalOptions),
    setSEO(originalOptions),
+   setAuthentication(originalOptions),
   ]);
  };
 }

@@ -1,0 +1,168 @@
+import { Component } from '@angular/core';
+import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { Router } from '@angular/router';
+import { AuthService } from '../core/services/auth.service';
+
+@Component({
+  selector: 'app-login',
+  template: `
+    <div class="login-container">
+      <div class="login-card">
+        <h2>Sign In</h2>
+        <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" *ngIf="!(authService.currentUser$ | async)">
+          <div class="form-group">
+            <label for="email">Email:</label>
+            <input 
+              type="email" 
+              id="email" 
+              formControlName="email" 
+              class="form-control"
+              [class.is-invalid]="loginForm.get('email')?.invalid && loginForm.get('email')?.touched">
+            <div class="invalid-feedback" *ngIf="loginForm.get('email')?.invalid && loginForm.get('email')?.touched">
+              Please enter a valid email address.
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <label for="password">Password:</label>
+            <input 
+              type="password" 
+              id="password" 
+              formControlName="password" 
+              class="form-control"
+              [class.is-invalid]="loginForm.get('password')?.invalid && loginForm.get('password')?.touched">
+            <div class="invalid-feedback" *ngIf="loginForm.get('password')?.invalid && loginForm.get('password')?.touched">
+              Password is required.
+            </div>
+          </div>
+          
+          <button 
+            type="submit" 
+            class="btn btn-primary" 
+            [disabled]="loginForm.invalid || isLoading">
+            {{ isLoading ? 'Signing in...' : 'Sign In' }}
+          </button>
+          
+          <div class="error-message" *ngIf="errorMessage">
+            {{ errorMessage }}
+          </div>
+        </form>
+        
+        <div *ngIf="authService.currentUser$ | async as user" class="user-info">
+          <p>Welcome, {{ user.name }}!</p>
+          <button class="btn btn-secondary" (click)="logout()">Sign Out</button>
+        </div>
+      </div>
+    </div>
+  `,
+  styles: [`
+    .login-container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 80vh;
+    }
+    .login-card {
+      padding: 2rem;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      max-width: 400px;
+      width: 100%;
+    }
+    .form-group {
+      margin-bottom: 1rem;
+    }
+    .form-control {
+      width: 100%;
+      padding: 0.5rem;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+    }
+    .form-control.is-invalid {
+      border-color: #dc3545;
+    }
+    .invalid-feedback {
+      color: #dc3545;
+      font-size: 0.875rem;
+      margin-top: 0.25rem;
+    }
+    .btn {
+      padding: 0.75rem 1.5rem;
+      margin: 0.5rem 0;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      width: 100%;
+    }
+    .btn-primary {
+      background-color: #007bff;
+      color: white;
+    }
+    .btn-secondary {
+      background-color: #6c757d;
+      color: white;
+    }
+    .btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+    .error-message {
+      color: #dc3545;
+      margin-top: 1rem;
+      text-align: center;
+    }
+    .user-info {
+      text-align: center;
+      padding: 1rem;
+      background-color: #f8f9fa;
+      border-radius: 4px;
+    }
+    label {
+      display: block;
+      margin-bottom: 0.5rem;
+      font-weight: bold;
+    }
+  `]
+})
+export class LoginComponent {
+  loginForm: FormGroup;
+  isLoading = false;
+  errorMessage = '';
+
+  constructor(
+    private fb: FormBuilder,
+    private router: Router,
+    public authService: AuthService
+  ) {
+    this.loginForm = this.fb.group({
+      email: ['', [Validators.required, Validators.email]],
+      password: ['', Validators.required]
+    });
+  }
+
+  onSubmit() {
+    if (this.loginForm.valid) {
+      this.isLoading = true;
+      this.errorMessage = '';
+      
+      this.authService.login(this.loginForm.value).subscribe({
+        next: (success) => {
+          this.isLoading = false;
+          if (success) {
+            this.router.navigate(['/']);
+          } else {
+            this.errorMessage = 'Invalid email or password';
+          }
+        },
+        error: (error) => {
+          this.isLoading = false;
+          this.errorMessage = 'Login failed. Please try again.';
+        }
+      });
+    }
+  }
+
+  logout() {
+    this.authService.logout();
+  }
+}

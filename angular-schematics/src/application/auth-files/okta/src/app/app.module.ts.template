@@ -1,0 +1,34 @@
+import { NgModule } from '@angular/core';
+import { BrowserModule } from '@angular/platform-browser';
+import { HttpClientModule } from '@angular/common/http';
+
+import { OKTA_CONFIG, OktaAuthModule, OktaCallbackComponent, OktaAuthGuard } from '@okta/okta-angular';
+import { OktaAuth } from '@okta/okta-auth-js';
+
+import { AppRoutingModule } from './app-routing.module';
+import { AppComponent } from './app.component';
+import { CoreModule } from './core/core.module';
+import { SharedModule } from './shared/shared.module';
+import { oktaConfig } from './core/services/auth.config';
+
+const oktaAuth = new OktaAuth(oktaConfig);
+
+@NgModule({
+  declarations: [
+    AppComponent
+  ],
+  imports: [
+    BrowserModule,
+    AppRoutingModule,
+    HttpClientModule,
+    CoreModule,
+    SharedModule,
+    OktaAuthModule
+  ],
+  providers: [
+    { provide: OKTA_CONFIG, useValue: { oktaAuth } },
+    OktaAuthGuard
+  ],
+  bootstrap: [AppComponent]
+})
+export class AppModule { }

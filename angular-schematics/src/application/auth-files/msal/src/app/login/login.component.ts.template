@@ -1,0 +1,78 @@
+import { Component } from '@angular/core';
+import { AuthService } from '../core/services/auth.service';
+
+@Component({
+  selector: 'app-login',
+  template: `
+    <div class="login-container">
+      <div class="login-card">
+        <h2>Sign In</h2>
+        <p>Please sign in with your Microsoft account</p>
+        <button 
+          class="btn btn-primary" 
+          (click)="login()"
+          [disabled]="!isLoggedIn">
+          Sign in with Microsoft
+        </button>
+        <div *ngIf="isLoggedIn" class="user-info">
+          <p>Welcome, {{ user?.name }}!</p>
+          <button class="btn btn-secondary" (click)="logout()">Sign Out</button>
+        </div>
+      </div>
+    </div>
+  `,
+  styles: [`
+    .login-container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 80vh;
+    }
+    .login-card {
+      padding: 2rem;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      text-align: center;
+      max-width: 400px;
+      width: 100%;
+    }
+    .btn {
+      padding: 0.75rem 1.5rem;
+      margin: 0.5rem;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    .btn-primary {
+      background-color: #0078d4;
+      color: white;
+    }
+    .btn-secondary {
+      background-color: #6c757d;
+      color: white;
+    }
+    .user-info {
+      margin-top: 1rem;
+      padding: 1rem;
+      background-color: #f8f9fa;
+      border-radius: 4px;
+    }
+  `]
+})
+export class LoginComponent {
+  isLoggedIn = false;
+  user: any = null;
+
+  constructor(private authService: AuthService) {
+    this.isLoggedIn = this.authService.isLoggedIn();
+    this.user = this.authService.getUser();
+  }
+
+  login() {
+    this.authService.login();
+  }
+
+  logout() {
+    this.authService.logout();
+  }
+}

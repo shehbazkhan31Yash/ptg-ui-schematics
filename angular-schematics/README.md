@@ -54,9 +54,10 @@ ptg-ui-cli
 - **Husky** - Git hooks for code quality
 
 ### Authentication Options
-- **MSAL** - Microsoft Authentication Library
-- **Okta** - Enterprise identity platform
-- **Custom** - Custom authentication implementation
+- **MSAL** - Microsoft Authentication Library for Azure AD integration
+- **Okta** - Enterprise identity platform with OIDC/OAuth2 support
+- **Custom** - JWT-based custom authentication with login forms and guards
+- **None** - Skip authentication setup
 
 ## 🔧 Configuration Options
 
@@ -231,10 +232,10 @@ schematics @ptg-ui/angular-schematics:application --name=test-app
 
 For complete documentation, visit the [PTG UI Schematics Documentation](../documentations/)
 
-- [SEO Complete Guide](../documentations/SEO_COMPLETE_GUIDE.md)
-- [ESLint Fixes](../documentations/ESLINT_FIXES.md)
-- [Husky Integration](../documentations/HUSKY_INTEGRATION.md)
-- [Google Analytics Integration](../documentations/GOOGLE_ANALYTICS_INTEGRATION.md)
+- [Authentication Implementation](../documentations/ANGULAR_AUTHENTICATION.md)
+- [SEO Complete Guide](../documentations/ANGULAR_SEO_COMPLETE_GUIDE.md)
+- [ESLint Fixes](../documentations/ANGULAR_ESLINT_FIXES.md)
+- [Google Analytics Integration](../documentations/ANGULAR_GOOGLE_ANALYTICS.md)
 
 
 ## 🤝 Contributing

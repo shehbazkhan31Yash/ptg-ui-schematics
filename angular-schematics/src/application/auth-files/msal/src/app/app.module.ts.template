@@ -1,0 +1,46 @@
+import { NgModule } from '@angular/core';
+import { BrowserModule } from '@angular/platform-browser';
+import { HTTP_INTERCEPTORS, HttpClientModule } from '@angular/common/http';
+
+import { MsalModule, MsalRedirectComponent, MsalGuard, MsalInterceptor } from '@azure/msal-angular';
+import { InteractionType, PublicClientApplication } from '@azure/msal-browser';
+
+import { AppRoutingModule } from './app-routing.module';
+import { AppComponent } from './app.component';
+import { CoreModule } from './core/core.module';
+import { SharedModule } from './shared/shared.module';
+import { msalConfig } from './core/services/auth.config';
+
+@NgModule({
+  declarations: [
+    AppComponent
+  ],
+  imports: [
+    BrowserModule,
+    AppRoutingModule,
+    HttpClientModule,
+    CoreModule,
+    SharedModule,
+    MsalModule.forRoot(new PublicClientApplication(msalConfig), {
+      interactionType: InteractionType.Popup,
+      authRequest: {
+        scopes: ['user.read']
+      }
+    }, {
+      interactionType: InteractionType.Popup,
+      protectedResourceMap: new Map([
+        ['https://graph.microsoft.com/v1.0/me', ['user.read']]
+      ])
+    })
+  ],
+  providers: [
+    {
+      provide: HTTP_INTERCEPTORS,
+      useClass: MsalInterceptor,
+      multi: true
+    },
+    MsalGuard
+  ],
+  bootstrap: [AppComponent, MsalRedirectComponent]
+})
+export class AppModule { }
