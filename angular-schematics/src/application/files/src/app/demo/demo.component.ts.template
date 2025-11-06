@@ -1,0 +1,61 @@
+import { Component } from '@angular/core';
+<% if (i18n) { %>
+import { TranslateService } from '@ngx-translate/core';
+<% } %>
+
+interface User {
+  id: number;
+  name: string;
+  email: string;
+}
+
+@Component({
+  selector: 'app-demo',
+  templateUrl: './demo.component.html',
+  styleUrls: ['./demo.component.scss']
+})
+export class DemoComponent {
+  <% if (ngrx) { %>
+  counter = 0;
+  <% } %>
+  users: User[] = [];
+  loading = false;
+
+  constructor(
+    <% if (i18n) { %>
+    private translate: TranslateService
+    <% } %>
+  ) {}
+
+  <% if (ngrx) { %>
+  increment() {
+    this.counter++;
+  }
+
+  decrement() {
+    this.counter--;
+  }
+
+  reset() {
+    this.counter = 0;
+  }
+  <% } %>
+
+  <% if (i18n) { %>
+  getCurrentLanguage(): string {
+    return this.translate.currentLang || 'en';
+  }
+  <% } %>
+
+  loadUsers() {
+    this.loading = true;
+    setTimeout(() => {
+      this.users = [
+        { id: 1, name: 'John Doe', email: 'john@example.com' },
+        { id: 2, name: 'Jane Smith', email: 'jane@example.com' },
+        { id: 3, name: 'Bob Johnson', email: 'bob@example.com' }
+      ];
+      this.loading = false;
+    }, 1000);
+  }
+}

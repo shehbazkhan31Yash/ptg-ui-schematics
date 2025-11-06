@@ -128,7 +128,12 @@ export const ESLINT_CONFIGS = {
           "no-unused-vars": "off",
           "@typescript-eslint/no-unused-vars": [
             "warn",
-            { argsIgnorePattern: "^_", varsIgnorePattern: "^_" }
+            { 
+              argsIgnorePattern: "^_", 
+              varsIgnorePattern: "^_",
+              ignoreRestSiblings: true,
+              destructuredArrayIgnorePattern: "^_"
+            }
           ],
           "eqeqeq": ["error", "always"],
           "curly": ["error", "all"],
@@ -171,8 +176,11 @@ export const ESLINT_CONFIGS = {
           "@angular-eslint/no-conflicting-lifecycle": "error",
           "@angular-eslint/prefer-on-push-component-change-detection": "off",
           "@angular-eslint/no-host-metadata-property": "off",
-          "@angular-eslint/no-inputs-metadata-property": "warn",
-          "@angular-eslint/no-outputs-metadata-property": "warn",
+          "@angular-eslint/no-inputs-metadata-property": "off",
+          "@angular-eslint/no-outputs-metadata-property": "off",
+          "@angular-eslint/component-class-suffix": "error",
+          "@angular-eslint/directive-class-suffix": "error",
+          "@angular-eslint/pipe-prefix": "off",
           "@angular-eslint/use-pipe-transform-interface": "error",
           "rxjs/no-ignored-observable": "warn",
           "rxjs/no-nested-subscribe": "warn",
@@ -200,8 +208,8 @@ export const ESLINT_CONFIGS = {
           "@typescript-eslint/no-empty-function": "off",
           "@typescript-eslint/no-unused-expressions": "off",
           "@typescript-eslint/ban-ts-comment": "off",
-          // "@typescript-eslint/comma-dangle": ["error", "always-multiline"],
-          "@typescript-eslint/indent": ["error", 2],
+          "@typescript-eslint/comma-dangle": "off",
+          "@typescript-eslint/indent": "off",
           "import/no-unresolved": "off",
           "import/prefer-default-export": "off",
           "import/order": ["error", { "newlines-between": "always" }],
@@ -216,7 +224,11 @@ export const ESLINT_CONFIGS = {
             "error",
             {
               endOfLine: "auto",
-              singleQuote: true
+              singleQuote: true,
+              trailingComma: "es5",
+              tabWidth: 2,
+              semi: true,
+              printWidth: 80
             }
           ]
         }
@@ -229,7 +241,11 @@ export const ESLINT_CONFIGS = {
           "max-lines-per-function": "off",
           "complexity": "off",
           "@angular-eslint/no-empty-lifecycle-method": "off",
-          "@typescript-eslint/no-empty-function": "off"
+          "@typescript-eslint/no-empty-function": "off",
+          "@typescript-eslint/no-unused-vars": "off",
+          "no-console": "off",
+          "import/order": "off",
+          "@typescript-eslint/naming-convention": "off"
         }
       },
       {

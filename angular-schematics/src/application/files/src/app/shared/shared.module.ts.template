@@ -1,11 +1,35 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { RouterModule } from '@angular/router';
+<% if (i18n) { %>
+import { TranslateModule } from '@ngx-translate/core';
+import { LanguageExampleComponent } from './components/language-example/language-example.component';
+<% } %>
+<% if (seoType && seoType !== 'none') { %>
+import { SeoExampleComponent } from './components/seo-example/seo-example.component';
+<% } %>
 
 @NgModule({
-  imports: [CommonModule, FormsModule],
-  declarations: [],
-  exports: [CommonModule, FormsModule],
+  declarations: [<% if (i18n) { %>
+    LanguageExampleComponent<% if (seoType && seoType !== 'none') { %>,<% } %>
+<% } %><% if (seoType && seoType !== 'none') { %>
+    SeoExampleComponent
+<% } %>],
+  imports: [
+    CommonModule, 
+    FormsModule, 
+    RouterModule<% if (i18n) { %>,
+    TranslateModule<% } %>
+  ],
+  exports: [
+    CommonModule, 
+    FormsModule, 
+    RouterModule<% if (i18n) { %>,
+    TranslateModule,
+    LanguageExampleComponent<% } %><% if (seoType && seoType !== 'none') { %>,
+    SeoExampleComponent<% } %>
+  ],
 })
 /**
  * Shares common components, directives, and pipes that

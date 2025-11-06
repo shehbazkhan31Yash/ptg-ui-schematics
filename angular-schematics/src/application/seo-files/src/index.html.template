@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title><%= appName %></title>
+  <base href="/">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  
+  <!-- SEO Meta Tags -->
+  <meta name="description" content="<%= appName %> - Modern Angular application with TypeScript, responsive design, SEO optimization, and enterprise-grade features. Built for scalable web development.">
+  <meta name="keywords" content="angular, typescript, web application, seo, responsive design, enterprise, pwa, state management, modern ui">
+  <meta name="author" content="PTG UI Schematics">
+  
+  <!-- Open Graph Meta Tags -->
+  <meta property="og:title" content="<%= appName %> - Modern Angular Application">
+  <meta property="og:description" content="Modern Angular application with TypeScript, responsive design, SEO optimization, and enterprise-grade features. Built for scalable web development.">
+  <meta property="og:image" content="/assets/images/YashLogo.jpg">
+  <meta property="og:url" content="">
+  <meta property="og:type" content="website">
+  
+  <!-- Twitter Card Meta Tags -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="<%= appName %> - Modern Angular Application">
+  <meta name="twitter:description" content="Modern Angular application with TypeScript, responsive design, SEO optimization, and enterprise-grade features. Built for scalable development.">
+  <meta name="twitter:image" content="/assets/images/YashLogo.jpg">
+  
+  <!-- Favicon -->
+  <link rel="icon" type="image/x-icon" href="/assets/images/YashLogo.png">
+  <link rel="apple-touch-icon" href="/assets/images/YashLogo.png">
+  
+  <!-- Google Analytics -->
+  <!-- Replace GA_MEASUREMENT_ID with your actual Google Analytics 4 Measurement ID -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=GA_MEASUREMENT_ID"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'GA_MEASUREMENT_ID', {
+      page_title: document.title,
+      page_location: window.location.href,
+      anonymize_ip: true
+    });
+  </script>
+  
+  <!-- Structured Data -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "name": "<%= appName %>",
+    "description": "Modern Angular application with TypeScript, responsive design, SEO optimization, and enterprise-grade features. Built for scalable web development.",
+    "url": "",
+    "logo": "/assets/images/YashLogo.jpg",
+    "potentialAction": {
+      "@type": "SearchAction",
+      "target": "/search?q={search_term_string}",
+      "query-input": "required name=search_term_string"
+    }
+  }
+  </script>
+</head>
+<body>
+  <app-root></app-root>
+</body>
+</html>

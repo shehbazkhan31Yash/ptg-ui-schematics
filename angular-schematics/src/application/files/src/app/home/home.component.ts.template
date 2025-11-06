@@ -3,16 +3,16 @@ import { Component<% if (seoType && seoType !== 'none') { %>, OnInit<% } %> } fr
 import { TranslateService } from '@ngx-translate/core';
 <% } %>
 <% if (seoType && seoType !== 'none') { %>
-import { SeoService } from './core/services/seo.service';
+import { SeoService } from '../core/services/seo.service';
 <% } %>
 
 @Component({
-  selector: 'app-root',
-  templateUrl: './app.component.html',
-  styleUrls: ['./app.component.scss'],
+  selector: 'app-home',
+  templateUrl: './home.component.html',
+  styleUrls: ['./home.component.scss']
 })
-export class AppComponent<% if (seoType && seoType !== 'none') { %> implements OnInit<% } %> {
-  title = '<%= appName %>';
+export class HomeComponent<% if (seoType && seoType !== 'none') { %> implements OnInit<% } %> {
+  title = '<%= name %>';
 
   constructor(<% if (i18n && seoType && seoType !== 'none') { %>private translateService: TranslateService, private seoService: SeoService<% } else if (i18n) { %>private translateService: TranslateService<% } else if (seoType && seoType !== 'none') { %>private seoService: SeoService<% } %>) {
 <% if (i18n) { %>
@@ -31,14 +31,14 @@ export class AppComponent<% if (seoType && seoType !== 'none') { %> implements O
 
     // Initialize SEO for the main application
     this.seoService.updatePageSEO({
-      title: '<%= appName %>',
-      description: '<%= appName %> - Modern Angular application built with TypeScript featuring responsive design, comprehensive SEO optimization, enterprise-grade security, state management, and performance optimization. Scalable architecture for professional web development.',
+      title: '<%= name %>',
+      description: 'Modern Angular application built with TypeScript featuring enterprise-grade SEO optimization, Material Design components, NgRx state management, and internationalization support for scalable web development.',
       keywords: 'angular, typescript, web application, google analytics, seo',
       canonicalUrl: window.location.href,
       structuredData: {
         '@context': 'https://schema.org',
         '@type': 'WebSite',
-        name: '<%= appName %>',
+        name: '<%= name %>',
         description: 'Generated Angular application with SEO optimization and Google Analytics',
         url: window.location.origin,
         potentialAction: {
@@ -48,27 +48,33 @@ export class AppComponent<% if (seoType && seoType !== 'none') { %> implements O
         }
       },
       ogTags: {
-        title: '<%= appName %>',
-        description: 'Generated Angular application with SEO optimization and Google Analytics',
+        title: '<%= name %>',
+        description: 'Modern Angular application with comprehensive SEO optimization, Google Analytics integration, and enterprise-ready features for scalable web development.',
         type: 'website',
         url: window.location.href,
         image: window.location.origin + '/assets/images/YashLogo.jpg'
       },
       twitterTags: {
         card: 'summary_large_image',
-        title: '<%= appName %>',
-        description: 'Generated Angular application with SEO optimization and Google Analytics',
+        title: '<%= name %>',
+        description: 'Modern Angular application with comprehensive SEO optimization, Google Analytics integration, and enterprise-ready features for scalable web development.',
         image: window.location.origin + '/assets/images/YashLogo.jpg'
       }
     });
 
     // Track initial page view
-    this.seoService.trackPageView('/', '<%= appName %>');
+    this.seoService.trackPageView('/', '<%= name %>');
   }
 
 <% } %>
   getCurrentDate(): string {
-    return new Date().toISOString().split('T')[0];
+    const date = new Date();
+    const options: Intl.DateTimeFormatOptions = { 
+      day: 'numeric', 
+      month: 'long', 
+      year: 'numeric' 
+    };
+    return date.toLocaleDateString('en-US', options);
   }
 
 <% if (i18n) { %>
