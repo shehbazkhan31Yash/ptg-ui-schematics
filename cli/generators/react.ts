@@ -151,6 +151,52 @@ const FeaturesPage = () => {
       
       <main className="features-content">
         <section className="feature-usage">
+          ${a.auth === 'msal' ? `
+          <div className="usage-example setup-required">
+            <h3>🔐 Azure AD (MSAL) Authentication</h3>
+            <div className="setup-step">Your app is configured with Microsoft Authentication Library (MSAL)</div>
+            <div className="setup-step">
+              <strong>Configuration:</strong> Update <code>src/config/msalConfig.ts</code> with your Azure AD credentials
+            </div>
+            <div className="setup-step">
+              <strong>Components:</strong> Use <code>&lt;MsalLoginButton /&gt;</code> component anywhere in your app
+            </div>
+            <div className="setup-step">
+              <strong>Access user data:</strong>
+            </div>
+            <code>const &#123; accounts &#125; = useMsal();<br/>const user = accounts[0];</code>
+            <div className="setup-step">
+              <strong>Get access token:</strong>
+            </div>
+            <code>const response = await instance.acquireTokenSilent(&#123;<br/>  scopes: ['user.read'],<br/>  account: accounts[0]<br/>&#125;);</code>
+            <div className="setup-step">
+              ✨ <strong>Try it:</strong> Visit the <a href="/demo">Demo page</a> to see live authentication!
+            </div>
+          </div>` : ''}
+          
+          ${a.auth === 'okta' ? `
+          <div className="usage-example setup-required">
+            <h3>🔐 Okta Authentication</h3>
+            <div className="setup-step">Your app is configured with Okta for secure authentication</div>
+            <div className="setup-step">
+              <strong>Configuration:</strong> Update <code>src/config/oktaConfig.ts</code> with your Okta credentials
+            </div>
+            <div className="setup-step">
+              <strong>Components:</strong> Use <code>&lt;OktaLoginButton /&gt;</code> component anywhere in your app
+            </div>
+            <div className="setup-step">
+              <strong>Access user data:</strong>
+            </div>
+            <code>const &#123; authState &#125; = useOktaAuth();<br/>const user = authState.idToken?.claims;</code>
+            <div className="setup-step">
+              <strong>Protected routes:</strong>
+            </div>
+            <code>import &#123; SecureRoute &#125; from '@okta/okta-react';<br/>&lt;SecureRoute path="/protected" component=&#123;ProtectedPage&#125; /&gt;</code>
+            <div className="setup-step">
+              ✨ <strong>Try it:</strong> Visit the <a href="/demo">Demo page</a> to see live authentication!
+            </div>
+          </div>` : ''}
+          
           ${a.seo ? `
           <div className="usage-example">
             <h3>🔧 Google Analytics Setup</h3>
@@ -437,11 +483,6 @@ const AppContent = () => {
               <Link to="/features" className={\`nav-link $\{location.pathname === '/features' ? 'active' : ''}\`}>Features</Link>
               <Link to="/demo" className={\`nav-link $\{location.pathname === '/demo' ? 'active' : ''}\`}>Demo</Link>
             </div>
-            ${a.auth === 'msal' || a.auth === 'okta' ? `
-            <div className="nav-auth">
-              ${a.auth === 'msal' ? '<MsalLoginButton />' : ''}
-              ${a.auth === 'okta' ? '<OktaLoginButton />' : ''}
-            </div>` : ''}
           </div>
         </nav>
 
@@ -460,7 +501,10 @@ const AppContent = () => {
 
 const App = () => {
   return (
-    ${a.stateManagement === 'redux' ? '<Provider store={store}><BrowserRouter><AppContent /></BrowserRouter></Provider>' : '<BrowserRouter><AppContent /></BrowserRouter>'}
+    ${a.auth === 'okta' 
+      ? (a.stateManagement === 'redux' ? '<Provider store={store}><AppContent /></Provider>' : '<AppContent />')
+      : (a.stateManagement === 'redux' ? '<Provider store={store}><BrowserRouter><AppContent /></BrowserRouter></Provider>' : '<BrowserRouter><AppContent /></BrowserRouter>')
+    }
   );
 };
 
