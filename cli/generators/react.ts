@@ -1804,8 +1804,11 @@ const executeCommand = (command: string, options: any, description: string) => {
 };
 
 const installPackagesWithRetry = (packages: string[], isDev: boolean, workspacePath: string, description: string) => {
+  // If no packages specified, run npm install to install all dependencies from package.json
   const saveFlag = isDev ? "--save-dev" : "--save";
-  const command = `npm install ${packages.join(" ")} ${saveFlag}`;
+  const command = packages.length === 0 
+    ? "npm install" 
+    : `npm install ${packages.join(" ")} ${saveFlag}`;
   
   const strategies = [
     { cmd: `${command} --legacy-peer-deps`, desc: "with legacy peer deps" },
@@ -1926,8 +1929,8 @@ const getDependenciesByFeature = (a: any) => {
   const baseDevPkgs = [
     "@types/react@latest",
     "@types/react-dom@latest",
-    "@vitejs/plugin-react@latest",
-    "vite@latest",
+    // Only add Vite if it's the selected bundler
+    ...(a.bundler === 'vite' || a.bundler === 'esbuild' ? ["@vitejs/plugin-react@latest", "vite@latest"] : []),
     ...(a.style === 'scss' ? ["sass@latest"] : []),
     ...(a.style === 'styl' ? ["stylus@latest"] : []),
     ...(a.seo && a.bundler === 'vite' ? ["vite-plugin-ssr@latest"] : []), // Add SSR/SSG plugin for SEO (Vite only)
@@ -2162,13 +2165,25 @@ export function reactAppGenerator() {
         "cleanup old packages"
       );
       
-      installPackagesWithRetry([
+      // Prepare bundler-specific packages
+      const nxPlugins = [
         "@nx/react@latest", 
         "@nx/js@latest", 
-        "@nx/eslint@latest", 
-        "@nx/webpack@latest", 
-        "@nx/vite@latest"
-      ], true, workspacePath, "Nx React Plugin");
+        "@nx/eslint@latest"
+      ];
+      
+      // Add bundler-specific plugins
+      if (a.bundler === 'webpack') {
+        nxPlugins.push("@nx/webpack@latest");
+      } else if (a.bundler === 'vite' || a.bundler === 'esbuild') {
+        nxPlugins.push("@nx/vite@latest");
+      } else if (a.bundler === 'rspack') {
+        nxPlugins.push("@nx/rspack@latest");
+      } else if (a.bundler === 'rsbuild') {
+        nxPlugins.push("@nx/rsbuild@latest");
+      }
+      
+      installPackagesWithRetry(nxPlugins, true, workspacePath, "Nx React Plugin");
 
       // Step 4: Install PTG React Schematics
       console.log("\n📦 Step 5/7: Installing PTG React Schematics...\n");
