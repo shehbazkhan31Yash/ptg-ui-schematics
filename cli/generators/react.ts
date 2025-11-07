@@ -2491,10 +2491,11 @@ function getArgs() {
       value: "webpack",
       label: "Webpack",
     },
-    {
-      value: "esbuild",
-      label: "esbuild",
-    },
+    //  Not supported by Nx for React apps
+    // {
+    //   value: "esbuild",
+    //   label: "esbuild",
+    // },
   ];
   const unitTestOptions: { value: string; label: string }[] = [
     {
@@ -2526,16 +2527,16 @@ function getArgs() {
   ];
   const stateManagementOptions: { value: string; label: string }[] = [
     {
-      value: "none",
-      label: "None - No state management library",
-    },
-    {
       value: "redux",
       label: "Redux Toolkit - Popular, powerful state management",
     },
     {
       value: "zustand",
       label: "Zustand - Lightweight, simple state management",
+    },
+    {
+      value: "none",
+      label: "None - No state management library",
     },
   ];
   const linterOptions: { value: string; label: string }[] = [
@@ -2901,15 +2902,16 @@ function applyPTGCustomizations(workspacePath: string, a: any) {
   try {
     console.log("🔧 Applying framework-specific customizations...");
 
-    // Update package.json to include module type for ESLint v9 compatibility
+    // Update package.json to include module type for Vite bundler
+    // Note: Webpack requires CommonJS, so we only set "module" for Vite
     const packageJsonPath = path.join(workspacePath, "package.json");
     if (fs.existsSync(packageJsonPath)) {
       try {
         const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, "utf8"));
-        if (!packageJson.type) {
+        if (!packageJson.type && a.bundler === 'vite') {
           packageJson.type = "module";
           fs.writeFileSync(packageJsonPath, JSON.stringify(packageJson, null, 2));
-          console.log("✅ Updated package.json with module type");
+          console.log("✅ Updated package.json with module type for Vite");
         }
       } catch (error) {
         console.warn("⚠️  Could not update package.json:", error.message);
