@@ -32,11 +32,13 @@ function getNormalizedStyleForNx(style: string): string {
 const TEMPLATES = {
   getAppContent: (a: any) => `import React, { useState } from 'react';
 import './app.${a.style}';
-${a.routing ? "import { Routes, Route, Link, useLocation } from 'react-router-dom';" : ''}
+${a.routing ? "import { Routes, Route, Link, useLocation, BrowserRouter } from 'react-router-dom';" : ''}
 ${a.stateManagement === 'redux' ? "import { Provider, useSelector, useDispatch } from 'react-redux';\nimport { store, RootState, increment, decrement } from './store';" : ''}
 ${a.stateManagement === 'zustand' ? "import { useAppStore } from './store';" : ''}
 ${a.i18n ? "import { useTranslation } from 'react-i18next';\nimport './i18n';" : ''}
 ${a.seo ? "import { SEO } from './components/SEO';\nimport { GoogleAnalytics } from './components/GoogleAnalytics';" : ''}
+${a.auth === 'msal' ? "import { MsalLoginButton } from '../components/MsalLoginButton';\nimport { useMsal } from '@azure/msal-react';" : ''}
+${a.auth === 'okta' ? "import { OktaLoginButton } from '../components/OktaLoginButton';\nimport { useOktaAuth } from '@okta/okta-react';" : ''}
 
 ${a.routing ? `
 // Home Page Component
@@ -71,6 +73,8 @@ const HomePage = () => {
             <li>✅ ${a.style.toUpperCase()} Styling</li>
             <li>✅ ${a.bundler.charAt(0).toUpperCase() + a.bundler.slice(1)} Bundler</li>
             ${a.framework !== 'none' ? `<li>✅ ${a.framework.charAt(0).toUpperCase() + a.framework.slice(1)} UI Framework</li>` : ''}
+            ${a.auth === 'msal' ? '<li>✅ Azure AD (MSAL) Authentication</li>' : ''}
+            ${a.auth === 'okta' ? '<li>✅ Okta Authentication</li>' : ''}
             ${a.stateManagement === 'redux' ? '<li>✅ Redux Toolkit State Management</li>' : ''}
             ${a.stateManagement === 'zustand' ? '<li>✅ Zustand State Management</li>' : ''}
             ${a.i18n ? '<li>✅ Internationalization (i18n)</li>' : ''}
@@ -203,6 +207,50 @@ const FeaturesPage = () => {
   );
 };
 
+${a.auth === 'msal' || a.auth === 'okta' ? `
+// Authentication Info Component
+const AuthInfo = () => {
+  ${a.auth === 'msal' ? `const { accounts } = useMsal();
+  
+  if (accounts.length === 0) {
+    return (
+      <div className="auth-info">
+        <p>Not authenticated. Click the button above to sign in.</p>
+      </div>
+    );
+  }
+  
+  const account = accounts[0];
+  return (
+    <div className="auth-info">
+      <h4>User Information</h4>
+      <p><strong>Name:</strong> {account.name}</p>
+      <p><strong>Email:</strong> {account.username}</p>
+      <p><strong>Account ID:</strong> {account.localAccountId}</p>
+    </div>
+  );` : ''}
+  ${a.auth === 'okta' ? `const { authState } = useOktaAuth();
+  
+  if (!authState || !authState.isAuthenticated) {
+    return (
+      <div className="auth-info">
+        <p>Not authenticated. Click the button above to sign in.</p>
+      </div>
+    );
+  }
+  
+  const user = authState.idToken?.claims;
+  return (
+    <div className="auth-info">
+      <h4>User Information</h4>
+      <p><strong>Name:</strong> {user?.name || 'N/A'}</p>
+      <p><strong>Email:</strong> {user?.email || 'N/A'}</p>
+      <p><strong>Subject:</strong> {user?.sub || 'N/A'}</p>
+    </div>
+  );` : ''}
+};
+` : ''}
+
 // Demo Page Component
 const DemoPage = () => {
   ${a.i18n ? "const { t, i18n } = useTranslation();" : ''}
@@ -259,6 +307,28 @@ const DemoPage = () => {
                 <li>Structured data markup</li>
                 <li>Google Analytics tracking</li>
               </ul>
+            </div>
+          </div>
+        </section>` : ''}
+
+        ${a.auth === 'msal' ? `
+        <section className="demo-section">
+          <h2>MSAL Authentication Demo</h2>
+          <div className="demo-examples">
+            <div className="auth-demo">
+              <MsalLoginButton />
+              <AuthInfo />
+            </div>
+          </div>
+        </section>` : ''}
+
+        ${a.auth === 'okta' ? `
+        <section className="demo-section">
+          <h2>Okta Authentication Demo</h2>
+          <div className="demo-examples">
+            <div className="auth-demo">
+              <OktaLoginButton />
+              <AuthInfo />
             </div>
           </div>
         </section>` : ''}
@@ -367,6 +437,11 @@ const AppContent = () => {
               <Link to="/features" className={\`nav-link $\{location.pathname === '/features' ? 'active' : ''}\`}>Features</Link>
               <Link to="/demo" className={\`nav-link $\{location.pathname === '/demo' ? 'active' : ''}\`}>Demo</Link>
             </div>
+            ${a.auth === 'msal' || a.auth === 'okta' ? `
+            <div className="nav-auth">
+              ${a.auth === 'msal' ? '<MsalLoginButton />' : ''}
+              ${a.auth === 'okta' ? '<OktaLoginButton />' : ''}
+            </div>` : ''}
           </div>
         </nav>
 
@@ -385,7 +460,7 @@ const AppContent = () => {
 
 const App = () => {
   return (
-    ${a.stateManagement === 'redux' ? '<Provider store={store}><AppContent /></Provider>' : '<AppContent />'}
+    ${a.stateManagement === 'redux' ? '<Provider store={store}><BrowserRouter><AppContent /></BrowserRouter></Provider>' : '<BrowserRouter><AppContent /></BrowserRouter>'}
   );
 };
 
@@ -640,6 +715,81 @@ body {
   color: #007bff;
   background-color: rgba(0, 123, 255, 0.1);
   border-color: #007bff;
+}
+
+.nav-auth {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+}
+
+.auth-buttons {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.loginBtn, .logoutBtn {
+  padding: 0.5rem 1.5rem;
+  border-radius: 25px;
+  border: none;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 0.9rem;
+}
+
+.loginBtn {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+}
+
+.loginBtn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+}
+
+.logoutBtn {
+  background-color: #dc3545;
+  color: white;
+  margin-left: 0.5rem;
+}
+
+.logoutBtn:hover {
+  background-color: #c82333;
+  transform: translateY(-2px);
+}
+
+.auth-info {
+  margin-top: 1rem;
+  padding: 1.5rem;
+  background: linear-gradient(135deg, #667eea15 0%, #764ba215 100%);
+  border-radius: 8px;
+  border-left: 4px solid #667eea;
+}
+
+.auth-info h4 {
+  margin: 0 0 1rem 0;
+  color: #333;
+  font-size: 1.1rem;
+}
+
+.auth-info p {
+  margin: 0.5rem 0;
+  color: #666;
+  font-size: 0.95rem;
+}
+
+.auth-info strong {
+  color: #333;
+  font-weight: 600;
+}
+
+.auth-demo {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 2rem;
 }
 
 /* Main Content Area */
@@ -1777,7 +1927,142 @@ export default {
   getArticleStructuredData,
   getBreadcrumbStructuredData,
   getProductStructuredData,
-};`
+};`,
+
+  // MSAL Configuration
+  getMsalConfig: () => `export const msalConfig: any = {
+  auth: {
+    clientId: "YOUR_CLIENT_ID", // Replace with your Azure AD client ID
+    authority: "https://login.microsoftonline.com/YOUR_TENANT_ID", // Replace with your tenant ID
+    redirectUri: window.location.origin, // Automatically uses current origin
+  },
+  cache: {
+    cacheLocation: 'sessionStorage',
+    storeAuthStateInCookie: true,
+  },
+};
+
+export const loginRequest = {
+  scopes: ['user.read', 'https://management.azure.com/user_impersonation'],
+};`,
+
+  // MSAL Login Button component
+  getMsalLoginButton: () => `import { useMsal } from '@azure/msal-react';
+import { loginRequest } from '../config/msalConfig';
+
+export function MsalLoginButton() {
+  const { instance, accounts } = useMsal();
+
+  const handleLogin = () => {
+    instance.loginPopup(loginRequest).catch((e) => {
+      console.error('Login error:', e);
+    });
+  };
+
+  const handleLogout = () => {
+    instance.logoutPopup().catch((e) => {
+      console.error('Logout error:', e);
+    });
+  };
+
+  return (
+    <div className="auth-buttons">
+      {accounts.length === 0 ? (
+        <button onClick={handleLogin} className="loginBtn">
+          Sign In with Microsoft
+        </button>
+      ) : (
+        <div>
+          <span>Welcome, {accounts[0].name}</span>
+          <button onClick={handleLogout} className="logoutBtn">
+            Sign Out
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}`,
+
+  // Okta Configuration
+  getOktaConfig: () => `import { OktaAuthOptions } from '@okta/okta-auth-js';
+
+const oktaConfig: OktaAuthOptions = {
+  clientId: 'YOUR_OKTA_CLIENT_ID', // Replace with your Okta client ID
+  issuer: 'https://YOUR_OKTA_DOMAIN/oauth2/default', // Replace with your Okta domain
+  redirectUri: window.location.origin + '/login/callback',
+  scopes: ['openid', 'profile', 'email'],
+  pkce: true,
+  disableHttpsCheck: process.env.NODE_ENV === 'development',
+};
+
+export default oktaConfig;`,
+
+  // Okta Login Button component
+  getOktaLoginButton: () => `import { useOktaAuth } from '@okta/okta-react';
+
+export function OktaLoginButton() {
+  const { oktaAuth, authState } = useOktaAuth();
+
+  const handleLogin = async () => {
+    await oktaAuth.signInWithRedirect();
+  };
+
+  const handleLogout = async () => {
+    await oktaAuth.signOut();
+  };
+
+  if (!authState) {
+    return <div>Loading...</div>;
+  }
+
+  return (
+    <div className="auth-buttons">
+      {!authState.isAuthenticated ? (
+        <button onClick={handleLogin} className="loginBtn">
+          Sign In with Okta
+        </button>
+      ) : (
+        <div>
+          <span>Welcome, {authState.idToken?.claims.name || 'User'}</span>
+          <button onClick={handleLogout} className="logoutBtn">
+            Sign Out
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}`,
+
+  // Authentication README
+  getAuthReadme: (authType: string) => `# ${authType.toUpperCase()} Authentication Setup
+
+This project is configured with ${authType.toUpperCase()} authentication.
+
+## Setup Instructions
+
+${authType === 'msal' ? `### Azure AD (MSAL) Configuration
+
+1. Register your app in Azure Portal
+2. Update \`src/config/msalConfig.ts\` with your Client ID and Tenant ID
+3. Configure API permissions in Azure Portal
+
+See the full setup guide in the MSAL documentation.` : `### Okta Configuration
+
+1. Create an Okta developer account
+2. Create a new application in Okta Dashboard
+3. Update \`src/config/oktaConfig.ts\` with your Client ID and Domain
+
+See the full setup guide in the Okta documentation.`}
+
+## Usage
+
+Authentication components are available in \`src/components/\`:
+- Login/Logout button component
+- Protected route examples
+
+Check the component files for implementation details.
+`
+
 };
 
 
@@ -2913,6 +3198,142 @@ function fixLintIssues(workspacePath: string, a: any) {
   }
 }
 
+function setupAuthentication(workspacePath: string, a: any) {
+  if (!a.auth || a.auth === 'custom') {
+    return; // No setup needed for custom auth
+  }
+
+  try {
+    console.log(`\n🔐 Setting up ${a.auth.toUpperCase()} authentication...`);
+
+    // Detect app structure
+    const standaloneAppPath = path.join(workspacePath, "src");
+    const multiAppPath = path.join(workspacePath, "apps", a.name);
+
+    let appPath: string;
+    let srcPath: string;
+
+    if (fs.existsSync(standaloneAppPath)) {
+      appPath = workspacePath;
+      srcPath = standaloneAppPath;
+    } else if (fs.existsSync(multiAppPath)) {
+      appPath = multiAppPath;
+      srcPath = path.join(appPath, "src");
+    } else {
+      console.warn("⚠️  Could not detect app structure for auth setup");
+      return;
+    }
+
+    // Create config directory
+    const configPath = path.join(srcPath, "config");
+    fs.mkdirSync(configPath, { recursive: true });
+
+    // Create components directory
+    const componentsPath = path.join(srcPath, "components");
+    fs.mkdirSync(componentsPath, { recursive: true });
+
+    if (a.auth === 'msal') {
+      // Create MSAL configuration
+      const msalConfigPath = path.join(configPath, "msalConfig.ts");
+      const msalConfigContent = TEMPLATES.getMsalConfig();
+      createFileWithErrorHandling(msalConfigPath, msalConfigContent, "MSAL configuration");
+
+      // Create MSAL Login Button component
+      const msalButtonPath = path.join(componentsPath, "MsalLoginButton.tsx");
+      const msalButtonContent = TEMPLATES.getMsalLoginButton();
+      createFileWithErrorHandling(msalButtonPath, msalButtonContent, "MSAL Login Button component");
+
+      // Update main.tsx to wrap with MsalProvider
+      const mainTsxPath = path.join(srcPath, "main.tsx");
+      if (fs.existsSync(mainTsxPath)) {
+        const updatedMain = `import { StrictMode } from 'react';
+import * as ReactDOM from 'react-dom/client';
+import { MsalProvider } from '@azure/msal-react';
+import { PublicClientApplication } from '@azure/msal-browser';
+import { msalConfig } from './config/msalConfig';
+import App from './app/app';
+
+const msalInstance = new PublicClientApplication(msalConfig);
+
+const root = ReactDOM.createRoot(
+  document.getElementById('root') as HTMLElement
+);
+
+root.render(
+  <StrictMode>
+    <MsalProvider instance={msalInstance}>
+      <App />
+    </MsalProvider>
+  </StrictMode>
+);`;
+        fs.writeFileSync(mainTsxPath, updatedMain);
+        console.log("✅ Updated main.tsx with MsalProvider");
+      }
+
+      console.log("✅ MSAL authentication setup completed!");
+      console.log("   📝 Update src/config/msalConfig.ts with your Azure AD credentials");
+      console.log("   📝 Use <MsalLoginButton /> component in your app");
+
+    } else if (a.auth === 'okta') {
+      // Create Okta configuration
+      const oktaConfigPath = path.join(configPath, "oktaConfig.ts");
+      const oktaConfigContent = TEMPLATES.getOktaConfig();
+      createFileWithErrorHandling(oktaConfigPath, oktaConfigContent, "Okta configuration");
+
+      // Create Okta Login Button component
+      const oktaButtonPath = path.join(componentsPath, "OktaLoginButton.tsx");
+      const oktaButtonContent = TEMPLATES.getOktaLoginButton();
+      createFileWithErrorHandling(oktaButtonPath, oktaButtonContent, "Okta Login Button component");
+
+      // Update main.tsx to wrap with Okta Security
+      const mainTsxPath = path.join(srcPath, "main.tsx");
+      if (fs.existsSync(mainTsxPath)) {
+        const updatedMain = `import { StrictMode } from 'react';
+import * as ReactDOM from 'react-dom/client';
+import { OktaAuth } from '@okta/okta-auth-js';
+import { Security } from '@okta/okta-react';
+import { BrowserRouter as Router } from 'react-router-dom';
+import oktaConfig from './config/oktaConfig';
+import App from './app/app';
+
+const oktaAuth = new OktaAuth(oktaConfig);
+
+const restoreOriginalUri = async (_oktaAuth: any, originalUri: string) => {
+  window.location.replace(originalUri || '/');
+};
+
+const root = ReactDOM.createRoot(
+  document.getElementById('root') as HTMLElement
+);
+
+root.render(
+  <StrictMode>
+    <Router>
+      <Security oktaAuth={oktaAuth} restoreOriginalUri={restoreOriginalUri}>
+        <App />
+      </Security>
+    </Router>
+  </StrictMode>
+);`;
+        fs.writeFileSync(mainTsxPath, updatedMain);
+        console.log("✅ Updated main.tsx with Okta Security provider");
+      }
+
+      console.log("✅ Okta authentication setup completed!");
+      console.log("   📝 Update src/config/oktaConfig.ts with your Okta credentials");
+      console.log("   📝 Use <OktaLoginButton /> component in your app");
+    }
+
+    // Create README for authentication
+    const authReadmePath = path.join(srcPath, `${a.auth.toUpperCase()}_SETUP.md`);
+    const authReadmeContent = TEMPLATES.getAuthReadme(a.auth);
+    createFileWithErrorHandling(authReadmePath, authReadmeContent, "Authentication setup guide");
+
+  } catch (error) {
+    console.warn(`⚠️  Could not setup ${a.auth} authentication:`, error.message);
+  }
+}
+
 function applyPTGCustomizations(workspacePath: string, a: any) {
   try {
     console.log("🔧 Applying framework-specific customizations...");
@@ -3122,6 +3543,9 @@ function applyPTGCustomizations(workspacePath: string, a: any) {
 
     // Update test files with proper formatting
     updateTestFiles(workspacePath, a);
+
+    // Setup authentication if MSAL or Okta selected
+    setupAuthentication(workspacePath, a);
 
     // Fix lint issues after all customizations
     fixLintIssues(workspacePath, a);
