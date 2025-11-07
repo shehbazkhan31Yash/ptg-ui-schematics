@@ -43,10 +43,14 @@ export class AuthService {
   constructor(private http: HttpClient) {}
 
   login(credentials: LoginCredentials): Observable<boolean> {
-    return this.http.post<DummyAuthResponse>(`${this.API_URL}/auth/login`, credentials)
+    const headers = {
+      'Content-Type': 'application/json'
+    };
+    
+    return this.http.post<DummyAuthResponse>(`${this.API_URL}/auth/login`, credentials, { headers })
       .pipe(
         map(response => {
-          if (response.token) {
+          if (response && response.token) {
             const user: User = {
               id: response.id,
               username: response.username,
@@ -94,7 +98,10 @@ export class AuthService {
     }
 
     return this.http.get<User>(`${this.API_URL}/auth/me`, {
-      headers: { Authorization: `Bearer ${token}` }
+      headers: { 
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      }
     }).pipe(
       map(user => {
         this.currentUserSubject.next(user);

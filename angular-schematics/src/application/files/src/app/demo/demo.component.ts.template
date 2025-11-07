@@ -6,6 +6,7 @@ import { TranslateService } from '@ngx-translate/core';
 import { AuthService } from '../core/services/auth.service';
 <% } %>
 
+
 interface User {
   id: number;
   name: string;
@@ -23,6 +24,9 @@ export class DemoComponent {
   <% } %>
   users: User[] = [];
   loading = false;
+  <% if (authentication === 'custom') { %>
+  apiTestResult: string = '';
+  <% } %>
 
   constructor(
     <% if (i18n) { %>
@@ -68,6 +72,30 @@ export class DemoComponent {
     } else {
       await this.authService.login();
     }
+  }
+  <% } %>
+
+  <% if (authentication === 'custom') { %>
+  testDirectAPI() {
+    this.apiTestResult = 'Testing API...';
+    
+    const testCredentials = {
+      username: 'kminchelle',
+      password: '0lelplR'
+    };
+    
+    fetch('https://dummyjson.com/auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(testCredentials)
+    })
+    .then(res => res.json())
+    .then(data => {
+      this.apiTestResult = JSON.stringify(data, null, 2);
+    })
+    .catch(error => {
+      this.apiTestResult = 'Error: ' + JSON.stringify(error, null, 2);
+    });
   }
   <% } %>
 

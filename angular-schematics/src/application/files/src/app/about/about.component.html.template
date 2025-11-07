@@ -1,35 +1,133 @@
 <div class="about-container">
   <header class="about-header">
     <h1>About <%= appName %></h1>
+    <p class="app-description">Enterprise-grade Angular application built with modern web technologies</p>
   </header>
   
   <main class="about-content">
-    <section class="about-info">
-      <h2>Application Information</h2>
-      <p>This is a modern Angular application generated using PTG UI Schematics. Built with the latest Angular framework and best practices for enterprise-grade development.</p>
+    <section class="tech-stack">
+      <h2>🛠️ Technology Stack</h2>
       
-      <div class="tech-stack">
-        <h3>Technology Stack</h3>
+      <div class="tech-category">
+        <h3>Core Framework</h3>
         <ul>
-          <li>Angular 18+</li>
-          <li>TypeScript</li>
-          <li>SCSS</li>
-          <% if (framework !== 'none') { %>
-          <li><%= framework.charAt(0).toUpperCase() + framework.slice(1) %> UI Framework</li>
+          <li><strong>Angular</strong> ^18.0.0</li>
+          <li><strong>TypeScript</strong> ~5.4.0</li>
+          <li><strong>RxJS</strong> ~7.8.0</li>
+          <% if (standalone) { %>
+          <li><strong>Architecture:</strong> Standalone Components</li>
+          <% } else { %>
+          <li><strong>Architecture:</strong> NgModules</li>
           <% } %>
-          <% if (ngrx) { %>
-          <li>NgRx State Management</li>
+        </ul>
+      </div>
+      
+      <div class="tech-category">
+        <h3>Styling & UI</h3>
+        <ul>
+          <li><strong>Stylesheet:</strong> <%= style.toUpperCase() %></li>
+          <% if (framework && framework !== 'none') { %>
+          <% if (framework === 'material') { %>
+          <li><strong>UI Framework:</strong> Angular Material</li>
+          <% } else if (framework === 'bootstrap') { %>
+          <li><strong>UI Framework:</strong> Bootstrap 5</li>
+          <% } else if (framework === 'tailwind') { %>
+          <li><strong>UI Framework:</strong> Tailwind CSS</li>
           <% } %>
-          <% if (i18n) { %>
-          <li>Internationalization (i18n)</li>
+          <% } %>
+          <li><strong>Responsive Design:</strong> CSS Grid & Flexbox</li>
+        </ul>
+      </div>
+      
+      <% if (authentication && authentication !== 'none') { %>
+      <div class="tech-category">
+        <h3>Authentication</h3>
+        <ul>
+          <% if (authentication === 'msal') { %>
+          <li><strong>Provider:</strong> Microsoft Authentication Library (MSAL)</li>
+          <li><strong>Protocol:</strong> OAuth 2.0 / OpenID Connect</li>
+          <% } else if (authentication === 'okta') { %>
+          <li><strong>Provider:</strong> Okta Identity Platform</li>
+          <li><strong>Protocol:</strong> OIDC / SAML</li>
+          <% } else if (authentication === 'custom') { %>
+          <li><strong>Provider:</strong> Custom JWT Implementation</li>
+          <li><strong>API:</strong> DummyJSON (Demo)</li>
+          <% } %>
+          <li><strong>Security:</strong> Route Guards & HTTP Interceptors</li>
+        </ul>
+      </div>
+      <% } %>
+      
+      <% if (ngrx) { %>
+      <div class="tech-category">
+        <h3>State Management</h3>
+        <ul>
+          <li><strong>NgRx Store:</strong> Centralized state management</li>
+          <li><strong>NgRx Effects:</strong> Side effects handling</li>
+          <li><strong>Pattern:</strong> Redux-inspired architecture</li>
+        </ul>
+      </div>
+      <% } %>
+      
+      <% if (i18n) { %>
+      <div class="tech-category">
+        <h3>Internationalization</h3>
+        <ul>
+          <li><strong>Library:</strong> &#64;ngx-translate/core</li>
+          <li><strong>Format:</strong> JSON translation files</li>
+          <li><strong>Features:</strong> Dynamic language switching</li>
+        </ul>
+      </div>
+      <% } %>
+      
+      <% if (seoType && seoType !== 'none') { %>
+      <div class="tech-category">
+        <h3>SEO & Analytics</h3>
+        <ul>
+          <% if (seoType === 'ssr') { %>
+          <li><strong>Rendering:</strong> Server-Side Rendering (SSR)</li>
+          <% } else if (seoType === 'ssg') { %>
+          <li><strong>Rendering:</strong> Static Site Generation (SSG)</li>
+          <% } else { %>
+          <li><strong>SEO:</strong> Meta tags & structured data</li>
+          <% } %>
+          <li><strong>Analytics:</strong> Google Analytics 4</li>
+          <li><strong>Social:</strong> Open Graph & Twitter Cards</li>
+        </ul>
+      </div>
+      <% } %>
+      
+      <div class="tech-category">
+        <h3>Development Tools</h3>
+        <ul>
+          <li><strong>Build Tool:</strong> Angular CLI & Webpack</li>
+          <li><strong>Testing:</strong> Jasmine & Karma</li>
+          <% if (lintingStyle && lintingStyle !== 'none') { %>
+          <li><strong>Linting:</strong> ESLint (<%= lintingStyle.charAt(0).toUpperCase() + lintingStyle.slice(1) %>)</li>
+          <% } %>
+          <% if (husky) { %>
+          <li><strong>Git Hooks:</strong> Husky pre-commit validation</li>
           <% } %>
         </ul>
       </div>
     </section>
     
-    <section class="contact-info">
-      <h3>Contact</h3>
-      <p>For more information about this application, please contact the development team.</p>
+    <section class="app-info">
+      <h2>📋 Application Details</h2>
+      <div class="info-grid">
+        <div class="info-item">
+          <strong>Generated:</strong> {{ getCurrentDate() }}
+        </div>
+        <div class="info-item">
+          <strong>Generator:</strong> PTG UI Schematics v2.0.8
+        </div>
+        <div class="info-item">
+          <strong>Node Version:</strong> {{ getNodeVersion() }}
+        </div>
+        <div class="info-item">
+          <strong>Package Manager:</strong> npm
+        </div>
+      </div>
     </section>
   </main>
 </div>

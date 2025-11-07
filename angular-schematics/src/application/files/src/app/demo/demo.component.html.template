@@ -75,6 +75,13 @@
           <button routerLink="/login" class="auth-btn custom-btn">
             Go to Login Page
           </button>
+          <button (click)="testDirectAPI()" class="auth-btn test-btn">
+            Test API Directly
+          </button>
+          <div *ngIf="apiTestResult" class="api-test-result">
+            <h5>API Test Result:</h5>
+            <pre>{{ apiTestResult }}</pre>
+          </div>
           <div class="auth-info">
             <p><strong>Features:</strong></p>
             <ul>

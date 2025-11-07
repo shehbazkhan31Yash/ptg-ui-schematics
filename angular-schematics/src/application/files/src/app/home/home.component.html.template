@@ -24,12 +24,36 @@
     <h2 itemprop="name">Features included:</h2>
     <ul>
       <li>✅ Angular 18+ with TypeScript</li>
+      <% if (standalone) { %>
+      <li>✅ Standalone Components</li>
+      <% } else { %>
+      <li>✅ NgModules Architecture</li>
+      <% } %>
       <li>✅ Angular Routing</li>
-      <li>✅ SCSS Styling</li>
+      <li>✅ <%= style.toUpperCase() %> Styling</li>
       <li>✅ Shared Module</li>
       <li>✅ Core Module</li>
-      <% if (framework !== 'none') { %>
+      <% if (framework && framework !== 'none') { %>
+      <% if (framework === 'material') { %>
+      <li>✅ Angular Material UI Framework</li>
+      <% } else if (framework === 'bootstrap') { %>
+      <li>✅ Bootstrap UI Framework</li>
+      <% } else if (framework === 'tailwind') { %>
+      <li>✅ Tailwind CSS Framework</li>
+      <% } else { %>
       <li>✅ <%= framework.charAt(0).toUpperCase() + framework.slice(1) %> UI Framework</li>
+      <% } %>
+      <% } %>
+      <% if (authentication && authentication !== 'none') { %>
+      <% if (authentication === 'msal') { %>
+      <li>✅ MSAL Authentication (Microsoft)</li>
+      <% } else if (authentication === 'okta') { %>
+      <li>✅ Okta Authentication (Enterprise SSO)</li>
+      <% } else if (authentication === 'custom') { %>
+      <li>✅ Custom Authentication (JWT)</li>
+      <% } else { %>
+      <li>✅ <%= authentication.charAt(0).toUpperCase() + authentication.slice(1) %> Authentication</li>
+      <% } %>
       <% } %>
       <% if (ngrx) { %>
       <li>✅ NgRx State Management</li>

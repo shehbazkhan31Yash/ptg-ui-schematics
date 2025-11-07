@@ -14,6 +14,7 @@ import { AuthService } from '../core/services/auth.service';
             <p><strong>Demo Credentials:</strong></p>
             <p>Username: <code>kminchelle</code></p>
             <p>Password: <code>0lelplR</code></p>
+            <p><small>Note: These are real working credentials from DummyJSON API</small></p>
           </div>
           
           <div class="form-group">
@@ -183,21 +184,42 @@ export class LoginComponent {
       this.isLoading = true;
       this.errorMessage = '';
       
-      this.authService.login(this.loginForm.value).subscribe({
+      const credentials = {
+        username: this.loginForm.get('username')?.value?.trim(),
+        password: this.loginForm.get('password')?.value
+      };
+      
+      this.authService.login(credentials).subscribe({
         next: (success) => {
           this.isLoading = false;
           if (success) {
             this.router.navigate(['/']);
           } else {
-            this.errorMessage = 'Invalid username or password';
+            this.errorMessage = 'Invalid username or password. Please use the demo credentials provided.';
           }
         },
         error: (error) => {
           this.isLoading = false;
-          this.errorMessage = 'Login failed. Please try again.';
+          console.error('Login error:', error);
+          if (error.status === 400) {
+            this.errorMessage = 'Invalid credentials. Please check username and password.';
+          } else if (error.status === 0) {
+            this.errorMessage = 'Network error. Please check your internet connection.';
+          } else {
+            this.errorMessage = 'Login failed. Please try again with the demo credentials.';
+          }
         }
       });
+    } else {
+      this.markFormGroupTouched();
     }
+  }
+
+  private markFormGroupTouched() {
+    Object.keys(this.loginForm.controls).forEach(key => {
+      const control = this.loginForm.get(key);
+      control?.markAsTouched();
+    });
   }
 
   logout() {
