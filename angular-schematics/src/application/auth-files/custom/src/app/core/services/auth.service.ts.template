@@ -43,14 +43,22 @@ export class AuthService {
   constructor(private http: HttpClient) {}
 
   login(credentials: LoginCredentials): Observable<boolean> {
-    const headers = {
-      'Content-Type': 'application/json'
+    const loginPayload = {
+      username: credentials.username,
+      password: credentials.password,
+      expiresInMins: 30
     };
     
-    return this.http.post<DummyAuthResponse>(`${this.API_URL}/auth/login`, credentials, { headers })
+    const options = {
+      headers: { 'Content-Type': 'application/json' }
+    };
+    
+    return this.http.post<DummyAuthResponse>(`${this.API_URL}/auth/login`, loginPayload, options)
       .pipe(
         map(response => {
+          console.log('Login API response:', response);
           if (response && response.token) {
+            console.log('Login successful, setting session');
             const user: User = {
               id: response.id,
               username: response.username,
@@ -63,11 +71,12 @@ export class AuthService {
             this.setSession(response.token, user);
             return true;
           }
+          console.log('Login failed: No token in response');
           return false;
         }),
         catchError(error => {
           console.error('Login error:', error);
-          return of(false);
+          throw error;
         })
       );
   }

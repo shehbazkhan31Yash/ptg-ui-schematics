@@ -7,7 +7,7 @@ import { TranslateHttpLoader } from '@ngx-translate/http-loader';
 import { HttpClient } from '@angular/common/http';
 <% } %>
 
-import { OKTA_CONFIG, OktaAuthModule, OktaCallbackComponent, OktaAuthGuard } from '@okta/okta-angular';
+import { OKTA_AUTH, OktaAuthModule, OktaCallbackComponent, OktaAuthGuard } from '@okta/okta-angular';
 import { OktaAuth } from '@okta/okta-auth-js';
 
 import { AppRoutingModule } from './app-routing.module';
@@ -55,7 +55,7 @@ export function HttpLoaderFactory(http: HttpClient) {
     })<% } %>
   ],
   providers: [
-    { provide: OKTA_CONFIG, useValue: { oktaAuth } },
+    { provide: OKTA_AUTH, useValue: oktaAuth },
     OktaAuthGuard
   ],
   bootstrap: [AppComponent],

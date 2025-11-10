@@ -61,12 +61,12 @@ function setupOkta(options: ApplicationOptions): Rule {
     const dependencies: NodeDependency[] = [
       {
         type: NodeDependencyType.Default,
-        version: '^6.0.0',
+        version: '^6.4.0',
         name: '@okta/okta-angular'
       },
       {
         type: NodeDependencyType.Default,
-        version: '^7.0.0',
+        version: '^7.5.0',
         name: '@okta/okta-auth-js'
       }
     ];

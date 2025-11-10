@@ -51,6 +51,7 @@ temp/
 
 # Test generated apps (keep specific test folders)
 my-react-app/
+my-angular-app/
 
 # Nx
 .nx/cache

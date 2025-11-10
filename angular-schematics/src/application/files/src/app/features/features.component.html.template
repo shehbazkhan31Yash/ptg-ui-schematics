@@ -82,8 +82,8 @@
         <code>await this.authService.isLoggedIn(); // Check auth status</code>
         <% } else if (authentication === 'custom') { %>
         <div class="setup-step">Demo Credentials (DummyJSON API):</div>
-        <code>Username: kminchelle</code>
-        <code>Password: 0lelplR</code>
+        <code>Username: emilys</code>
+        <code>Password: emilyspass</code>
         <div class="setup-step">Usage:</div>
         <code>this.authService.login(credentials).subscribe();</code>
         <code>this.authService.isLoggedIn(); // Check auth status</code>

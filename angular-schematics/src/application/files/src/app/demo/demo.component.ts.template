@@ -53,7 +53,13 @@ export class DemoComponent {
 
   <% if (i18n) { %>
   getCurrentLanguage(): string {
-    return this.translate.currentLang || 'en';
+    return this.translate?.currentLang || 'en';
+  }
+
+  switchLanguage(language: string): void {
+    if (this.translate) {
+      this.translate.use(language);
+    }
   }
   <% } %>
 
@@ -80,8 +86,9 @@ export class DemoComponent {
     this.apiTestResult = 'Testing API...';
     
     const testCredentials = {
-      username: 'kminchelle',
-      password: '0lelplR'
+      username: 'emilys',
+      password: 'emilyspass',
+      expiresInMins: 30
     };
     
     fetch('https://dummyjson.com/auth/login', {

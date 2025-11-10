@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
+import { Location } from '@angular/common';
 import { AuthService } from '../core/services/auth.service';
 
 @Component({
@@ -8,12 +9,17 @@ import { AuthService } from '../core/services/auth.service';
   template: `
     <div class="login-container">
       <div class="login-card">
-        <h2>Sign In</h2>
+        <div class="login-header">
+          <button type="button" class="back-btn" (click)="goBack()" title="Go back">
+            ← Back
+          </button>
+          <h2>Sign In</h2>
+        </div>
         <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" *ngIf="!(authService.currentUser$ | async)">
           <div class="demo-info">
             <p><strong>Demo Credentials:</strong></p>
-            <p>Username: <code>kminchelle</code></p>
-            <p>Password: <code>0lelplR</code></p>
+            <p>Username: <code>emilys</code></p>
+            <p>Password: <code>emilyspass</code></p>
             <p><small>Note: These are real working credentials from DummyJSON API</small></p>
           </div>
           
@@ -54,6 +60,10 @@ import { AuthService } from '../core/services/auth.service';
           <div class="error-message" *ngIf="errorMessage">
             {{ errorMessage }}
           </div>
+          
+          <div class="success-message" *ngIf="successMessage">
+            {{ successMessage }}
+          </div>
         </form>
         
         <div *ngIf="authService.currentUser$ | async as user" class="user-info">
@@ -80,6 +90,30 @@ import { AuthService } from '../core/services/auth.service';
       border-radius: 8px;
       max-width: 400px;
       width: 100%;
+    }
+    .login-header {
+      position: relative;
+      margin-bottom: 1rem;
+    }
+    .back-btn {
+      position: absolute;
+      left: -0.5rem;
+      top: 0;
+      background: none;
+      border: none;
+      color: #007bff;
+      cursor: pointer;
+      font-size: 0.9rem;
+      padding: 0.25rem 0.5rem;
+      border-radius: 4px;
+    }
+    .back-btn:hover {
+      background-color: #f8f9fa;
+      color: #0056b3;
+    }
+    h2 {
+      text-align: center;
+      margin: 0;
     }
     .form-group {
       margin-bottom: 1rem;
@@ -122,6 +156,12 @@ import { AuthService } from '../core/services/auth.service';
       color: #dc3545;
       margin-top: 1rem;
       text-align: center;
+    }
+    .success-message {
+      color: #28a745;
+      margin-top: 1rem;
+      text-align: center;
+      font-weight: 500;
     }
     .user-info {
       text-align: center;
@@ -167,15 +207,18 @@ export class LoginComponent {
   loginForm: FormGroup;
   isLoading = false;
   errorMessage = '';
+  successMessage = '';
 
   constructor(
     private fb: FormBuilder,
     private router: Router,
+    private route: ActivatedRoute,
+    private location: Location,
     public authService: AuthService
   ) {
     this.loginForm = this.fb.group({
-      username: ['kminchelle', Validators.required],
-      password: ['0lelplR', Validators.required]
+      username: ['emilys', Validators.required],
+      password: ['emilyspass', Validators.required]
     });
   }
 
@@ -183,6 +226,7 @@ export class LoginComponent {
     if (this.loginForm.valid) {
       this.isLoading = true;
       this.errorMessage = '';
+      this.successMessage = '';
       
       const credentials = {
         username: this.loginForm.get('username')?.value?.trim(),
@@ -191,22 +235,51 @@ export class LoginComponent {
       
       this.authService.login(credentials).subscribe({
         next: (success) => {
+          console.log('Login component received success:', success);
           this.isLoading = false;
           if (success) {
-            this.router.navigate(['/']);
+            this.errorMessage = '';
+            this.successMessage = '✅ Login successful! You are now signed in.';
           } else {
+            this.successMessage = '';
             this.errorMessage = 'Invalid username or password. Please use the demo credentials provided.';
           }
         },
         error: (error) => {
+          console.log('Login component received error:', error);
           this.isLoading = false;
-          console.error('Login error:', error);
-          if (error.status === 400) {
-            this.errorMessage = 'Invalid credentials. Please check username and password.';
-          } else if (error.status === 0) {
-            this.errorMessage = 'Network error. Please check your internet connection.';
+          this.successMessage = '';
+          
+          // Handle different error types
+          if (error.status === 0) {
+            // Network/CORS errors
+            if (error.error instanceof ProgressEvent) {
+              this.errorMessage = 'Network error: Unable to reach server. Check your internet connection.';
+            } else if (error.message?.toLowerCase().includes('cors')) {
+              this.errorMessage = 'CORS policy error: Authentication server access blocked by browser security.';
+            } else {
+              this.errorMessage = 'Connection failed: Unable to connect to authentication server.';
+            }
+          } else if (error.status === 400) {
+            this.errorMessage = 'Invalid credentials: Please use demo credentials (emilys / emilyspass)';
+          } else if (error.status === 401) {
+            this.errorMessage = 'Unauthorized: Invalid username or password.';
+          } else if (error.status === 403) {
+            this.errorMessage = 'Access forbidden: You do not have permission to access this resource.';
+          } else if (error.status === 404) {
+            this.errorMessage = 'Service not found: Authentication endpoint is unavailable.';
+          } else if (error.status === 408) {
+            this.errorMessage = 'Request timeout: Server took too long to respond. Please try again.';
+          } else if (error.status === 429) {
+            this.errorMessage = 'Too many requests: Please wait a moment before trying again.';
+          } else if (error.status >= 500 && error.status < 600) {
+            this.errorMessage = `Server error (${error.status}): Authentication service is temporarily unavailable.`;
+          } else if (error.name === 'TimeoutError') {
+            this.errorMessage = 'Request timeout: Please check your connection and try again.';
+          } else if (error.name === 'HttpErrorResponse') {
+            this.errorMessage = `HTTP error (${error.status}): ${error.statusText || 'Unknown error occurred'}.`;
           } else {
-            this.errorMessage = 'Login failed. Please try again with the demo credentials.';
+            this.errorMessage = `Unexpected error: ${error.message || 'Please try again with demo credentials.'}`;
           }
         }
       });
@@ -224,5 +297,9 @@ export class LoginComponent {
 
   logout() {
     this.authService.logout();
+  }
+
+  goBack() {
+    this.location.back();
   }
 }

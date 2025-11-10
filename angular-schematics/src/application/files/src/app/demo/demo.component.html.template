@@ -69,8 +69,8 @@
           <p>Try the working demo with real API:</p>
           <div class="demo-credentials">
             <p><strong>Demo Credentials:</strong></p>
-            <code>Username: kminchelle</code>
-            <code>Password: 0lelplR</code>
+            <code>Username: emilys</code>
+            <code>Password: emilyspass</code>
           </div>
           <button routerLink="/login" class="auth-btn custom-btn">
             Go to Login Page
