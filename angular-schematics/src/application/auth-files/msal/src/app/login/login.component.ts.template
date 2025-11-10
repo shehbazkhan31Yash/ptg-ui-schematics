@@ -68,11 +68,11 @@ export class LoginComponent {
     this.user = this.authService.getUser();
   }
 
-  login() {
-    this.authService.login();
+  async login() {
+    await this.authService.login();
   }
 
-  logout() {
-    this.authService.logout();
+  async logout() {
+    await this.authService.logout();
   }
 }
