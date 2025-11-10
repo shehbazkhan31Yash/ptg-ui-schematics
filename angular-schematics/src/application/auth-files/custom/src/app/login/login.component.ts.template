@@ -1,0 +1,305 @@
+import { Component } from '@angular/core';
+import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { Router, ActivatedRoute } from '@angular/router';
+import { Location } from '@angular/common';
+import { AuthService } from '../core/services/auth.service';
+
+@Component({
+  selector: 'app-login',
+  template: `
+    <div class="login-container">
+      <div class="login-card">
+        <div class="login-header">
+          <button type="button" class="back-btn" (click)="goBack()" title="Go back">
+            ← Back
+          </button>
+          <h2>Sign In</h2>
+        </div>
+        <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" *ngIf="!(authService.currentUser$ | async)">
+          <div class="demo-info">
+            <p><strong>Demo Credentials:</strong></p>
+            <p>Username: <code>emilys</code></p>
+            <p>Password: <code>emilyspass</code></p>
+            <p><small>Note: These are real working credentials from DummyJSON API</small></p>
+          </div>
+          
+          <div class="form-group">
+            <label for="username">Username:</label>
+            <input 
+              type="text" 
+              id="username" 
+              formControlName="username" 
+              class="form-control"
+              placeholder="Enter username"
+              [class.is-invalid]="loginForm.get('username')?.invalid && loginForm.get('username')?.touched">
+            <div class="invalid-feedback" *ngIf="loginForm.get('username')?.invalid && loginForm.get('username')?.touched">
+              Username is required.
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <label for="password">Password:</label>
+            <input 
+              type="password" 
+              id="password" 
+              formControlName="password" 
+              class="form-control"
+              [class.is-invalid]="loginForm.get('password')?.invalid && loginForm.get('password')?.touched">
+            <div class="invalid-feedback" *ngIf="loginForm.get('password')?.invalid && loginForm.get('password')?.touched">
+              Password is required.
+            </div>
+          </div>
+          
+          <button 
+            type="submit" 
+            class="btn btn-primary" 
+            [disabled]="loginForm.invalid || isLoading">
+            {{ isLoading ? 'Signing in...' : 'Sign In' }}
+          </button>
+          
+          <div class="error-message" *ngIf="errorMessage">
+            {{ errorMessage }}
+          </div>
+          
+          <div class="success-message" *ngIf="successMessage">
+            {{ successMessage }}
+          </div>
+        </form>
+        
+        <div *ngIf="authService.currentUser$ | async as user" class="user-info">
+          <div class="user-avatar">
+            <img [src]="user.image" [alt]="user.firstName" class="avatar">
+          </div>
+          <p>Welcome, {{ user.firstName }} {{ user.lastName }}!</p>
+          <p class="user-details">{{ '@' + user.username }} • {{ user.email }}</p>
+          <button class="btn btn-secondary" (click)="logout()">Sign Out</button>
+        </div>
+      </div>
+    </div>
+  `,
+  styles: [`
+    .login-container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 80vh;
+    }
+    .login-card {
+      padding: 2rem;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      max-width: 400px;
+      width: 100%;
+    }
+    .login-header {
+      position: relative;
+      margin-bottom: 1rem;
+    }
+    .back-btn {
+      position: absolute;
+      left: -0.5rem;
+      top: 0;
+      background: none;
+      border: none;
+      color: #007bff;
+      cursor: pointer;
+      font-size: 0.9rem;
+      padding: 0.25rem 0.5rem;
+      border-radius: 4px;
+    }
+    .back-btn:hover {
+      background-color: #f8f9fa;
+      color: #0056b3;
+    }
+    h2 {
+      text-align: center;
+      margin: 0;
+    }
+    .form-group {
+      margin-bottom: 1rem;
+    }
+    .form-control {
+      width: 100%;
+      padding: 0.5rem;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+    }
+    .form-control.is-invalid {
+      border-color: #dc3545;
+    }
+    .invalid-feedback {
+      color: #dc3545;
+      font-size: 0.875rem;
+      margin-top: 0.25rem;
+    }
+    .btn {
+      padding: 0.75rem 1.5rem;
+      margin: 0.5rem 0;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      width: 100%;
+    }
+    .btn-primary {
+      background-color: #007bff;
+      color: white;
+    }
+    .btn-secondary {
+      background-color: #6c757d;
+      color: white;
+    }
+    .btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+    .error-message {
+      color: #dc3545;
+      margin-top: 1rem;
+      text-align: center;
+    }
+    .success-message {
+      color: #28a745;
+      margin-top: 1rem;
+      text-align: center;
+      font-weight: 500;
+    }
+    .user-info {
+      text-align: center;
+      padding: 1rem;
+      background-color: #f8f9fa;
+      border-radius: 4px;
+    }
+    .demo-info {
+      background-color: #e7f3ff;
+      padding: 1rem;
+      border-radius: 4px;
+      margin-bottom: 1rem;
+      font-size: 0.875rem;
+    }
+    .demo-info code {
+      background-color: #fff;
+      padding: 0.2rem 0.4rem;
+      border-radius: 3px;
+      font-family: monospace;
+    }
+    .user-avatar {
+      margin-bottom: 1rem;
+    }
+    .avatar {
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      object-fit: cover;
+    }
+    .user-details {
+      color: #6c757d;
+      font-size: 0.875rem;
+      margin: 0.5rem 0;
+    }
+    label {
+      display: block;
+      margin-bottom: 0.5rem;
+      font-weight: bold;
+    }
+  `]
+})
+export class LoginComponent {
+  loginForm: FormGroup;
+  isLoading = false;
+  errorMessage = '';
+  successMessage = '';
+
+  constructor(
+    private fb: FormBuilder,
+    private router: Router,
+    private route: ActivatedRoute,
+    private location: Location,
+    public authService: AuthService
+  ) {
+    this.loginForm = this.fb.group({
+      username: ['emilys', Validators.required],
+      password: ['emilyspass', Validators.required]
+    });
+  }
+
+  onSubmit() {
+    if (this.loginForm.valid) {
+      this.isLoading = true;
+      this.errorMessage = '';
+      this.successMessage = '';
+      
+      const credentials = {
+        username: this.loginForm.get('username')?.value?.trim(),
+        password: this.loginForm.get('password')?.value
+      };
+      
+      this.authService.login(credentials).subscribe({
+        next: (success) => {
+          console.log('Login component received success:', success);
+          this.isLoading = false;
+          if (success) {
+            this.errorMessage = '';
+            this.successMessage = '✅ Login successful! You are now signed in.';
+          } else {
+            this.successMessage = '';
+            this.errorMessage = 'Invalid username or password. Please use the demo credentials provided.';
+          }
+        },
+        error: (error) => {
+          console.log('Login component received error:', error);
+          this.isLoading = false;
+          this.successMessage = '';
+          
+          // Handle different error types
+          if (error.status === 0) {
+            // Network/CORS errors
+            if (error.error instanceof ProgressEvent) {
+              this.errorMessage = 'Network error: Unable to reach server. Check your internet connection.';
+            } else if (error.message?.toLowerCase().includes('cors')) {
+              this.errorMessage = 'CORS policy error: Authentication server access blocked by browser security.';
+            } else {
+              this.errorMessage = 'Connection failed: Unable to connect to authentication server.';
+            }
+          } else if (error.status === 400) {
+            this.errorMessage = 'Invalid credentials: Please use demo credentials (emilys / emilyspass)';
+          } else if (error.status === 401) {
+            this.errorMessage = 'Unauthorized: Invalid username or password.';
+          } else if (error.status === 403) {
+            this.errorMessage = 'Access forbidden: You do not have permission to access this resource.';
+          } else if (error.status === 404) {
+            this.errorMessage = 'Service not found: Authentication endpoint is unavailable.';
+          } else if (error.status === 408) {
+            this.errorMessage = 'Request timeout: Server took too long to respond. Please try again.';
+          } else if (error.status === 429) {
+            this.errorMessage = 'Too many requests: Please wait a moment before trying again.';
+          } else if (error.status >= 500 && error.status < 600) {
+            this.errorMessage = `Server error (${error.status}): Authentication service is temporarily unavailable.`;
+          } else if (error.name === 'TimeoutError') {
+            this.errorMessage = 'Request timeout: Please check your connection and try again.';
+          } else if (error.name === 'HttpErrorResponse') {
+            this.errorMessage = `HTTP error (${error.status}): ${error.statusText || 'Unknown error occurred'}.`;
+          } else {
+            this.errorMessage = `Unexpected error: ${error.message || 'Please try again with demo credentials.'}`;
+          }
+        }
+      });
+    } else {
+      this.markFormGroupTouched();
+    }
+  }
+
+  private markFormGroupTouched() {
+    Object.keys(this.loginForm.controls).forEach(key => {
+      const control = this.loginForm.get(key);
+      control?.markAsTouched();
+    });
+  }
+
+  logout() {
+    this.authService.logout();
+  }
+
+  goBack() {
+    this.location.back();
+  }
+}

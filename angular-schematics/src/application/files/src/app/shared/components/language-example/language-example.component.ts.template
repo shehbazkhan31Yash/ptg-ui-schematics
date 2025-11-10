@@ -1,5 +1,5 @@
-<% if (i18n) { %>import { Component } from '@angular/core';
-import { TranslateService } from '@ngx-translate/core';
+import { Component } from '@angular/core';
+<% if (i18n) { %>import { TranslateService } from '@ngx-translate/core';<% } %>
 
 @Component({
   selector: 'app-language-example',
@@ -7,7 +7,7 @@ import { TranslateService } from '@ngx-translate/core';
   styleUrls: ['./language-example.component.scss']
 })
 export class LanguageExampleComponent {
-
+<% if (i18n) { %>
   constructor(private translateService: TranslateService) {
     // Set default language
     this.translateService.setDefaultLang('en');
@@ -21,5 +21,15 @@ export class LanguageExampleComponent {
   getCurrentLanguage(): string {
     return this.translateService.currentLang || 'en';
   }
-}
+<% } else { %>
+  constructor() {}
+
+  switchLanguage(language: string): void {
+    console.log('Language switching not available - i18n not enabled');
+  }
+
+  getCurrentLanguage(): string {
+    return 'en';
+  }
 <% } %>
+}

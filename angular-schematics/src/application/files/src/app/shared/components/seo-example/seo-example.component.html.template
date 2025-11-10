@@ -1,5 +1,5 @@
-<% if (seoType && seoType !== 'none') { %><div class="seo-example">
-  <div class="features-list">
+<div class="seo-example">
+<% if (seoType && seoType !== 'none') { %>  <div class="features-list">
     <p><strong>Included Features:</strong></p>
     <ul>
       <li>✅ Dynamic meta tags</li>
@@ -13,7 +13,21 @@
   
   <div class="demo-section">
     <p>Test Google Analytics tracking with these interactive buttons:</p>
-    
+<% } else { %>  <div class="features-list">
+    <p><strong>SEO Features (Not Enabled):</strong></p>
+    <ul>
+      <li>❌ Dynamic meta tags</li>
+      <li>❌ Canonical URL</li>
+      <li>❌ Schema.org structured data</li>
+      <li>❌ Open Graph tags</li>
+      <li>❌ Twitter Card tags</li>
+      <li>❌ Google Analytics integration</li>
+    </ul>
+  </div>
+  
+  <div class="demo-section">
+    <p>SEO features are not enabled. Enable them during app generation to use these features:</p>
+<% } %>    
     <% if (framework === 'bootstrap') { %>
     <div class="d-flex flex-wrap gap-2 mb-3">
       <button (click)="trackButtonClick()" class="btn btn-primary me-2">
@@ -57,7 +71,7 @@
       </button>
     </div>
     <% } %>
-    
+<% if (seoType && seoType !== 'none') { %>    
     <div class="methods-info">
       <p><strong>Available Methods:</strong></p>
       <ul>
@@ -67,6 +81,5 @@
         <li><code>setUserId(userId)</code></li>
       </ul>
     </div>
-  </div>
+<% } %>  </div>
 </div>
-<% } %>

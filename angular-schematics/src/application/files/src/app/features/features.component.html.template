@@ -34,7 +34,7 @@
         <div class="setup-step">1. Extract messages:</div>
         <code>npm run extract-i18n</code>
         <div class="setup-step">2. Usage:</div>
-        <code>&#123;&#123; 'HELLO_WORLD' | translate &#125;&#125;</code>
+<code>&#123;&#123; 'HELLO_WORLD' &#125;&#125;</code>
         <code>this.translate.get('HELLO_WORLD').subscribe()</code>
       </div>
       <% } %>
@@ -60,6 +60,34 @@
         <h3>ESLint</h3>
         <code>npm run lint // Check for linting errors</code>
         <code>npm run lint:fix // Auto-fix linting issues</code>
+      </div>
+      <% } %>
+      
+      <% if (authentication && authentication !== 'none') { %>
+      <div class="usage-example">
+        <h3>🔐 Authentication Setup</h3>
+        <% if (authentication === 'msal') { %>
+        <div class="setup-step">1. Configure MSAL in <code>src/app/core/services/auth.config.ts</code></div>
+        <code>clientId: 'YOUR_CLIENT_ID'</code>
+        <code>authority: 'https://login.microsoftonline.com/YOUR_TENANT_ID'</code>
+        <div class="setup-step">2. Usage:</div>
+        <code>this.authService.login(); // Login with popup</code>
+        <code>this.authService.isLoggedIn(); // Check auth status</code>
+        <% } else if (authentication === 'okta') { %>
+        <div class="setup-step">1. Configure Okta in <code>src/app/core/services/auth.config.ts</code></div>
+        <code>issuer: 'https://YOUR_OKTA_DOMAIN/oauth2/default'</code>
+        <code>clientId: 'YOUR_CLIENT_ID'</code>
+        <div class="setup-step">2. Usage:</div>
+        <code>await this.authService.login(); // Login with redirect</code>
+        <code>await this.authService.isLoggedIn(); // Check auth status</code>
+        <% } else if (authentication === 'custom') { %>
+        <div class="setup-step">Demo Credentials (DummyJSON API):</div>
+        <code>Username: emilys</code>
+        <code>Password: emilyspass</code>
+        <div class="setup-step">Usage:</div>
+        <code>this.authService.login(credentials).subscribe();</code>
+        <code>this.authService.isLoggedIn(); // Check auth status</code>
+        <% } %>
       </div>
       <% } %>
       

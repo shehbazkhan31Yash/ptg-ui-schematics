@@ -1,0 +1,92 @@
+import { Injectable } from '@angular/core';
+import { MsalService, MsalBroadcastService } from '@azure/msal-angular';
+import { InteractionStatus, PopupRequest, RedirectRequest, SilentRequest } from '@azure/msal-browser';
+import { Observable, filter, takeUntil, Subject, from } from 'rxjs';
+
+@Injectable({
+  providedIn: 'root'
+})
+export class AuthService {
+  private readonly _destroying$ = new Subject<void>();
+  private isInitialized = false;
+
+  constructor(
+    private authService: MsalService,
+    private msalBroadcastService: MsalBroadcastService
+  ) {
+    this.initialize();
+    
+    this.msalBroadcastService.inProgress$
+      .pipe(
+        filter((status: InteractionStatus) => status === InteractionStatus.None),
+        takeUntil(this._destroying$)
+      )
+      .subscribe(() => {
+        this.setLoginDisplay();
+      });
+  }
+
+  private async initialize() {
+    try {
+      await this.authService.instance.initialize();
+      this.isInitialized = true;
+      console.log('MSAL initialized successfully');
+    } catch (error) {
+      console.error('MSAL initialization failed', error);
+    }
+  }
+
+  setLoginDisplay() {
+    // Implementation for login display logic
+  }
+
+  async login() {
+    // Ensure MSAL is initialized before attempting login
+    if (!this.isInitialized) {
+      await this.initialize();
+    }
+
+    const loginRequest: PopupRequest = {
+      scopes: ['user.read']
+    };
+
+    this.authService.loginPopup(loginRequest)
+      .subscribe({
+        next: (result) => {
+          console.log('Login successful', result);
+          this.setLoginDisplay();
+        },
+        error: (error) => console.log('Login failed', error)
+      });
+  }
+
+  async logout() {
+    // Ensure MSAL is initialized before attempting logout
+    if (!this.isInitialized) {
+      await this.initialize();
+    }
+
+    this.authService.logoutPopup({
+      mainWindowRedirectUri: "/"
+    });
+  }
+
+  isLoggedIn(): boolean {
+    if (!this.isInitialized) {
+      return false;
+    }
+    return this.authService.instance.getActiveAccount() != null;
+  }
+
+  getUser() {
+    if (!this.isInitialized) {
+      return null;
+    }
+    return this.authService.instance.getActiveAccount();
+  }
+
+  ngOnDestroy(): void {
+    this._destroying$.next(undefined);
+    this._destroying$.complete();
+  }
+}

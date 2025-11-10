@@ -1,0 +1,137 @@
+import { Injectable } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { BehaviorSubject, Observable, of } from 'rxjs';
+import { map, catchError } from 'rxjs/operators';
+
+export interface User {
+  id: number;
+  username: string;
+  email: string;
+  firstName: string;
+  lastName: string;
+  gender: string;
+  image: string;
+}
+
+export interface LoginCredentials {
+  username: string;
+  password: string;
+}
+
+export interface DummyAuthResponse {
+  id: number;
+  username: string;
+  email: string;
+  firstName: string;
+  lastName: string;
+  gender: string;
+  image: string;
+  token: string;
+}
+
+@Injectable({
+  providedIn: 'root'
+})
+export class AuthService {
+  private readonly TOKEN_KEY = 'auth_token';
+  private readonly USER_KEY = 'auth_user';
+  private readonly API_URL = 'https://dummyjson.com';
+  
+  private currentUserSubject = new BehaviorSubject<User | null>(this.getUserFromStorage());
+  public currentUser$ = this.currentUserSubject.asObservable();
+
+  constructor(private http: HttpClient) {}
+
+  login(credentials: LoginCredentials): Observable<boolean> {
+    const loginPayload = {
+      username: credentials.username,
+      password: credentials.password,
+      expiresInMins: 30
+    };
+    
+    const options = {
+      headers: { 'Content-Type': 'application/json' }
+    };
+    
+    return this.http.post<DummyAuthResponse>(`${this.API_URL}/auth/login`, loginPayload, options)
+      .pipe(
+        map(response => {
+          console.log('Login API response:', response);
+          if (response && response.token) {
+            console.log('Login successful, setting session');
+            const user: User = {
+              id: response.id,
+              username: response.username,
+              email: response.email,
+              firstName: response.firstName,
+              lastName: response.lastName,
+              gender: response.gender,
+              image: response.image
+            };
+            this.setSession(response.token, user);
+            return true;
+          }
+          console.log('Login failed: No token in response');
+          return false;
+        }),
+        catchError(error => {
+          console.error('Login error:', error);
+          throw error;
+        })
+      );
+  }
+
+  logout(): void {
+    localStorage.removeItem(this.TOKEN_KEY);
+    localStorage.removeItem(this.USER_KEY);
+    this.currentUserSubject.next(null);
+  }
+
+  isLoggedIn(): boolean {
+    const token = this.getToken();
+    return !!token;
+  }
+
+  getToken(): string | null {
+    return localStorage.getItem(this.TOKEN_KEY);
+  }
+
+  getUser(): User | null {
+    return this.currentUserSubject.value;
+  }
+
+  getCurrentUser(): Observable<User | null> {
+    const token = this.getToken();
+    if (!token) {
+      return of(null);
+    }
+
+    return this.http.get<User>(`${this.API_URL}/auth/me`, {
+      headers: { 
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      }
+    }).pipe(
+      map(user => {
+        this.currentUserSubject.next(user);
+        return user;
+      }),
+      catchError(error => {
+        console.error('Get current user error:', error);
+        this.logout();
+        return of(null);
+      })
+    );
+  }
+
+  private setSession(token: string, user: User): void {
+    localStorage.setItem(this.TOKEN_KEY, token);
+    localStorage.setItem(this.USER_KEY, JSON.stringify(user));
+    this.currentUserSubject.next(user);
+  }
+
+  private getUserFromStorage(): User | null {
+    const userStr = localStorage.getItem(this.USER_KEY);
+    return userStr ? JSON.parse(userStr) : null;
+  }
+}

@@ -1,0 +1,10 @@
+import { OktaAuthOptions } from '@okta/okta-auth-js';
+
+export const oktaConfig: OktaAuthOptions = {
+  issuer: 'https://YOUR_OKTA_DOMAIN/oauth2/default', // Replace with your Okta domain
+  clientId: 'YOUR_CLIENT_ID', // Replace with your client ID
+  redirectUri: window.location.origin + '/login/callback',
+  scopes: ['openid', 'profile', 'email'],
+  pkce: true,
+  responseType: 'code'
+};

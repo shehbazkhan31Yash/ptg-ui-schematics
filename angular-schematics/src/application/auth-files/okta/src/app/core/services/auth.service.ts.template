@@ -1,0 +1,43 @@
+import { Injectable } from '@angular/core';
+import { OktaAuthStateService, OKTA_AUTH } from '@okta/okta-angular';
+import { OktaAuth, AuthState } from '@okta/okta-auth-js';
+import { Observable } from 'rxjs';
+import { filter, map } from 'rxjs/operators';
+import { Inject } from '@angular/core';
+
+@Injectable({
+  providedIn: 'root'
+})
+export class AuthService {
+  public isAuthenticated$: Observable<boolean>;
+
+  constructor(
+    @Inject(OKTA_AUTH) private oktaAuth: OktaAuth,
+    private oktaStateService: OktaAuthStateService
+  ) {
+    this.isAuthenticated$ = this.oktaStateService.authState$.pipe(
+      filter((s: AuthState) => !!s),
+      map((s: AuthState) => s.isAuthenticated ?? false)
+    );
+  }
+
+  async login(): Promise<void> {
+    await this.oktaAuth.signInWithRedirect();
+  }
+
+  async logout(): Promise<void> {
+    await this.oktaAuth.signOut();
+  }
+
+  async isLoggedIn(): Promise<boolean> {
+    return await this.oktaAuth.isAuthenticated();
+  }
+
+  async getUser() {
+    return await this.oktaAuth.getUser();
+  }
+
+  async getAccessToken(): Promise<string | undefined> {
+    return await this.oktaAuth.getAccessToken();
+  }
+}
