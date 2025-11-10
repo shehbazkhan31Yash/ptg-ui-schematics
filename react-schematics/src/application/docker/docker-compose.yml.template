@@ -1,0 +1,26 @@
+version: '3.8'
+
+services:
+  <%= appName %>:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: <%= appName %>-app
+    ports:
+      - "3000:80"
+    environment:
+      - NODE_ENV=production
+    restart: unless-stopped
+    networks:
+      - <%= appName %>-network
+    # Optional: Add volume for logs
+    # volumes:
+    #   - ./logs:/var/log/nginx
+
+networks:
+  <%= appName %>-network:
+    driver: bridge
+
+# Optional: Add volumes for persistent data
+# volumes:
+#   app-data:

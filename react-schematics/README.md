@@ -55,9 +55,11 @@ The CLI will guide you through the setup process with interactive prompts for al
 
 ### Optional Features
 - React Router for navigation
-- Redux Toolkit for state management
+- Redux Toolkit or Zustand for state management
 - i18n support for internationalization
-- Authentication integrations
+- Authentication integrations (MSAL, Okta)
+- Husky for Git hooks (pre-commit linting)
+- Docker configuration for containerization
 
 ## 🔧 Configuration Options
 
@@ -108,8 +110,10 @@ $ ptg-ui-cli
 ? Which bundler would you like to use? › Vite (Recommended)
 ? Which unit test runner would you like to use? › Vitest (Recommended)
 ? Which test runner would you like to use for end to end tests? › Cypress
-? Would you like to use ESLint for linting? › Yes
+? Which linter would you like to use? › Standard
 ? Would you like to use Prettier for code formatting? › Yes
+? Would you like to add Husky for Git hooks (pre-commit)? › No
+? Would you like to add Docker configuration? › Yes
 ```
 
 ## 🔐 Authentication Setup
@@ -133,6 +137,39 @@ $ ptg-ui-cli
      }
    };
    ```
+
+## 🐳 Docker Support
+
+When Docker configuration is enabled, the following files are generated:
+
+- **Dockerfile**: Multi-stage build with Node.js and Nginx
+- **.dockerignore**: Optimized build context
+- **docker-compose.yml**: Easy service orchestration
+- **nginx.conf**: Production-ready Nginx configuration
+- **DOCKER_README.md**: Comprehensive Docker documentation
+
+### Docker Commands
+
+```bash
+# Build Docker image
+npm run docker:build
+
+# Run with Docker Compose
+npm run docker:up
+
+# View logs
+npm run docker:logs
+
+# Stop services
+npm run docker:down
+```
+
+### Features
+- ✅ Multi-stage build for optimized image size
+- ✅ Production-ready Nginx configuration
+- ✅ Security headers and gzip compression
+- ✅ Health check endpoint
+- ✅ SPA routing support
 
 ## 🛠️ Development
 

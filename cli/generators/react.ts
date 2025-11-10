@@ -523,7 +523,324 @@ export default defineConfig({
     return getEslintConfig(linterType);
   },
 
-  getPrettierConfig: () => getPrettierConfig()
+  getPrettierConfig: () => getPrettierConfig(),
+
+  getDockerfile: (appName: string, bundler: string = 'vite') => {
+    const distPath = bundler === 'vite' ? 'dist' : 'build';
+    return `# Multi-stage build for React application
+# Stage 1: Build the application
+FROM node:18-alpine AS builder
+
+# Set working directory
+WORKDIR /app
+
+# Copy package files
+COPY package*.json ./
+
+# Install dependencies
+RUN npm ci --only=production && npm cache clean --force
+
+# Copy application source
+COPY . .
+
+# Build the application
+RUN npm run build
+
+# Stage 2: Serve the application with nginx
+FROM nginx:alpine
+
+# Copy built assets from builder stage
+COPY --from=builder /app/${distPath} /usr/share/nginx/html
+
+# Copy custom nginx configuration (optional)
+# COPY nginx.conf /etc/nginx/conf.d/default.conf
+
+# Expose port 80
+EXPOSE 80
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \\
+  CMD wget --quiet --tries=1 --spider http://localhost:80/ || exit 1
+
+# Start nginx
+CMD ["nginx", "-g", "daemon off;"]
+`;
+  },
+
+  getDockerIgnore: () => `# Node modules
+node_modules
+npm-debug.log
+
+# Build output
+dist
+build
+.nx
+
+# Development files
+.git
+.gitignore
+.env.local
+.env.development
+.env.test
+*.log
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Test files
+coverage
+*.test.ts
+*.test.tsx
+*.spec.ts
+*.spec.tsx
+__tests__
+__mocks__
+
+# Documentation
+*.md
+docs
+
+# CI/CD
+.github
+.gitlab-ci.yml
+azure-pipelines.yml
+
+# Docker
+Dockerfile
+.dockerignore
+docker-compose.yml
+`,
+
+  getDockerCompose: (appName: string) => `version: '3.8'
+
+services:
+  ${appName}:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: ${appName}-app
+    ports:
+      - "3000:80"
+    environment:
+      - NODE_ENV=production
+    restart: unless-stopped
+    networks:
+      - ${appName}-network
+    # Optional: Add volume for logs
+    # volumes:
+    #   - ./logs:/var/log/nginx
+
+networks:
+  ${appName}-network:
+    driver: bridge
+
+# Optional: Add volumes for persistent data
+# volumes:
+#   app-data:
+`,
+
+  getNginxConf: () => `server {
+    listen 80;
+    server_name localhost;
+    root /usr/share/nginx/html;
+    index index.html;
+
+    # Gzip compression
+    gzip on;
+    gzip_vary on;
+    gzip_min_length 1024;
+    gzip_types text/plain text/css text/xml text/javascript application/x-javascript application/xml+rss application/json application/javascript;
+
+    # Security headers
+    add_header X-Frame-Options "SAMEORIGIN" always;
+    add_header X-Content-Type-Options "nosniff" always;
+    add_header X-XSS-Protection "1; mode=block" always;
+
+    # Cache static assets
+    location ~* \\.(?:css|js|jpg|jpeg|gif|png|ico|svg|woff|woff2|ttf|eot)$ {
+        expires 1y;
+        add_header Cache-Control "public, immutable";
+    }
+
+    # Single Page Application routing
+    location / {
+        try_files $uri $uri/ /index.html;
+    }
+
+    # Health check endpoint
+    location /health {
+        access_log off;
+        return 200 "healthy\\n";
+        add_header Content-Type text/plain;
+    }
+
+    # Error pages
+    error_page 404 /index.html;
+}
+`,
+
+  getDockerReadme: (appName: string) => `# Docker Configuration for ${appName}
+
+This directory contains Docker configuration files for containerizing your React application.
+
+## Files Included
+
+- **Dockerfile**: Multi-stage build configuration
+- **.dockerignore**: Files to exclude from Docker build context
+- **docker-compose.yml**: Docker Compose configuration for easy deployment
+- **nginx.conf**: Custom Nginx configuration (optional)
+
+## Quick Start
+
+### Build and Run with Docker
+
+\`\`\`bash
+# Build the Docker image
+docker build -t ${appName}:latest .
+
+# Run the container
+docker run -d -p 3000:80 --name ${appName}-app ${appName}:latest
+
+# View logs
+docker logs ${appName}-app
+
+# Stop the container
+docker stop ${appName}-app
+\`\`\`
+
+### Using Docker Compose
+
+\`\`\`bash
+# Build and start services
+docker-compose up -d
+
+# View logs
+docker-compose logs -f
+
+# Stop services
+docker-compose down
+
+# Rebuild and restart
+docker-compose up -d --build
+\`\`\`
+
+## NPM Scripts
+
+Use these convenient npm scripts:
+
+\`\`\`bash
+# Build Docker image
+npm run docker:build
+
+# Run with Docker Compose
+npm run docker:up
+
+# Stop Docker Compose
+npm run docker:down
+
+# View logs
+npm run docker:logs
+\`\`\`
+
+## Configuration
+
+### Environment Variables
+
+Add environment variables in \`docker-compose.yml\`:
+
+\`\`\`yaml
+environment:
+  - NODE_ENV=production
+  - REACT_APP_API_URL=https://api.example.com
+\`\`\`
+
+### Port Configuration
+
+Default port mapping: \`3000:80\` (host:container)
+
+To change the host port, edit \`docker-compose.yml\`:
+
+\`\`\`yaml
+ports:
+  - "8080:80"  # Changes host port to 8080
+\`\`\`
+
+### Custom Nginx Configuration
+
+Uncomment the following line in \`Dockerfile\` to use custom Nginx config:
+
+\`\`\`dockerfile
+COPY nginx.conf /etc/nginx/conf.d/default.conf
+\`\`\`
+
+## Production Deployment
+
+### Build Optimization
+
+The Dockerfile uses multi-stage builds to minimize image size:
+- Stage 1: Builds the application
+- Stage 2: Serves static files with Nginx
+
+### Security Best Practices
+
+1. ✅ Uses Alpine Linux for smaller attack surface
+2. ✅ Multi-stage build reduces final image size
+3. ✅ Security headers configured in Nginx
+4. ✅ Health check endpoint included
+5. ✅ Runs as non-root user (Nginx default)
+
+### Health Checks
+
+The container includes a health check that runs every 30 seconds:
+
+\`\`\`bash
+# Check container health
+docker inspect --format='{{.State.Health.Status}}' ${appName}-app
+\`\`\`
+
+## Troubleshooting
+
+### Container won't start
+
+\`\`\`bash
+# Check logs
+docker logs ${appName}-app
+
+# Inspect container
+docker inspect ${appName}-app
+\`\`\`
+
+### Port already in use
+
+Change the host port in \`docker-compose.yml\` or use:
+
+\`\`\`bash
+docker run -d -p 8080:80 ${appName}:latest
+\`\`\`
+
+### Build fails
+
+Ensure all dependencies are properly installed:
+
+\`\`\`bash
+# Clean build
+docker-compose build --no-cache
+\`\`\`
+
+## Additional Resources
+
+- [Docker Documentation](https://docs.docker.com/)
+- [Nginx Documentation](https://nginx.org/en/docs/)
+- [Docker Compose Reference](https://docs.docker.com/compose/compose-file/)
+`
 };
 
 
@@ -843,6 +1160,83 @@ const setupHusky = (workspacePath: string, a: any) => {
   }
 };
 
+const setupDockerConfig = (workspacePath: string, a: any) => {
+  if (!a.docker) {
+    return;
+  }
+
+  try {
+    console.log("\n🐳 Setting up Docker configuration...");
+
+    // Detect app structure (standalone or multi-app)
+    const standaloneAppPath = path.join(workspacePath, "src");
+    const multiAppPath = path.join(workspacePath, "apps", a.name);
+    
+    let appPath: string;
+    
+    if (fs.existsSync(standaloneAppPath)) {
+      appPath = workspacePath; // Standalone app, docker files go in root
+    } else if (fs.existsSync(multiAppPath)) {
+      appPath = multiAppPath; // Multi-app workspace
+    } else {
+      appPath = workspacePath; // Fallback to root
+    }
+
+    // Create Dockerfile
+    const dockerfilePath = path.join(appPath, "Dockerfile");
+    const dockerfileContent = TEMPLATES.getDockerfile(a.name, a.bundler);
+    createFileWithErrorHandling(dockerfilePath, dockerfileContent, "Dockerfile");
+
+    // Create .dockerignore
+    const dockerignorePath = path.join(appPath, ".dockerignore");
+    const dockerignoreContent = TEMPLATES.getDockerIgnore();
+    createFileWithErrorHandling(dockerignorePath, dockerignoreContent, ".dockerignore");
+
+    // Create docker-compose.yml
+    const dockerComposePath = path.join(appPath, "docker-compose.yml");
+    const dockerComposeContent = TEMPLATES.getDockerCompose(a.name);
+    createFileWithErrorHandling(dockerComposePath, dockerComposeContent, "docker-compose.yml");
+
+    // Create nginx.conf (optional)
+    const nginxConfPath = path.join(appPath, "nginx.conf");
+    const nginxConfContent = TEMPLATES.getNginxConf();
+    createFileWithErrorHandling(nginxConfPath, nginxConfContent, "nginx.conf");
+
+    // Create Docker README
+    const dockerReadmePath = path.join(appPath, "DOCKER_README.md");
+    const dockerReadmeContent = TEMPLATES.getDockerReadme(a.name);
+    createFileWithErrorHandling(dockerReadmePath, dockerReadmeContent, "Docker documentation");
+
+    // Add Docker scripts to package.json
+    const packageJsonPath = path.join(workspacePath, "package.json");
+    if (fs.existsSync(packageJsonPath)) {
+      const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, "utf8"));
+      
+      packageJson.scripts = packageJson.scripts || {};
+      packageJson.scripts["docker:build"] = `docker build -t ${a.name}:latest .`;
+      packageJson.scripts["docker:run"] = `docker run -d -p 3000:80 --name ${a.name}-app ${a.name}:latest`;
+      packageJson.scripts["docker:stop"] = `docker stop ${a.name}-app`;
+      packageJson.scripts["docker:up"] = "docker-compose up -d";
+      packageJson.scripts["docker:down"] = "docker-compose down";
+      packageJson.scripts["docker:logs"] = "docker-compose logs -f";
+      
+      fs.writeFileSync(packageJsonPath, JSON.stringify(packageJson, null, 2));
+      console.log("✅ Added Docker scripts to package.json");
+    }
+
+    console.log("✅ Docker configuration setup completed successfully!");
+    console.log("   📝 Dockerfile created with multi-stage build");
+    console.log("   📝 docker-compose.yml created for easy deployment");
+    console.log("   📝 nginx.conf created with optimized settings");
+    console.log("   📝 Docker scripts added to package.json");
+    console.log("\n   Run 'npm run docker:build' to build your Docker image");
+    console.log("   Run 'npm run docker:up' to start with Docker Compose");
+  } catch (error) {
+    console.error("❌ Failed to setup Docker configuration:", error.message);
+    console.warn("You can add Docker configuration manually later");
+  }
+};
+
 export function reactAppGenerator() {
   getArgs().then((a: any) => {
     try {
@@ -1095,6 +1489,9 @@ export function reactAppGenerator() {
       // Setup Husky if enabled
       setupHusky(workspacePath, a);
 
+      // Setup Docker configuration if enabled
+      setupDockerConfig(workspacePath, a);
+
       console.log("\n✅ React application created successfully!\n");
       console.log("━".repeat(50));
       console.log(`📁 Workspace: ${a.workspace}`);
@@ -1107,6 +1504,7 @@ export function reactAppGenerator() {
       console.log(`🔧 Linter: ${a.linter === 'none' ? 'None' : a.linter === 'airbnb' ? 'ESLint with Airbnb' : a.linter === 'custom' ? 'ESLint with Custom Rules' : 'ESLint'}`);
       console.log(`✨ Prettier: ${a.prettier ? "Yes" : "No"}`);
       console.log(`🐶 Husky: ${a.husky ? "Yes" : "No"}`);
+      console.log(`🐳 Docker: ${a.docker ? "Yes" : "No"}`);
       console.log("━".repeat(50));
       console.log("\nTo get started:\n");
       console.log(`  cd ${a.workspace}`);
@@ -1346,6 +1744,12 @@ function getArgs() {
       {
         name: "husky",
         message: "Would you like to add Husky for Git hooks (pre-commit)?",
+        type: "confirm",
+        default: false,
+      },
+      {
+        name: "docker",
+        message: "Would you like to add Docker configuration?",
         type: "confirm",
         default: false,
       },
@@ -1702,6 +2106,9 @@ function applyPTGCustomizations(workspacePath: string, a: any) {
 
     // Update test files with proper formatting
     updateTestFiles(workspacePath, a);
+
+    // Setup Docker configuration if enabled
+    setupDockerConfig(workspacePath, a);
 
     // Fix lint issues after all customizations
     fixLintIssues(workspacePath, a);

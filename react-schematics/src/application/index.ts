@@ -212,7 +212,22 @@ export default function (options: any): Rule {
       addEslintConfigToProject(originalOptionsObject),
       addPrettierConfigToProject(originalOptionsObject),
       addHuskyConfigToProject(originalOptionsObject),
+      addDockerConfigToProject(originalOptionsObject),
       addLintScriptsToPackageJson(originalOptionsObject),
+      originalOptionsObject.docker
+        ? mergeWith(
+          apply(url("./docker/"), [
+            applyTemplates({
+              utils: strings,
+              ...originalOptionsObject,
+              appName: originalOptionsObject.name,
+              isRootApp,
+            }),
+            move(`apps/${options.name}/`),
+          ]),
+          MergeStrategy.Overwrite
+        )
+        : noop,
     ]);
   };
 }
@@ -460,6 +475,36 @@ export function addHuskyConfigToProject(options: any): Rule {
       // Add prepare script for husky
       packageJson.scripts = packageJson.scripts || {};
       packageJson.scripts.prepare = 'husky';
+      
+      tree.overwrite(packageJsonPath, JSON.stringify(packageJson, null, 2));
+    }
+    
+    return tree;
+  };
+}
+
+export function addDockerConfigToProject(options: any): Rule {
+  if (!options.docker) {
+    return noop;
+  }
+
+  return (tree: Tree) => {
+    const appName = options.name;
+    const appPath = `apps/${appName}`;
+    
+    // Add Docker scripts to package.json
+    const packageJsonPath = 'package.json';
+    if (tree.exists(packageJsonPath)) {
+      const sourceText = tree.read(packageJsonPath)!.toString('utf-8');
+      const packageJson = JSON.parse(sourceText);
+      
+      packageJson.scripts = packageJson.scripts || {};
+      packageJson.scripts["docker:build"] = `docker build -t ${appName}:latest ${appPath}`;
+      packageJson.scripts["docker:run"] = `docker run -d -p 3000:80 --name ${appName}-app ${appName}:latest`;
+      packageJson.scripts["docker:stop"] = `docker stop ${appName}-app`;
+      packageJson.scripts["docker:up"] = `cd ${appPath} && docker-compose up -d`;
+      packageJson.scripts["docker:down"] = `cd ${appPath} && docker-compose down`;
+      packageJson.scripts["docker:logs"] = `cd ${appPath} && docker-compose logs -f`;
       
       tree.overwrite(packageJsonPath, JSON.stringify(packageJson, null, 2));
     }

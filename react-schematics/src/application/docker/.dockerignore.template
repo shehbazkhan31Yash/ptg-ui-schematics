@@ -1,0 +1,50 @@
+# Node modules
+node_modules
+npm-debug.log
+
+# Build output
+dist
+build
+.nx
+
+# Development files
+.git
+.gitignore
+.env.local
+.env.development
+.env.test
+*.log
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Test files
+coverage
+*.test.ts
+*.test.tsx
+*.spec.ts
+*.spec.tsx
+__tests__
+__mocks__
+
+# Documentation
+*.md
+docs
+
+# CI/CD
+.github
+.gitlab-ci.yml
+azure-pipelines.yml
+
+# Docker
+Dockerfile
+.dockerignore
+docker-compose.yml

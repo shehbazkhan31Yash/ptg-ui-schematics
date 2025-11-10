@@ -142,6 +142,15 @@
         "message": "Would you like to add Husky for Git hooks (pre-commit)?",
         "type": "confirmation"
       }
+    },
+    "docker": {
+      "type": "boolean",
+      "default": false,
+      "description": "Add Docker configuration (Dockerfile, .dockerignore, docker-compose.yml)",
+      "x-prompt": {
+        "message": "Would you like to add Docker configuration?",
+        "type": "confirmation"
+      }
     }
   },
   "required": [
@@ -151,6 +160,7 @@
     "routing",
     "auth",
     "i18n",
-    "husky"
+    "husky",
+    "docker"
   ]
 }
