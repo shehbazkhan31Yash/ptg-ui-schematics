@@ -1,0 +1,101 @@
+# CI/CD Configuration
+
+This project includes CI/CD configurations for both GitHub Actions and GitLab CI.
+
+## Files
+
+- `.github/workflows/ci.yml` - GitHub Actions workflow
+- `.gitlab-ci.yml` - GitLab CI configuration
+
+## GitHub Actions
+
+### Workflow Jobs
+
+1. **build-and-test** - Runs on Node 18.x and 20.x
+   - Lints code
+   - Runs tests
+   - Builds application
+   - Uploads artifacts
+
+2. **code-quality** - Code quality checks
+   - Prettier formatting check
+   - TypeScript type checking
+
+3. **docker-build** - Docker image build and test (on main/develop only)
+
+### Running Locally
+
+Install [act](https://github.com/nektos/act):
+```bash
+brew install act  # macOS
+# or
+curl https://raw.githubusercontent.com/nektos/act/master/install.sh | sudo bash  # Linux
+```
+
+Run workflows:
+```bash
+act                    # Run all workflows
+act -j build-and-test  # Run specific job
+```
+
+## GitLab CI
+
+### Pipeline Stages
+
+1. **install** - Install dependencies with caching
+2. **lint** - Linting, type checking, formatting
+3. **test** - Unit and E2E tests with coverage
+4. **build** - Build application
+5. **docker** - Docker build and test (on main/develop only)
+
+### Running Locally
+
+Install [gitlab-runner](https://docs.gitlab.com/runner/install/):
+
+```bash
+# Validate configuration
+gitlab-runner exec docker --docker-pull-policy="if-not-present" lint
+
+# Run specific job
+gitlab-runner exec docker --docker-pull-policy="if-not-present" build
+```
+
+## Configuration
+
+### Environment Variables (Optional)
+
+Add these in your CI/CD platform for deployment:
+
+- `DOCKER_USERNAME` - Docker Hub username
+- `DOCKER_PASSWORD` - Docker Hub token
+- `NPM_TOKEN` - NPM registry token (for package publishing)
+
+### Deployment
+
+Deployment configurations are commented out by default. Uncomment and configure deployment steps in the CI files based on your needs.
+
+## Troubleshooting
+
+### Tests Fail in CI
+
+- Ensure all tests pass locally
+- Check environment-specific configurations
+- Review CI logs for specific errors
+
+### Build Fails
+
+- Verify dependencies are correctly specified
+- Check build output directory configuration
+- Ensure build command is correct
+
+### Docker Issues
+
+- Verify Dockerfile exists
+- Check if Docker service is running (GitLab CI)
+- Review Docker build logs
+
+## Resources
+
+- [GitHub Actions Docs](https://docs.github.com/en/actions)
+- [GitLab CI Docs](https://docs.gitlab.com/ee/ci/)
+- [Project Documentation](./CI_CD_INTEGRATION_GUIDE.md)

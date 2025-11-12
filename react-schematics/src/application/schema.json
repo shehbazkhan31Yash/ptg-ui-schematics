@@ -151,6 +151,15 @@
         "message": "Would you like to add Docker configuration?",
         "type": "confirmation"
       }
+    },
+    "ci": {
+      "type": "boolean",
+      "default": false,
+      "description": "Add CI/CD configuration (GitHub Actions & GitLab CI)",
+      "x-prompt": {
+        "message": "Would you like to add CI/CD configuration (GitHub Actions & GitLab CI)?",
+        "type": "confirmation"
+      }
     }
   },
   "required": [
@@ -161,6 +170,7 @@
     "auth",
     "i18n",
     "husky",
-    "docker"
+    "docker",
+    "ci"
   ]
 }

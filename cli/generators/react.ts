@@ -2388,6 +2388,428 @@ export const OktaLoginButton: React.FC = () => {
 export default OktaLoginButton;
 `,
 
+  getGitHubActionsWorkflow: () => `name: CI
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    
+    strategy:
+      matrix:
+        node-version: [18.x, 20.x]
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js \${{ matrix.node-version }}
+      uses: actions/setup-node@v4
+      with:
+        node-version: \${{ matrix.node-version }}
+        cache: 'npm'
+    
+    - name: Install dependencies
+      run: npm ci
+    
+    - name: Lint code
+      run: npm run lint
+      continue-on-error: true
+    
+    - name: Run tests
+      run: npm test -- --watchAll=false
+      continue-on-error: true
+    
+    - name: Build application
+      run: npm run build
+    
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v4
+      if: matrix.node-version == '20.x'
+      with:
+        name: build-output
+        path: dist/
+        retention-days: 7
+    
+    - name: Run E2E tests (if available)
+      run: |
+        if grep -q "\\"e2e\\"" package.json; then
+          npm run e2e
+        else
+          echo "E2E tests not configured, skipping..."
+        fi
+      continue-on-error: true
+
+  code-quality:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: 20.x
+        cache: 'npm'
+    
+    - name: Install dependencies
+      run: npm ci
+    
+    - name: Check formatting (if Prettier is configured)
+      run: |
+        if grep -q "prettier" package.json; then
+          npm run format:check || true
+        else
+          echo "Prettier not configured, skipping..."
+        fi
+      continue-on-error: true
+    
+    - name: Type check
+      run: npx tsc --noEmit
+      continue-on-error: true
+
+  docker-build:
+    runs-on: ubuntu-latest
+    needs: build-and-test
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop')
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Check if Dockerfile exists
+      id: docker-check
+      run: |
+        if [ -f "Dockerfile" ]; then
+          echo "dockerfile_exists=true" >> \$GITHUB_OUTPUT
+        else
+          echo "dockerfile_exists=false" >> \$GITHUB_OUTPUT
+        fi
+    
+    - name: Set up Docker Buildx
+      if: steps.docker-check.outputs.dockerfile_exists == 'true'
+      uses: docker/setup-buildx-action@v3
+    
+    - name: Build Docker image
+      if: steps.docker-check.outputs.dockerfile_exists == 'true'
+      run: docker build -t app:\${{ github.sha }} .
+    
+    - name: Test Docker image
+      if: steps.docker-check.outputs.dockerfile_exists == 'true'
+      run: |
+        docker run -d -p 3000:80 --name test-container app:\${{ github.sha }}
+        sleep 5
+        curl -f http://localhost:3000 || exit 1
+        docker stop test-container
+`,
+
+  getGitLabCI: () => `stages:
+  - install
+  - lint
+  - test
+  - build
+  - docker
+
+variables:
+  NODE_VERSION: "20"
+  NPM_CACHE_FOLDER: .npm
+  DOCKER_DRIVER: overlay2
+
+cache:
+  key:
+    files:
+      - package-lock.json
+  paths:
+    - node_modules/
+    - .npm/
+
+install_dependencies:
+  stage: install
+  image: node:\${NODE_VERSION}
+  script:
+    - npm ci --cache .npm --prefer-offline
+  artifacts:
+    paths:
+      - node_modules/
+    expire_in: 1 hour
+
+lint:
+  stage: lint
+  image: node:\${NODE_VERSION}
+  needs:
+    - install_dependencies
+  script:
+    - npm run lint
+  allow_failure: true
+
+test:unit:
+  stage: test
+  image: node:\${NODE_VERSION}
+  needs:
+    - install_dependencies
+  script:
+    - npm test -- --watchAll=false
+  coverage: '/All files[^|]*\\|[^|]*\\s+([\\d\\.]+)/'
+  artifacts:
+    when: always
+    reports:
+      junit:
+        - junit.xml
+      coverage_report:
+        coverage_format: cobertura
+        path: coverage/cobertura-coverage.xml
+    paths:
+      - coverage/
+    expire_in: 30 days
+  allow_failure: true
+
+test:e2e:
+  stage: test
+  image: node:\${NODE_VERSION}
+  needs:
+    - install_dependencies
+  script:
+    - |
+      if grep -q "\\"e2e\\"" package.json; then
+        npm run e2e
+      else
+        echo "E2E tests not configured, skipping..."
+      fi
+  allow_failure: true
+  only:
+    - main
+    - develop
+    - merge_requests
+
+build:
+  stage: build
+  image: node:\${NODE_VERSION}
+  needs:
+    - install_dependencies
+  script:
+    - npm run build
+    - echo "Build completed successfully"
+  artifacts:
+    paths:
+      - dist/
+      - build/
+    expire_in: 1 week
+
+typecheck:
+  stage: lint
+  image: node:\${NODE_VERSION}
+  needs:
+    - install_dependencies
+  script:
+    - npx tsc --noEmit
+  allow_failure: true
+
+format:check:
+  stage: lint
+  image: node:\${NODE_VERSION}
+  needs:
+    - install_dependencies
+  script:
+    - |
+      if grep -q "prettier" package.json; then
+        npm run format:check || true
+      else
+        echo "Prettier not configured, skipping..."
+      fi
+  allow_failure: true
+
+docker:build:
+  stage: docker
+  image: docker:24
+  services:
+    - docker:24-dind
+  needs:
+    - build
+  before_script:
+    - |
+      if [ ! -f "Dockerfile" ]; then
+        echo "Dockerfile not found, skipping Docker build..."
+        exit 0
+      fi
+  script:
+    - docker build -t \$CI_PROJECT_NAME:\$CI_COMMIT_SHORT_SHA .
+    - docker tag \$CI_PROJECT_NAME:\$CI_COMMIT_SHORT_SHA \$CI_PROJECT_NAME:latest
+    - echo "Docker image built successfully"
+  only:
+    - main
+    - develop
+  allow_failure: true
+
+docker:test:
+  stage: docker
+  image: docker:24
+  services:
+    - docker:24-dind
+  needs:
+    - docker:build
+  before_script:
+    - |
+      if [ ! -f "Dockerfile" ]; then
+        echo "Dockerfile not found, skipping Docker test..."
+        exit 0
+      fi
+  script:
+    - docker run -d -p 3000:80 --name test-container \$CI_PROJECT_NAME:latest
+    - sleep 5
+    - apk add --no-cache curl
+    - curl -f http://localhost:3000 || exit 1
+    - docker stop test-container
+    - echo "Docker container tested successfully"
+  only:
+    - main
+    - develop
+  allow_failure: true
+`,
+
+  getCIReadme: () => `# CI/CD Configuration
+
+This project includes CI/CD configurations for both GitHub Actions and GitLab CI.
+
+## GitHub Actions
+
+The GitHub Actions workflow is located at \`.github/workflows/ci.yml\` and includes:
+
+### Jobs
+
+1. **build-and-test** (Matrix: Node 18.x, 20.x)
+   - Checkout code
+   - Setup Node.js
+   - Install dependencies
+   - Lint code
+   - Run unit tests
+   - Build application
+   - Upload build artifacts
+   - Run E2E tests (if configured)
+
+2. **code-quality**
+   - Check code formatting with Prettier
+   - Run TypeScript type checking
+
+3. **docker-build** (Only on main/develop branches)
+   - Build Docker image
+   - Test Docker container
+
+### Triggers
+- Push to \`main\` or \`develop\` branches
+- Pull requests to \`main\` or \`develop\` branches
+
+## GitLab CI
+
+The GitLab CI configuration is located at \`.gitlab-ci.yml\` and includes:
+
+### Stages
+
+1. **install** - Install dependencies with caching
+2. **lint** - Run linters and type checking
+3. **test** - Run unit and E2E tests with coverage
+4. **build** - Build the application
+5. **docker** - Build and test Docker images (only on main/develop)
+
+### Features
+- Dependency caching for faster builds
+- Test coverage reporting
+- Parallel job execution
+- Artifact retention
+- Docker build and testing
+
+## Configuration
+
+### GitHub Secrets (Optional)
+
+For deployment, you may need to add these secrets in GitHub Settings > Secrets:
+
+- \`DOCKER_USERNAME\` - Docker Hub username
+- \`DOCKER_PASSWORD\` - Docker Hub password/token
+- \`NPM_TOKEN\` - NPM registry token (if publishing packages)
+
+### GitLab CI/CD Variables (Optional)
+
+For deployment, configure these variables in GitLab Settings > CI/CD > Variables:
+
+- \`DOCKER_USERNAME\` - Docker Hub username
+- \`DOCKER_PASSWORD\` - Docker Hub password/token
+- \`NPM_TOKEN\` - NPM registry token (if publishing packages)
+
+## Customization
+
+### Adding Deployment
+
+To add deployment steps, uncomment and configure the deployment jobs in the respective CI files:
+
+**GitHub Actions:**
+\`\`\`yaml
+deploy:
+  runs-on: ubuntu-latest
+  needs: build-and-test
+  if: github.ref == 'refs/heads/main'
+  steps:
+    # Add your deployment steps here
+\`\`\`
+
+**GitLab CI:**
+\`\`\`yaml
+deploy:
+  stage: deploy
+  script:
+    # Add your deployment steps here
+  only:
+    - main
+\`\`\`
+
+### Modifying Test Commands
+
+Update the test commands in the CI files to match your project:
+
+- \`npm test\` - Unit tests
+- \`npm run e2e\` - End-to-end tests
+- \`npm run lint\` - Linting
+- \`npm run build\` - Build
+
+## Troubleshooting
+
+### Tests Failing in CI
+
+- Ensure all tests pass locally before pushing
+- Check if environment-specific configurations are needed
+- Review CI logs for specific error messages
+
+### Build Artifacts Not Found
+
+- Verify the build output directory matches the artifact path
+- Check if the build command completes successfully
+
+### Docker Build Issues
+
+- Ensure Dockerfile exists in the project root
+- Verify all dependencies are properly installed before build
+- Check Docker service is running (GitLab CI)
+
+## Best Practices
+
+1. ✅ Keep CI files up to date with project dependencies
+2. ✅ Run CI checks locally before pushing (using act for GitHub Actions)
+3. ✅ Monitor CI/CD pipeline execution times and optimize if needed
+4. ✅ Use caching effectively to speed up builds
+5. ✅ Keep secrets secure - never commit them to the repository
+
+## Resources
+
+- [GitHub Actions Documentation](https://docs.github.com/en/actions)
+- [GitLab CI/CD Documentation](https://docs.gitlab.com/ee/ci/)
+- [Docker Documentation](https://docs.docker.com/)
+`,
+
   getAuthReadme: (authType: string) => `# ${authType.toUpperCase()} Authentication Setup
 
 ${authType === 'msal' ? `## Microsoft Authentication Library (MSAL) Setup
@@ -2938,6 +3360,46 @@ const setupDockerConfig = (workspacePath: string, a: any) => {
   }
 };
 
+const setupCIConfig = (workspacePath: string, a: any) => {
+  if (!a.ci) {
+    return;
+  }
+
+  try {
+    console.log("\n🔄 Setting up CI/CD configuration...");
+
+    // Create .github/workflows directory for GitHub Actions
+    const githubWorkflowsPath = path.join(workspacePath, ".github", "workflows");
+    if (!fs.existsSync(githubWorkflowsPath)) {
+      fs.mkdirSync(githubWorkflowsPath, { recursive: true });
+    }
+
+    // Create GitHub Actions workflow
+    const githubActionsPath = path.join(githubWorkflowsPath, "ci.yml");
+    const githubActionsContent = TEMPLATES.getGitHubActionsWorkflow();
+    createFileWithErrorHandling(githubActionsPath, githubActionsContent, "GitHub Actions workflow");
+
+    // Create GitLab CI configuration
+    const gitlabCIPath = path.join(workspacePath, ".gitlab-ci.yml");
+    const gitlabCIContent = TEMPLATES.getGitLabCI();
+    createFileWithErrorHandling(gitlabCIPath, gitlabCIContent, "GitLab CI configuration");
+
+    // Create CI README
+    const ciReadmePath = path.join(workspacePath, "CI_README.md");
+    const ciReadmeContent = TEMPLATES.getCIReadme();
+    createFileWithErrorHandling(ciReadmePath, ciReadmeContent, "CI/CD documentation");
+
+    console.log("✅ CI/CD configuration setup completed successfully!");
+    console.log("   📝 GitHub Actions: .github/workflows/ci.yml");
+    console.log("   📝 GitLab CI: .gitlab-ci.yml");
+    console.log("   📝 Documentation: CI_README.md");
+    console.log("\n   Both CI configurations work with React and Angular applications");
+  } catch (error) {
+    console.error("❌ Failed to setup CI/CD configuration:", error.message);
+    console.warn("You can add CI/CD configuration manually later");
+  }
+};
+
 export function reactAppGenerator() {
   getArgs().then((a: any) => {
     try {
@@ -3219,6 +3681,9 @@ export function reactAppGenerator() {
       // Setup Docker configuration if enabled
       setupDockerConfig(workspacePath, a);
 
+      // Setup CI/CD configuration if enabled
+      setupCIConfig(workspacePath, a);
+
       console.log("\n✅ React application created successfully!\n");
       console.log("━".repeat(50));
       console.log(`📁 Workspace: ${a.workspace}`);
@@ -3233,6 +3698,7 @@ export function reactAppGenerator() {
       console.log(`✨ Prettier: ${a.prettier ? "Yes" : "No"}`);
       console.log(`🐶 Husky: ${a.husky ? "Yes" : "No"}`);
       console.log(`🐳 Docker: ${a.docker ? "Yes" : "No"}`);
+      console.log(`🔄 CI/CD: ${a.ci ? "Yes (GitHub Actions & GitLab CI)" : "No"}`);
       console.log("━".repeat(50));
       console.log("\nTo get started:\n");
       console.log(`  cd ${a.workspace}`);
@@ -3500,6 +3966,12 @@ function getArgs() {
       {
         name: "docker",
         message: "Would you like to add Docker configuration?",
+        type: "confirm",
+        default: false,
+      },
+      {
+        name: "ci",
+        message: "Would you like to add CI/CD configuration? (GitHub Actions & GitLab CI)",
         type: "confirm",
         default: false,
       },
@@ -4102,6 +4574,9 @@ function applyPTGCustomizations(workspacePath: string, a: any) {
 
     // Setup Docker configuration if enabled
     setupDockerConfig(workspacePath, a);
+
+    // Setup CI/CD configuration if enabled
+    setupCIConfig(workspacePath, a);
 
     // Setup authentication if MSAL or Okta selected
     setupAuthentication(workspacePath, a);

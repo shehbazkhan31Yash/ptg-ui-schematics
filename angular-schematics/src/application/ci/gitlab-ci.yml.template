@@ -1,0 +1,171 @@
+stages:
+  - install
+  - lint
+  - test
+  - build
+  - docker
+
+variables:
+  NODE_VERSION: "20"
+  NPM_CACHE_FOLDER: .npm
+  DOCKER_DRIVER: overlay2
+
+# Cache configuration
+cache:
+  key:
+    files:
+      - package-lock.json
+  paths:
+    - node_modules/
+    - .npm/
+
+# Install dependencies
+install_dependencies:
+  stage: install
+  image: node:${NODE_VERSION}
+  script:
+    - npm ci --cache .npm --prefer-offline
+  artifacts:
+    paths:
+      - node_modules/
+    expire_in: 1 hour
+
+# Lint job
+lint:
+  stage: lint
+  image: node:${NODE_VERSION}
+  needs:
+    - install_dependencies
+  script:
+    - npm run lint
+  allow_failure: true
+
+# Unit tests
+test:unit:
+  stage: test
+  image: node:${NODE_VERSION}
+  needs:
+    - install_dependencies
+  script:
+    - npm test -- --watch=false --browsers=ChromeHeadless
+  coverage: '/All files[^|]*\|[^|]*\s+([\d\.]+)/'
+  artifacts:
+    when: always
+    reports:
+      junit:
+        - junit.xml
+      coverage_report:
+        coverage_format: cobertura
+        path: coverage/cobertura-coverage.xml
+    paths:
+      - coverage/
+    expire_in: 30 days
+  allow_failure: true
+
+# E2E tests
+test:e2e:
+  stage: test
+  image: node:${NODE_VERSION}
+  needs:
+    - install_dependencies
+  script:
+    - |
+      if grep -q "\"e2e\"" package.json; then
+        npm run e2e
+      else
+        echo "E2E tests not configured, skipping..."
+      fi
+  allow_failure: true
+  only:
+    - main
+    - develop
+    - merge_requests
+
+# Build application
+build:
+  stage: build
+  image: node:${NODE_VERSION}
+  needs:
+    - install_dependencies
+  script:
+    - npm run build
+    - echo "Build completed successfully"
+  artifacts:
+    paths:
+      - dist/
+      - build/
+    expire_in: 1 week
+
+# Type check
+typecheck:
+  stage: lint
+  image: node:${NODE_VERSION}
+  needs:
+    - install_dependencies
+  script:
+    - npx tsc --noEmit
+  allow_failure: true
+
+# Prettier format check (if configured)
+format:check:
+  stage: lint
+  image: node:${NODE_VERSION}
+  needs:
+    - install_dependencies
+  script:
+    - |
+      if grep -q "prettier" package.json; then
+        npm run format:check || true
+      else
+        echo "Prettier not configured, skipping..."
+      fi
+  allow_failure: true
+
+# Docker build (optional, only on main/develop)
+docker:build:
+  stage: docker
+  image: docker:24
+  services:
+    - docker:24-dind
+  needs:
+    - build
+  before_script:
+    - |
+      if [ ! -f "Dockerfile" ]; then
+        echo "Dockerfile not found, skipping Docker build..."
+        exit 0
+      fi
+  script:
+    - docker build -t $CI_PROJECT_NAME:$CI_COMMIT_SHORT_SHA .
+    - docker tag $CI_PROJECT_NAME:$CI_COMMIT_SHORT_SHA $CI_PROJECT_NAME:latest
+    - echo "Docker image built successfully"
+  only:
+    - main
+    - develop
+  allow_failure: true
+
+# Docker test (optional)
+docker:test:
+  stage: docker
+  image: docker:24
+  services:
+    - docker:24-dind
+  needs:
+    - docker:build
+  before_script:
+    - |
+      if [ ! -f "Dockerfile" ]; then
+        echo "Dockerfile not found, skipping Docker test..."
+        exit 0
+      fi
+  script:
+    - docker run -d -p 4200:80 --name test-container $CI_PROJECT_NAME:latest
+    - sleep 5
+    - apk add --no-cache curl
+    - curl -f http://localhost:4200 || exit 1
+    - docker stop test-container
+    - echo "Docker container tested successfully"
+  only:
+    - main
+    - develop
+  allow_failure: true
