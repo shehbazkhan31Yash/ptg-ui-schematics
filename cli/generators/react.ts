@@ -30,132 +30,557 @@ function getNormalizedStyleForNx(style: string): string {
 
 // Template constants for better maintainability
 const TEMPLATES = {
-  getAppContent: (a: any) => `import React from 'react';
+  getAppContent: (a: any) => `import React, { useState } from 'react';
 import './app.${a.style}';
-${a.routing ? "import { Routes, Route, Link, Navigate } from 'react-router-dom';" : ''}
+${a.routing ? "import { Routes, Route, Link, useLocation, BrowserRouter } from 'react-router-dom';" : ''}
 ${a.stateManagement === 'redux' ? "import { Provider, useSelector, useDispatch } from 'react-redux';\nimport { store, RootState, increment, decrement } from './store';" : ''}
 ${a.stateManagement === 'zustand' ? "import { useAppStore } from './store';" : ''}
 ${a.i18n ? "import { useTranslation } from 'react-i18next';\nimport './i18n';" : ''}
-${
-  a.stateManagement === 'redux'
-    ? `
-// Redux-connected component
-const ReduxFeatures = () => {
-  const dispatch = useDispatch();
-  const count = useSelector((state: RootState) => state.app.count);
+${a.seo ? "import { SEO } from './components/SEO';\nimport { GoogleAnalytics } from './components/GoogleAnalytics';" : ''}
+${a.auth === 'msal' ? "import { MsalLoginButton } from '../components/MsalLoginButton';\nimport { useMsal } from '@azure/msal-react';" : ''}
+${a.auth === 'okta' ? "import { OktaLoginButton } from '../components/OktaLoginButton';\nimport { useOktaAuth } from '@okta/okta-react';" : ''}
 
+${a.routing ? `
+// Home Page Component
+const HomePage = () => {
+  ${a.i18n ? "const { t } = useTranslation();" : ''}
+  const getCurrentDate = () => new Date().toISOString().split('T')[0];
+  
   return (
-    <div className="state-management-demo">
-      <h2>Redux Toolkit Demo</h2>
-      <p>Count: {count}</p>
-      <div className="state-buttons">
-        <button onClick={() => dispatch(decrement())}>-</button>
-        <button onClick={() => dispatch(increment())}>+</button>
-      </div>
+    <div className="container-full">
+      <header className="app-header">
+        <h1 className="entry-title">Welcome to ${a.name}!</h1>
+        <div className="author">
+          <span>PTG UI Schematics</span>
+        </div>
+        <time className="published">{getCurrentDate()}</time>
+      </header>
+
+      <main className="main-content">
+        <section className="intro entry-content">
+          <p className="entry-summary">Congratulations! Your React application is running successfully. This modern web application is built with the latest React framework, providing a robust foundation for scalable enterprise applications.</p>
+          
+          <p>This application demonstrates best practices in modern web development, including component-based architecture, reactive programming patterns, and comprehensive testing strategies.</p>
+          
+          <p>Built with performance and maintainability in mind, this application includes optimized build processes, code splitting capabilities, and progressive web app features to ensure excellent user experience across all devices and network conditions.</p>
+        </section>
+
+        <div className="features">
+          <h2>Features included:</h2>
+          <ul>
+            <li>✅ React 18+ with TypeScript</li>
+            <li>✅ React Router</li>
+            <li>✅ ${a.style.toUpperCase()} Styling</li>
+            <li>✅ ${a.bundler.charAt(0).toUpperCase() + a.bundler.slice(1)} Bundler</li>
+            ${a.framework !== 'none' ? `<li>✅ ${a.framework.charAt(0).toUpperCase() + a.framework.slice(1)} UI Framework</li>` : ''}
+            ${a.auth === 'msal' ? '<li>✅ Azure AD (MSAL) Authentication</li>' : ''}
+            ${a.auth === 'okta' ? '<li>✅ Okta Authentication</li>' : ''}
+            ${a.stateManagement === 'redux' ? '<li>✅ Redux Toolkit State Management</li>' : ''}
+            ${a.stateManagement === 'zustand' ? '<li>✅ Zustand State Management</li>' : ''}
+            ${a.i18n ? '<li>✅ Internationalization (i18n)</li>' : ''}
+            ${a.seo ? '<li>✅ SEO Optimization with Google Analytics</li>' : ''}
+            ${a.unitTestRunner !== 'none' ? `<li>✅ ${a.unitTestRunner.charAt(0).toUpperCase() + a.unitTestRunner.slice(1)} Unit Tests</li>` : ''}
+            ${a.e2eTestRunner !== 'none' ? `<li>✅ ${a.e2eTestRunner.charAt(0).toUpperCase() + a.e2eTestRunner.slice(1)} E2E Tests</li>` : ''}
+            ${a.linter !== 'none' ? '<li>✅ ESLint Linting</li>' : ''}
+            ${a.prettier ? '<li>✅ Prettier Formatting</li>' : ''}
+            ${a.husky ? '<li>✅ Husky Git Hooks</li>' : ''}
+          </ul>
+        </div>
+
+        <section className="getting-started">
+          <h2>Getting Started</h2>
+          <p>Ready to start building your application! Visit the <Link to="/features">Features page</Link> to learn how to setup and use all included features.</p>
+        </section>
+      </main>
     </div>
   );
 };
-`
-    : ''
-}
-${
-  a.stateManagement === 'zustand'
-    ? `
-// Zustand-connected component
-const ZustandFeatures = () => {
-  const { count, increment, decrement, reset } = useAppStore();
 
+// About Page Component
+const AboutPage = () => {
   return (
-    <div className="state-management-demo">
-      <h2>Zustand Demo</h2>
-      <p>Count: {count}</p>
-      <div className="state-buttons">
-        <button onClick={decrement}>-</button>
-        <button onClick={increment}>+</button>
-        <button onClick={reset}>Reset</button>
-      </div>
+    <div className="container-full">
+      <header className="page-header">
+        <h1>About</h1>
+        <p>Learn more about this application and its technology stack</p>
+      </header>
+
+      <main className="main-content">
+        <section className="content-section">
+          <h2>About This Application</h2>
+          <p>Built with PTG UI Schematics - a powerful React application generator designed for enterprise applications.</p>
+          
+          <article className="tech-stack">
+            <h3>Technology Stack</h3>
+            <p>This application uses modern web technologies for optimal performance and developer experience.</p>
+            
+            <h4>Core Technologies</h4>
+            <ul>
+              <li>React 18+ for UI components and state management</li>
+              <li>TypeScript for type safety and better developer experience</li>
+              <li>${a.bundler.charAt(0).toUpperCase() + a.bundler.slice(1)} for fast builds and hot module replacement</li>
+              <li>React Router for client-side routing</li>
+            </ul>
+            
+            ${a.stateManagement !== 'none' ? `
+            <h4>State Management</h4>
+            <p>Using ${a.stateManagement === 'redux' ? 'Redux Toolkit' : 'Zustand'} for predictable state management and scalable application architecture.</p>` : ''}
+            
+            ${a.i18n ? `
+            <h4>Internationalization</h4>
+            <p>Built-in i18n support using react-i18next for multi-language applications.</p>` : ''}
+            
+            ${a.seo ? `
+            <h4>SEO & Analytics</h4>
+            <p>Comprehensive SEO optimization with meta tags, structured data, and Google Analytics integration.</p>` : ''}
+          </article>
+        </section>
+      </main>
     </div>
   );
 };
-`
-    : ''
-}
+
+// Features Page Component
+const FeaturesPage = () => {
+  return (
+    <div className="features-container">
+      <header className="features-header">
+        <h1>Features & Setup Guide</h1>
+        <p>Learn how to setup and use all the features included in your application</p>
+      </header>
+      
+      <main className="features-content">
+        <section className="feature-usage">
+          ${a.auth === 'msal' ? `
+          <div className="usage-example setup-required">
+            <h3>🔐 Azure AD (MSAL) Authentication</h3>
+            <div className="setup-step">Your app is configured with Microsoft Authentication Library (MSAL)</div>
+            <div className="setup-step">
+              <strong>Configuration:</strong> Update <code>src/config/msalConfig.ts</code> with your Azure AD credentials
+            </div>
+            <div className="setup-step">
+              <strong>Components:</strong> Use <code>&lt;MsalLoginButton /&gt;</code> component anywhere in your app
+            </div>
+            <div className="setup-step">
+              <strong>Access user data:</strong>
+            </div>
+            <code>const &#123; accounts &#125; = useMsal();<br/>const user = accounts[0];</code>
+            <div className="setup-step">
+              <strong>Get access token:</strong>
+            </div>
+            <code>const response = await instance.acquireTokenSilent(&#123;<br/>  scopes: ['user.read'],<br/>  account: accounts[0]<br/>&#125;);</code>
+            <div className="setup-step">
+              ✨ <strong>Try it:</strong> Visit the <a href="/demo">Demo page</a> to see live authentication!
+            </div>
+          </div>` : ''}
+          
+          ${a.auth === 'okta' ? `
+          <div className="usage-example setup-required">
+            <h3>🔐 Okta Authentication</h3>
+            <div className="setup-step">Your app is configured with Okta for secure authentication</div>
+            <div className="setup-step">
+              <strong>Configuration:</strong> Update <code>src/config/oktaConfig.ts</code> with your Okta credentials
+            </div>
+            <div className="setup-step">
+              <strong>Components:</strong> Use <code>&lt;OktaLoginButton /&gt;</code> component anywhere in your app
+            </div>
+            <div className="setup-step">
+              <strong>Access user data:</strong>
+            </div>
+            <code>const &#123; authState &#125; = useOktaAuth();<br/>const user = authState.idToken?.claims;</code>
+            <div className="setup-step">
+              <strong>Protected routes:</strong>
+            </div>
+            <code>import &#123; SecureRoute &#125; from '@okta/okta-react';<br/>&lt;SecureRoute path="/protected" component=&#123;ProtectedPage&#125; /&gt;</code>
+            <div className="setup-step">
+              ✨ <strong>Try it:</strong> Visit the <a href="/demo">Demo page</a> to see live authentication!
+            </div>
+          </div>` : ''}
+          
+          ${a.seo ? `
+          <div className="usage-example">
+            <h3>🔧 Google Analytics Setup</h3>
+            <div className="setup-step">1. Add your Measurement ID in the GoogleAnalytics component</div>
+            <code>&lt;GoogleAnalytics measurementId="G-XXXXXXXXXX" /&gt;</code>
+            <div className="setup-step">2. Track custom events:</div>
+            <code>trackEvent('button_click', &#123; button_name: 'signup' &#125;);</code>
+          </div>` : ''}
+          
+          ${a.husky ? `
+          <div className="usage-example setup-required">
+            <h3>🔧 Husky Git Hooks Setup</h3>
+            <div className="setup-step">1. Enable Husky:</div>
+            <code>npm run prepare</code>
+            <div className="setup-step">2. Hooks are now active for pre-commit and pre-push</div>
+          </div>` : ''}
+          
+          ${a.i18n ? `
+          <div className="usage-example">
+            <h3>🔧 i18n Setup</h3>
+            <div className="setup-step">1. Usage in components:</div>
+            <code>const &#123; t, i18n &#125; = useTranslation();<br/>&#123;t('welcome')&#125;</code>
+            <div className="setup-step">2. Change language:</div>
+            <code>i18n.changeLanguage('es');</code>
+          </div>` : ''}
+          
+          ${a.stateManagement === 'redux' ? `
+          <div className="usage-example">
+            <h3>Redux State Management</h3>
+            <code>const dispatch = useDispatch();<br/>dispatch(increment());</code>
+            <code>const count = useSelector((state: RootState) =&gt; state.app.count);</code>
+          </div>` : ''}
+          
+          ${a.stateManagement === 'zustand' ? `
+          <div className="usage-example">
+            <h3>Zustand State Management</h3>
+            <code>const &#123; count, increment &#125; = useAppStore();<br/>&lt;button onClick=&#123;increment&#125;&gt;+&lt;/button&gt;</code>
+          </div>` : ''}
+          
+          <div className="usage-example">
+            <h3>Routing</h3>
+            <code>import &#123; useNavigate, Link &#125; from 'react-router-dom';<br/>const navigate = useNavigate();<br/>navigate('/about');</code>
+            <code>&lt;Link to="/about"&gt;About&lt;/Link&gt;</code>
+          </div>
+          
+          <div className="usage-example">
+            <h3>HTTP Client</h3>
+            <code>fetch('/api/users').then(res =&gt; res.json()).then(data =&gt; console.log(data));</code>
+            <code>// Or use axios, fetch, or any HTTP library</code>
+          </div>
+        </section>
+      </main>
+    </div>
+  );
+};
+
+${a.auth === 'msal' || a.auth === 'okta' ? `
+// Authentication Info Component
+const AuthInfo = () => {
+  ${a.auth === 'msal' ? `const { accounts } = useMsal();
+  
+  if (accounts.length === 0) {
+    return (
+      <div className="auth-info">
+        <p>Not authenticated. Click the button above to sign in.</p>
+      </div>
+    );
+  }
+  
+  const account = accounts[0];
+  return (
+    <div className="auth-info">
+      <h4>User Information</h4>
+      <p><strong>Name:</strong> {account.name}</p>
+      <p><strong>Email:</strong> {account.username}</p>
+      <p><strong>Account ID:</strong> {account.localAccountId}</p>
+    </div>
+  );` : ''}
+  ${a.auth === 'okta' ? `const { authState } = useOktaAuth();
+  
+  if (!authState || !authState.isAuthenticated) {
+    return (
+      <div className="auth-info">
+        <p>Not authenticated. Click the button above to sign in.</p>
+      </div>
+    );
+  }
+  
+  const user = authState.idToken?.claims;
+  return (
+    <div className="auth-info">
+      <h4>User Information</h4>
+      <p><strong>Name:</strong> {user?.name || 'N/A'}</p>
+      <p><strong>Email:</strong> {user?.email || 'N/A'}</p>
+      <p><strong>Subject:</strong> {user?.sub || 'N/A'}</p>
+    </div>
+  );` : ''}
+};
+` : ''}
+
+// Demo Page Component
+const DemoPage = () => {
+  ${a.i18n ? "const { t, i18n } = useTranslation();" : ''}
+  ${a.stateManagement === 'redux' ? "const dispatch = useDispatch();\n  const count = useSelector((state: RootState) => state.app.count);" : ''}
+  ${a.stateManagement === 'zustand' ? "const { count, increment, decrement, reset } = useAppStore();" : ''}
+  const [users, setUsers] = useState<any[]>([]);
+  const [loading, setLoading] = useState(false);
+
+  const loadUsers = async () => {
+    setLoading(true);
+    try {
+      const response = await fetch('https://jsonplaceholder.typicode.com/users?_limit=5');
+      const data = await response.json();
+      setUsers(data);
+    } catch (error) {
+      console.error('Error loading users:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="demo-container">
+      <header className="demo-header">
+        <h1>Live Demos</h1>
+        <p>Interactive examples of all included features</p>
+      </header>
+      
+      <main className="demo-content">
+        ${a.i18n ? `
+        <section className="demo-section">
+          <h2>Internationalization Demo</h2>
+          <div className="demo-examples">
+            <div className="i18n-demo">
+              <p>{t('welcome')}</p>
+              <div className="language-switcher">
+                <button onClick={() => i18n.changeLanguage('en')}>English</button>
+                <button onClick={() => i18n.changeLanguage('es')}>Español</button>
+              </div>
+              <p>Current Language: {i18n.language}</p>
+            </div>
+          </div>
+        </section>` : ''}
+
+        ${a.seo ? `
+        <section className="demo-section">
+          <h2>SEO Features Demo</h2>
+          <div className="demo-examples">
+            <div className="seo-info">
+              <p>This page includes:</p>
+              <ul>
+                <li>Meta tags for description and keywords</li>
+                <li>Open Graph tags for social sharing</li>
+                <li>Structured data markup</li>
+                <li>Google Analytics tracking</li>
+              </ul>
+            </div>
+          </div>
+        </section>` : ''}
+
+        ${a.auth === 'msal' ? `
+        <section className="demo-section">
+          <h2>MSAL Authentication Demo</h2>
+          <div className="demo-examples">
+            <div className="auth-demo">
+              <MsalLoginButton />
+              <AuthInfo />
+            </div>
+          </div>
+        </section>` : ''}
+
+        ${a.auth === 'okta' ? `
+        <section className="demo-section">
+          <h2>Okta Authentication Demo</h2>
+          <div className="demo-examples">
+            <div className="auth-demo">
+              <OktaLoginButton />
+              <AuthInfo />
+            </div>
+          </div>
+        </section>` : ''}
+
+        ${a.stateManagement === 'redux' ? `
+        <section className="demo-section">
+          <h2>Redux State Demo</h2>
+          <div className="demo-examples">
+            <div className="ngrx-demo">
+              <p>Counter: {count}</p>
+              <button onClick={() => dispatch(decrement())}>-</button>
+              <button onClick={() => dispatch(increment())}>+</button>
+            </div>
+          </div>
+        </section>` : ''}
+
+        ${a.stateManagement === 'zustand' ? `
+        <section className="demo-section">
+          <h2>Zustand State Demo</h2>
+          <div className="demo-examples">
+            <div className="ngrx-demo">
+              <p>Counter: {count}</p>
+              <button onClick={decrement}>-</button>
+              <button onClick={increment}>+</button>
+              <button onClick={reset}>Reset</button>
+            </div>
+          </div>
+        </section>` : ''}
+
+        <section className="demo-section">
+          <h2>HTTP Client Demo</h2>
+          <div className="demo-examples">
+            <div className="http-demo">
+              <button onClick={loadUsers}>Load Sample Data</button>
+              {loading && <div>Loading...</div>}
+              {users.length > 0 && (
+                <div>
+                  <h4>Sample Users:</h4>
+                  <ul>
+                    {users.map((user) => (
+                      <li key={user.id}>{user.name} - {user.email}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </div>
+          </div>
+        </section>
+
+        <section className="demo-section">
+          <h2>Routing Demo</h2>
+          <div className="demo-examples">
+            <div className="routing-demo">
+              <p>Navigate between pages:</p>
+              <Link to="/"><button>Home</button></Link>
+              <Link to="/about"><button>About</button></Link>
+              <Link to="/features"><button>Features</button></Link>
+            </div>
+          </div>
+        </section>
+
+        <section className="demo-section">
+          <h2>Responsive Grid Demo</h2>
+          <div className="demo-examples">
+            <div className="grid-demo">
+              <div className="grid-item">Item 1</div>
+              <div className="grid-item">Item 2</div>
+              <div className="grid-item">Item 3</div>
+              <div className="grid-item">Item 4</div>
+            </div>
+            <p>Resize browser to see responsive behavior</p>
+          </div>
+        </section>
+      </main>
+    </div>
+  );
+};
+
+// Main App Component with Navigation
+const AppContent = () => {
+  const location = useLocation();
+  
+  return (
+    <>
+      ${a.seo ? `
+      <SEO 
+        title="${a.name}"
+        description="A React application generated by PTG UI Schematics"
+        keywords="react, typescript, ${a.framework !== 'none' ? a.framework + ',' : ''} web application"
+      />
+      <GoogleAnalytics 
+        measurementId="G-XXXXXXXXXX" 
+        debug={process.env.NODE_ENV === 'development'} 
+      />` : ''}
+      
+      <div className="app">
+        <nav className="main-navigation">
+          <div className="nav-container">
+            <div className="nav-brand">
+              <img src="/assets/images/YashLogo.jpg" alt="Logo" className="nav-logo" />
+              <span className="brand-text">PTG UI - React Schematics</span>
+            </div>
+            <div className="nav-links">
+              <Link to="/" className={\`nav-link $\{location.pathname === '/' ? 'active' : ''}\`}>Home</Link>
+              <Link to="/about" className={\`nav-link $\{location.pathname === '/about' ? 'active' : ''}\`}>About</Link>
+              <Link to="/features" className={\`nav-link $\{location.pathname === '/features' ? 'active' : ''}\`}>Features</Link>
+              <Link to="/demo" className={\`nav-link $\{location.pathname === '/demo' ? 'active' : ''}\`}>Demo</Link>
+            </div>
+          </div>
+        </nav>
+
+        <main className="app-main">
+          <Routes>
+            <Route path="/" element={<HomePage />} />
+            <Route path="/about" element={<AboutPage />} />
+            <Route path="/features" element={<FeaturesPage />} />
+            <Route path="/demo" element={<DemoPage />} />
+          </Routes>
+        </main>
+      </div>
+    </>
+  );
+};
+
 const App = () => {
+  return (
+    ${a.auth === 'okta' 
+      ? (a.stateManagement === 'redux' ? '<Provider store={store}><AppContent /></Provider>' : '<AppContent />')
+      : (a.stateManagement === 'redux' ? '<Provider store={store}><BrowserRouter><AppContent /></BrowserRouter></Provider>' : '<BrowserRouter><AppContent /></BrowserRouter>')
+    }
+  );
+};
+
+export default App;
+` : `const App = () => {
   ${a.i18n ? "const { t, i18n } = useTranslation();" : ''}
 
   return (
     ${a.stateManagement === 'redux' ? '<Provider store={store}>' : ''}
+    ${a.stateManagement === 'redux' || a.seo ? '<>' : ''}
+    ${a.seo ? `<SEO 
+        title="${a.name}"
+        description="A React application generated by PTG UI Schematics"
+        keywords="react, typescript, ${a.framework !== 'none' ? a.framework + ',' : ''} web application"
+      />
+      <GoogleAnalytics 
+        measurementId="G-XXXXXXXXXX" 
+        debug={process.env.NODE_ENV === 'development'} 
+      />` : ''}
     <div className="app">
-      <header className="app-header">
-        <h1>${a.i18n ? '{t("welcome")}' : `Welcome to ${a.name}!`}</h1>
-        ${a.stateManagement === 'redux' ? '<ReduxFeatures />' : ''}
-        ${a.stateManagement === 'zustand' ? '<ZustandFeatures />' : ''}
-        <p>Generated by PTG UI Schematics with:</p>
-        <ul className="feature-list">
-          <li>✅ React ${a.framework !== 'none' ? `+ ${a.framework}` : ''}</li>
-          <li>✅ ${a.style.toUpperCase()} Styling</li>
-          <li>✅ ${a.bundler.charAt(0).toUpperCase() + a.bundler.slice(1)} Bundler</li>
-          ${a.routing ? '<li>✅ React Router</li>' : ''}
-          ${a.stateManagement === 'redux' ? '<li>✅ Redux Toolkit</li>' : ''}
-          ${a.stateManagement === 'zustand' ? '<li>✅ Zustand State Management</li>' : ''}
-          ${a.i18n ? '<li>✅ Internationalization</li>' : ''}
-          ${a.unitTestRunner !== 'none' ? `<li>✅ ${a.unitTestRunner.charAt(0).toUpperCase() + a.unitTestRunner.slice(1)} Unit Tests</li>` : ''}
-          ${a.e2eTestRunner !== 'none' ? `<li>✅ ${a.e2eTestRunner.charAt(0).toUpperCase() + a.e2eTestRunner.slice(1)} E2E Tests</li>` : ''}
-          ${a.linter !== 'none' ? `<li>✅ ${a.linter === 'airbnb' ? 'ESLint with Airbnb' : a.linter === 'custom' ? 'ESLint with Custom Rules' : 'ESLint'} Linting</li>` : ''}
-          ${a.prettier ? '<li>✅ Prettier Formatting</li>' : ''}
-          ${a.husky ? '<li>✅ Husky Git Hooks</li>' : ''}
-          ${a.auth !== 'custom' ? `<li>✅ ${a.auth.toUpperCase()} Authentication</li>` : '<li>✅ Custom Authentication</li>'}
-        </ul>
-      </header>
-      ${
-        a.routing
-          ? `
-      <nav className="app-nav">
-        <Link to="/">${a.i18n ? '{t("home")}' : 'Home'}</Link>
-        <Link to="/about">${a.i18n ? '{t("about")}' : 'About'}</Link>
-      </nav>
+      <div className="container-full">
+        <header className="app-header">
+          <h1>${a.i18n ? '{t("welcome")}' : `Welcome to ${a.name}!`}</h1>
+          <div className="author">
+            <span>PTG UI Schematics</span>
+          </div>
+        </header>
 
-      <main className="app-main">
-        <Routes>
-          <Route
-            path="/"
-            element={
-              <div className="page-content">
-                ${a.i18n ? '{t("home")}' : 'Home'} Page
-              </div>
-            }
-          />
-          <Route
-            path="/about"
-            element={
-              <div className="page-content">
-                ${a.i18n ? '{t("about")}' : 'About'} Page
-              </div>
-            }
-          />
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
-      </main>
-`
-          : ''
-      }
-      ${
-        a.i18n
-          ? `
-      <div className="language-switcher">
-        <button onClick={() => i18n.changeLanguage('en')}>English</button>
-        <button onClick={() => i18n.changeLanguage('es')}>Español</button>
+        <main className="main-content">
+          <section className="intro">
+            <p>Congratulations! Your React application is running successfully. This modern web application is built with the latest React framework.</p>
+          </section>
+
+          <div className="features">
+            <h2>Features included:</h2>
+            <ul>
+              <li>✅ React 18+ with TypeScript</li>
+              <li>✅ ${a.style.toUpperCase()} Styling</li>
+              <li>✅ ${a.bundler.charAt(0).toUpperCase() + a.bundler.slice(1)} Bundler</li>
+              ${a.framework !== 'none' ? `<li>✅ ${a.framework.charAt(0).toUpperCase() + a.framework.slice(1)} UI Framework</li>` : ''}
+              ${a.stateManagement === 'redux' ? '<li>✅ Redux Toolkit</li>' : ''}
+              ${a.stateManagement === 'zustand' ? '<li>✅ Zustand State Management</li>' : ''}
+              ${a.i18n ? '<li>✅ Internationalization</li>' : ''}
+              ${a.seo ? '<li>✅ SEO Optimization</li>' : ''}
+              ${a.unitTestRunner !== 'none' ? `<li>✅ ${a.unitTestRunner.charAt(0).toUpperCase() + a.unitTestRunner.slice(1)} Unit Tests</li>` : ''}
+              ${a.linter !== 'none' ? '<li>✅ ESLint Linting</li>' : ''}
+              ${a.prettier ? '<li>✅ Prettier Formatting</li>' : ''}
+              ${a.husky ? '<li>✅ Husky Git Hooks</li>' : ''}
+            </ul>
+          </div>
+
+          <section className="getting-started">
+            <h3>Getting Started</h3>
+            <p>Start building your application with these resources:</p>
+            <ul>
+              <li><strong>Documentation:</strong> Check the README.md file</li>
+              <li><strong>Development:</strong> Run <code>npm start</code> to begin</li>
+              <li><strong>Testing:</strong> Use <code>npm test</code> for unit tests</li>
+            </ul>
+          </section>
+        </main>
+        
+        ${a.i18n ? `
+        <div className="language-switcher">
+          <button onClick={() => i18n.changeLanguage('en')}>English</button>
+          <button onClick={() => i18n.changeLanguage('es')}>Español</button>
+        </div>` : ''}
       </div>
-`
-          : ''
-      }
     </div>
+    ${a.stateManagement === 'redux' || a.seo ? '</>' : ''}
     ${a.stateManagement === 'redux' ? '</Provider>' : ''}
   );
 };
 
 export default App;
-`,
+`}`,
 
   getI18nContent: (appName: string) => `import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
@@ -246,150 +671,576 @@ export const useAppStore = create<AppState>((set) => ({
 `,
 
   getStyleContent: (a: any) => {
-    let baseStyles = `.app {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+    let baseStyles = `* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body, #root {
+  width: 100%;
+  overflow-x: hidden;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Navigation Bar Styles */
+.main-navigation {
+  background: #fff;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  width: 100%;
+}
+
+.nav-container {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 2rem;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  min-height: 100vh;
-  color: white;
-}
-
-.app-header {
-  text-align: center;
-  margin-bottom: 2rem;
-}
-
-.app-header h1 {
-  font-size: 2.5rem;
-  margin-bottom: 1rem;
-  text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
-}
-
-.feature-list {
-  list-style: none;
-  padding: 0;
+  padding: 0 1rem;
   display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
+  justify-content: space-between;
+  align-items: center;
+  height: 70px;
+}
+
+.nav-brand {
+  display: flex;
+  align-items: center;
   gap: 1rem;
+  flex-shrink: 0;
 }
 
-.feature-list li {
-  background: rgba(255,255,255,0.1);
-  padding: 0.5rem 1rem;
-  border-radius: 20px;
-  backdrop-filter: blur(10px);
+.nav-logo {
+  width: 50px;
+  height: 50px;
+  border-radius: 8px;
+  object-fit: contain;
 }
 
-.app-nav {
+.brand-text {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #333;
+}
+
+.nav-links {
   display: flex;
-  justify-content: center;
-  gap: 2rem;
-  margin-bottom: 2rem;
+  gap: 0.5rem;
+  align-items: center;
+  flex-wrap: nowrap;
 }
 
-.app-nav a {
-  color: white;
-  text-decoration: none;
+.nav-link {
   padding: 0.5rem 1rem;
-  border: 2px solid rgba(255,255,255,0.3);
+  text-decoration: none;
+  color: #666;
   border-radius: 25px;
   transition: all 0.3s ease;
+  font-weight: 500;
+  font-size: 0.9rem;
+  white-space: nowrap;
+  border: 1px solid transparent;
 }
 
-.app-nav a:hover {
-  background: rgba(255,255,255,0.2);
+.nav-link:hover {
+  color: #007bff;
+  border-color: #007bff;
+  background-color: rgba(0, 123, 255, 0.1);
+}
+
+.nav-link.active {
+  color: #007bff;
+  background-color: rgba(0, 123, 255, 0.1);
+  border-color: #007bff;
+}
+
+.nav-auth {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+}
+
+.auth-buttons {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.loginBtn, .logoutBtn {
+  padding: 0.5rem 1.5rem;
+  border-radius: 25px;
+  border: none;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 0.9rem;
+}
+
+.loginBtn {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+}
+
+.loginBtn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+}
+
+.logoutBtn {
+  background-color: #dc3545;
+  color: white;
+  margin-left: 0.5rem;
+}
+
+.logoutBtn:hover {
+  background-color: #c82333;
   transform: translateY(-2px);
 }
 
-.app-main {
-  min-height: 200px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: rgba(255,255,255,0.1);
-  border-radius: 15px;
-  padding: 2rem;
-  backdrop-filter: blur(10px);
-  animation: fadeIn 0.3s ease-in-out;
+.auth-info {
+  margin-top: 1rem;
+  padding: 1.5rem;
+  background: linear-gradient(135deg, #667eea15 0%, #764ba215 100%);
+  border-radius: 8px;
+  border-left: 4px solid #667eea;
 }
 
-.page-content {
+.auth-info h4 {
+  margin: 0 0 1rem 0;
+  color: #333;
+  font-size: 1.1rem;
+}
+
+.auth-info p {
+  margin: 0.5rem 0;
+  color: #666;
+  font-size: 0.95rem;
+}
+
+.auth-info strong {
+  color: #333;
+  font-weight: 600;
+}
+
+.auth-demo {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 2rem;
+}
+
+/* Main Content Area */
+.app {
+  min-height: 100vh;
   width: 100%;
+}
+
+.app-main {
+  margin-top: 70px;
+  background-color: #f8f9fa;
+  min-height: calc(100vh - 70px);
+}
+
+/* Container Styles */
+.container-full {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+  width: 100%;
+}
+
+/* Page Header Styles */
+.app-header, .page-header {
+  text-align: center;
+  margin-bottom: 3rem;
+  background: white;
+  padding: 2rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.app-header h1, .page-header h1 {
+  color: #333;
+  font-size: 2.5rem;
+  margin-bottom: 1rem;
+}
+
+.app-header .author, .page-header .author {
+  color: #666;
+  margin: 0.5rem 0;
+}
+
+.app-header .published, .page-header .published {
+  color: #999;
+  font-size: 0.9rem;
+}
+
+/* Content Sections */
+.main-content {
+  background: white;
+  padding: 2rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  margin-bottom: 2rem;
+}
+
+.intro {
+  margin-bottom: 2rem;
+}
+
+.intro p {
+  color: #666;
+  line-height: 1.8;
+  margin-bottom: 1rem;
+  text-align: justify;
+}
+
+.entry-summary {
+  font-size: 1.1rem;
+  font-weight: 500;
+  color: #333;
+  margin-bottom: 1.5rem;
+}
+
+/* Features List */
+.features {
+  background: white;
+  padding: 2rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  margin: 2rem 0;
+}
+
+.features h2 {
+  color: #333;
+  margin-bottom: 1rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 2px solid #007bff;
+}
+
+.features ul {
+  list-style: none;
+  padding: 0;
+}
+
+.features ul li {
+  padding: 0.5rem 0;
+  color: #666;
+  font-size: 1rem;
+}
+
+/* Getting Started Section */
+.getting-started {
+  margin: 3rem 0;
+  text-align: center;
+  padding: 2rem;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.getting-started h2, .getting-started h3 {
+  color: #333;
+  margin-bottom: 1rem;
+  font-size: 2rem;
+}
+
+.getting-started p {
+  font-size: 1.1rem;
+  color: #666;
+}
+
+.getting-started a {
+  color: #007bff;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.getting-started a:hover {
+  text-decoration: underline;
+}
+
+/* Tech Stack & Content Sections */
+.content-section {
+  margin: 2rem 0;
+}
+
+.content-section h2, .content-section h3 {
+  color: #333;
+  margin: 1.5rem 0 1rem 0;
+}
+
+.content-section h4 {
+  color: #555;
+  margin: 1rem 0 0.5rem 0;
+}
+
+.content-section p {
+  color: #666;
+  line-height: 1.6;
+  margin-bottom: 1rem;
+}
+
+.content-section ul {
+  color: #666;
+  line-height: 1.8;
+  margin-left: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+/* Features Page Styles */
+.features-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+  margin-top: 70px;
+  min-height: calc(100vh - 70px);
+  background-color: #f8f9fa;
+}
+
+.features-header {
+  text-align: center;
+  margin-bottom: 3rem;
+  background: white;
+  padding: 2rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.features-header h1 {
+  color: #333;
+  font-size: 2.5rem;
+  margin-bottom: 1rem;
+}
+
+.features-header p {
+  color: #666;
+  font-size: 1.1rem;
+}
+
+.usage-example {
+  background: white;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.usage-example h3 {
+  color: #333;
+  margin-bottom: 1rem;
+}
+
+.setup-step {
+  color: #666;
+  margin: 0.5rem 0;
+  font-weight: 500;
+}
+
+.usage-example code {
+  display: block;
+  background: #f4f4f4;
+  padding: 1rem;
+  border-radius: 4px;
+  margin: 0.5rem 0;
+  font-family: 'Courier New', monospace;
+  color: #333;
+  overflow-x: auto;
+}
+
+/* Demo Page Styles */
+.demo-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+  margin-top: 70px;
+  min-height: calc(100vh - 70px);
+  background-color: #f8f9fa;
+}
+
+.demo-header {
+  text-align: center;
+  margin-bottom: 3rem;
+  background: white;
+  padding: 2rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.demo-header h1 {
+  color: #333;
+  font-size: 2.5rem;
+  margin-bottom: 1rem;
+}
+
+.demo-header p {
+  color: #666;
+  font-size: 1.1rem;
+}
+
+.demo-section {
+  margin: 3rem 0;
+}
+
+.demo-section h2 {
+  color: #333;
+  margin-bottom: 1.5rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 2px solid #007bff;
+}
+
+.demo-examples {
+  background: white;
+  padding: 2rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+/* Demo Components */
+.i18n-demo, .ngrx-demo, .http-demo, .routing-demo {
   text-align: center;
   padding: 1rem;
 }
 
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+.i18n-demo p, .ngrx-demo p {
+  font-size: 1.5rem;
+  margin: 1rem 0;
+  font-weight: 600;
+  color: #333;
 }
 
 .language-switcher {
-  margin-top: 2rem;
+  margin: 1rem 0;
   text-align: center;
 }
 
 .language-switcher button {
   margin: 0 0.5rem;
   padding: 0.5rem 1rem;
-  border: none;
-  border-radius: 20px;
-  background: rgba(255,255,255,0.2);
-  color: white;
+  border: 1px solid #007bff;
+  background: white;
+  color: #007bff;
+  border-radius: 4px;
   cursor: pointer;
   transition: all 0.3s ease;
+  font-size: 1rem;
 }
 
 .language-switcher button:hover {
-  background: rgba(255,255,255,0.3);
-  transform: scale(1.05);
+  background: #007bff;
+  color: white;
 }
 
-.state-management-demo {
-  background: rgba(255,255,255,0.1);
-  padding: 1rem;
-  border-radius: 15px;
-  margin: 1rem 0;
-  backdrop-filter: blur(10px);
+.ngrx-demo button, .routing-demo button, .http-demo button {
+  margin: 0.5rem;
+  padding: 0.5rem 1rem;
+  border: 1px solid #007bff;
+  background: white;
+  color: #007bff;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 1rem;
 }
 
-.state-management-demo h2 {
-  font-size: 1.5rem;
+.ngrx-demo button:hover, .routing-demo button:hover, .http-demo button:hover {
+  background: #007bff;
+  color: white;
+}
+
+.http-demo ul {
+  list-style-type: none;
+  padding: 0;
+  text-align: left;
+  max-width: 600px;
+  margin: 1rem auto;
+}
+
+.http-demo ul li {
+  padding: 0.5rem;
+  margin: 0.25rem 0;
+  background: #f8f9fa;
+  border-radius: 4px;
+  color: #666;
+}
+
+.seo-info ul {
+  list-style-type: none;
+  padding: 0;
+  text-align: left;
+}
+
+.seo-info ul li {
+  padding: 0.25rem 0;
+  color: #666;
+}
+
+.seo-info ul li::before {
+  content: "✓ ";
+  color: #28a745;
+  font-weight: bold;
+}
+
+/* Grid Demo */
+.grid-demo {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
   margin-bottom: 1rem;
 }
 
-.state-buttons {
-  display: flex;
-  gap: 1rem;
-  justify-content: center;
-  margin: 1rem 0;
-}
-
-.state-buttons button {
-  min-width: 40px;
-  height: 40px;
-  padding: 0 1rem;
-  border-radius: 20px;
-  border: none;
-  background: rgba(255,255,255,0.2);
+.grid-item {
+  background: #007bff;
   color: white;
-  font-size: 1rem;
-  cursor: pointer;
-  transition: all 0.3s ease;
+  padding: 2rem;
+  text-align: center;
+  border-radius: 8px;
+  font-weight: 600;
 }
 
-.state-buttons button:hover {
-  background: rgba(255,255,255,0.3);
-  transform: scale(1.1);
+.grid-demo + p {
+  text-align: center;
+  color: #666;
+  font-style: italic;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .nav-container {
+    padding: 0 0.5rem;
+  }
+  
+  .nav-links {
+    gap: 0.25rem;
+  }
+  
+  .nav-link {
+    padding: 0.4rem 0.8rem;
+    font-size: 0.85rem;
+  }
+  
+  .brand-text {
+    display: none;
+  }
+  
+  .container-full, .features-container, .demo-container {
+    padding: 1rem;
+  }
+  
+  .app-header h1, .page-header h1, .features-header h1, .demo-header h1 {
+    font-size: 2rem;
+  }
+  
+  .demo-examples {
+    padding: 1rem;
+  }
 }`;
 
     // Add framework-specific styles
@@ -413,7 +1264,15 @@ export const useAppStore = create<AppState>((set) => ({
     return baseStyles;
   },
 
-  getMainTsx: (a: any) => `import { StrictMode } from 'react';
+  getMainTsx: (a: any) => {
+    // Build the component nesting structure
+    let appWrapper = '<App />';
+    
+    if (a.routing) {
+      appWrapper = `<Router>${appWrapper}</Router>`;
+    }
+    
+    return `import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import App from './app/app';
 ${a.routing ? "import { BrowserRouter as Router } from 'react-router-dom';" : ''}
@@ -423,12 +1282,13 @@ const root = createRoot(container);
 
 root.render(
   <StrictMode>
-    ${a.routing ? '<Router><App /></Router>' : '<App />'}
+    ${appWrapper}
   </StrictMode>
 );
-`,
+`;
+  },
 
-  getIndexHtml: (appName: string) => `<!DOCTYPE html>
+  getIndexHtml: (appName: string, seoEnabled: boolean = false) => `<!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="utf-8" />
@@ -436,6 +1296,16 @@ root.render(
     <base href="/" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <link rel="icon" type="image/x-icon" href="favicon.ico" />
+    ${seoEnabled ? `<meta name="description" content="A React application built with PTG UI Schematics" />
+    <meta name="keywords" content="react, typescript, web application" />
+    <meta name="author" content="PTG Digital" />
+    <meta name="robots" content="index, follow" />
+    <meta property="og:title" content="${appName}" />
+    <meta property="og:description" content="A React application built with PTG UI Schematics" />
+    <meta property="og:type" content="website" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="${appName}" />
+    <meta name="twitter:description" content="A React application built with PTG UI Schematics" />` : ''}
   </head>
   <body>
     <div id="root"></div>
@@ -476,9 +1346,10 @@ export default App;`,
   color: #666;
 }`,
 
-  getViteConfig: (appName: string) => `/// <reference types="vitest" />
+  getViteConfig: (appName: string, seoEnabled: boolean = false, bundler: string = 'vite') => `/// <reference types="vitest" />
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
+${seoEnabled && bundler === 'vite' ? "import ssr from 'vite-plugin-ssr/plugin';" : ''}
 
 export default defineConfig({
   root: __dirname,
@@ -498,7 +1369,10 @@ export default defineConfig({
     host: 'localhost',
   },
 
-  plugins: [react()],
+  plugins: [
+    react(),
+    ${seoEnabled && bundler === 'vite' ? 'ssr({ prerender: true }), // Enable SSR/SSG for better SEO' : ''}
+  ],
 
   build: {
     outDir: '../../dist/apps/${appName}',
@@ -525,9 +1399,581 @@ export default defineConfig({
 
   getPrettierConfig: () => getPrettierConfig(),
 
-  getDockerfile: (appName: string, bundler: string = 'vite') => {
-    const distPath = bundler === 'vite' ? 'dist' : 'build';
-    return `# Multi-stage build for React application
+  getSEOComponent: (a: any) => `import { useEffect } from 'react';
+
+interface SEOProps {
+  title?: string;
+  description?: string;
+  keywords?: string;
+  author?: string;
+  image?: string;
+  url?: string;
+  type?: string;
+  twitterCard?: string;
+  structuredData?: Record<string, any>;
+}
+
+export const SEO: React.FC<SEOProps> = ({
+  title = '${a.name}',
+  description = 'A React application built with PTG UI Schematics',
+  keywords = 'react, typescript, vite, ${a.framework !== 'none' ? a.framework + ',' : ''} web application',
+  author = 'PTG Digital',
+  image = '/og-image.png',
+  url = typeof window !== 'undefined' ? window.location.href : '',
+  type = 'website',
+  twitterCard = 'summary_large_image',
+  structuredData,
+}) => {
+  const fullTitle = title === '${a.name}' ? title : \`\${title} | ${a.name}\`;
+
+  useEffect(() => {
+    // Set document title
+    document.title = fullTitle;
+
+    // Helper function to set or update meta tags
+    const setMetaTag = (name: string, content: string, isProperty = false) => {
+      const attribute = isProperty ? 'property' : 'name';
+      let element = document.querySelector(\`meta[\${attribute}="\${name}"]\`) as HTMLMetaElement;
+      
+      if (!element) {
+        element = document.createElement('meta');
+        element.setAttribute(attribute, name);
+        document.head.appendChild(element);
+      }
+      
+      element.setAttribute('content', content);
+    };
+
+    // Set basic meta tags
+    setMetaTag('description', description);
+    setMetaTag('keywords', keywords);
+    setMetaTag('author', author);
+
+    // Set Open Graph tags
+    setMetaTag('og:title', fullTitle, true);
+    setMetaTag('og:description', description, true);
+    setMetaTag('og:type', type, true);
+    setMetaTag('og:url', url, true);
+    setMetaTag('og:image', image, true);
+    setMetaTag('og:site_name', '${a.name}', true);
+
+    // Set Twitter Card tags
+    setMetaTag('twitter:card', twitterCard);
+    setMetaTag('twitter:title', fullTitle);
+    setMetaTag('twitter:description', description);
+    setMetaTag('twitter:image', image);
+    setMetaTag('twitter:creator', author);
+
+    // Set canonical link
+    let canonicalLink = document.querySelector('link[rel="canonical"]') as HTMLLinkElement;
+    if (!canonicalLink) {
+      canonicalLink = document.createElement('link');
+      canonicalLink.setAttribute('rel', 'canonical');
+      document.head.appendChild(canonicalLink);
+    }
+    canonicalLink.setAttribute('href', url);
+
+    // Add Schema.org structured data (JSON-LD)
+    const defaultStructuredData = {
+      '@context': 'https://schema.org',
+      '@type': 'WebApplication',
+      name: '${a.name}',
+      description: description,
+      url: url,
+      image: image,
+      author: {
+        '@type': 'Organization',
+        name: author,
+      },
+      applicationCategory: 'WebApplication',
+      operatingSystem: 'Any',
+    };
+
+    const jsonLdData = structuredData || defaultStructuredData;
+
+    // Remove existing JSON-LD script if present
+    const existingScript = document.querySelector('script[type="application/ld+json"]');
+    if (existingScript) {
+      existingScript.remove();
+    }
+
+    // Add new JSON-LD script
+    const script = document.createElement('script');
+    script.type = 'application/ld+json';
+    script.text = JSON.stringify(jsonLdData);
+    document.head.appendChild(script);
+
+  }, [fullTitle, description, keywords, author, image, url, type, twitterCard, structuredData]);
+
+  // This component doesn't render anything
+  return null;
+};
+
+export default SEO;`,
+
+  getRobotsTxt: (hostname: string = 'https://yourdomain.com') => `# https://www.robotstxt.org/robotstxt.html
+User-agent: *
+Disallow:
+
+# Sitemap
+Sitemap: ${hostname}/sitemap.xml`,
+
+  getSitemapXml: (hostname: string = 'https://yourdomain.com') => {
+    const currentDate = new Date().toISOString().split('T')[0];
+    return `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9
+        http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd">
+  <!-- Homepage -->
+  <url>
+    <loc>${hostname}/</loc>
+    <lastmod>${currentDate}</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>1.0</priority>
+  </url>
+  <!-- About Page -->
+  <url>
+    <loc>${hostname}/about</loc>
+    <lastmod>${currentDate}</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <!-- Add more URLs here as you create new pages -->
+  <!-- 
+  <url>
+    <loc>${hostname}/contact</loc>
+    <lastmod>${currentDate}</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  -->
+</urlset>`;
+  },
+
+  getSitemapConfig: (a: any) => `// Sitemap configuration
+export const sitemapConfig = {
+  hostname: 'https://yourdomain.com',
+  routes: [
+    { path: '/', priority: 1.0, changefreq: 'daily' },
+    { path: '/about', priority: 0.8, changefreq: 'monthly' },
+    // Add more routes here
+  ],
+  exclude: ['/admin', '/private'],
+};
+
+/**
+ * Generate sitemap.xml content
+ * @returns XML string for sitemap
+ */
+export function generateSitemap(): string {
+  const { hostname, routes } = sitemapConfig;
+  const currentDate = new Date().toISOString().split('T')[0];
+
+  const urlEntries = routes
+    .map((route) => {
+      const url = typeof route === 'string' ? route : route.path;
+      const priority = typeof route === 'object' ? route.priority || 0.5 : 0.5;
+      const changefreq = typeof route === 'object' ? route.changefreq || 'weekly' : 'weekly';
+
+      return \`  <url>
+    <loc>\${hostname}\${url}</loc>
+    <lastmod>\${currentDate}</lastmod>
+    <changefreq>\${changefreq}</changefreq>
+    <priority>\${priority}</priority>
+  </url>\`;
+    })
+    .join('\\n');
+
+  return \`<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+\${urlEntries}
+</urlset>\`;
+}
+
+export default sitemapConfig;`,
+
+  getGoogleAnalytics: (a: any) => `import { useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
+
+interface GoogleAnalyticsProps {
+  measurementId: string;
+  debug?: boolean;
+}
+
+type TrackingType = 'GA4' | 'GTM';
+
+/**
+ * Google Analytics 4 (GA4) & Google Tag Manager (GTM) Integration Component
+ * 
+ * Supports both:
+ * - GA4: Measurement IDs starting with 'G-' (e.g., 'G-XXXXXXXXXX')
+ * - GTM: Container IDs starting with 'GTM-' (e.g., 'GTM-XXXXXXX')
+ * 
+ * Usage:
+ * 1. Get your ID from Google Analytics or Google Tag Manager
+ * 2. Add this component to your App.tsx
+ * 3. Replace the placeholder with your actual ID
+ * 
+ * @param measurementId - Your GA4 Measurement ID or GTM Container ID
+ * @param debug - Enable debug mode for development (optional)
+ */
+export const GoogleAnalytics: React.FC<GoogleAnalyticsProps> = ({ 
+  measurementId, 
+  debug = false 
+}) => {
+  const location = useLocation();
+
+  // Detect tracking type based on ID format
+  const trackingType: TrackingType = measurementId.startsWith('GTM-') ? 'GTM' : 'GA4';
+
+  useEffect(() => {
+    // Skip analytics in development if debug is false
+    if (process.env.NODE_ENV === 'development' && !debug) {
+      console.log(\`[\${trackingType}] Skipped in development mode. Enable debug prop to test.\`);
+      return;
+    }
+
+    if (trackingType === 'GTM') {
+      // Google Tag Manager Implementation
+      if (!window.dataLayer) {
+        // Initialize dataLayer
+        window.dataLayer = window.dataLayer || [];
+        
+        // GTM script injection
+        const gtmScript = document.createElement('script');
+        gtmScript.innerHTML = \`
+          (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+          new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+          j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+          'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+          })(window,document,'script','dataLayer','\${measurementId}');
+        \`;
+        document.head.insertBefore(gtmScript, document.head.firstChild);
+
+        // GTM noscript fallback
+        const gtmNoscript = document.createElement('noscript');
+        gtmNoscript.innerHTML = \`
+          <iframe src="https://www.googletagmanager.com/ns.html?id=\${measurementId}"
+          height="0" width="0" style="display:none;visibility:hidden"></iframe>
+        \`;
+        document.body.insertBefore(gtmNoscript, document.body.firstChild);
+
+        if (debug) {
+          console.log('[GTM] Initialized with Container ID:', measurementId);
+        }
+      }
+    } else {
+      // Google Analytics 4 (GA4) Implementation
+      if (!window.gtag) {
+        const script = document.createElement('script');
+        script.async = true;
+        script.src = \`https://www.googletagmanager.com/gtag/js?id=\${measurementId}\`;
+        document.head.appendChild(script);
+
+        // Initialize gtag
+        window.dataLayer = window.dataLayer || [];
+        window.gtag = function gtag() {
+          window.dataLayer.push(arguments);
+        };
+        window.gtag('js', new Date());
+        window.gtag('config', measurementId, {
+          send_page_view: false, // We'll handle page views manually
+        });
+
+        if (debug) {
+          console.log('[GA4] Initialized with ID:', measurementId);
+        }
+      }
+    }
+  }, [measurementId, debug, trackingType]);
+
+  // Track page views on route change
+  useEffect(() => {
+    if (trackingType === 'GTM') {
+      // GTM page view tracking via dataLayer
+      if (window.dataLayer) {
+        window.dataLayer.push({
+          event: 'page_view',
+          page_path: location.pathname + location.search,
+          page_title: document.title,
+          page_location: window.location.href,
+        });
+
+        if (debug) {
+          console.log('[GTM] Page view tracked:', location.pathname);
+        }
+      }
+    } else {
+      // GA4 page view tracking via gtag
+      if (window.gtag) {
+        window.gtag('event', 'page_view', {
+          page_path: location.pathname + location.search,
+          page_title: document.title,
+        });
+
+        if (debug) {
+          console.log('[GA4] Page view tracked:', location.pathname);
+        }
+      }
+    }
+  }, [location, debug, trackingType]);
+
+  return null;
+};
+
+/**
+ * Track custom events
+ * Works with both GA4 and GTM
+ * 
+ * @example
+ * trackEvent('button_click', { button_name: 'signup', page: 'home' });
+ */
+export const trackEvent = (
+  eventName: string,
+  eventParams?: Record<string, any>
+) => {
+  // Try GTM dataLayer first
+  if (window.dataLayer) {
+    window.dataLayer.push({
+      event: eventName,
+      ...eventParams,
+    });
+  }
+  
+  // Also try GA4 gtag (in case both are present)
+  if (window.gtag) {
+    window.gtag('event', eventName, eventParams);
+  }
+};
+
+/**
+ * Track user properties
+ * Works with both GA4 and GTM
+ * 
+ * @example
+ * setUserProperties({ user_type: 'premium', plan: 'pro' });
+ */
+export const setUserProperties = (properties: Record<string, any>) => {
+  // GTM dataLayer
+  if (window.dataLayer) {
+    window.dataLayer.push({
+      event: 'user_properties_set',
+      user_properties: properties,
+    });
+  }
+  
+  // GA4 gtag
+  if (window.gtag) {
+    window.gtag('set', 'user_properties', properties);
+  }
+};
+
+/**
+ * Push custom data to GTM dataLayer
+ * 
+ * @example
+ * pushToDataLayer({ event: 'custom_event', customData: 'value' });
+ */
+export const pushToDataLayer = (data: Record<string, any>) => {
+  if (window.dataLayer) {
+    window.dataLayer.push(data);
+  }
+};
+
+// TypeScript declarations for gtag and dataLayer
+declare global {
+  interface Window {
+    dataLayer: any[];
+    gtag: (...args: any[]) => void;
+  }
+}
+
+export default GoogleAnalytics;`,
+
+  getSEOUtils: (a: any) => `// SEO Utility Functions
+export interface PageMeta {
+  title: string;
+  description: string;
+  keywords?: string;
+  image?: string;
+  url?: string;
+  structuredData?: Record<string, any>;
+}
+
+// Default meta tags for the application
+export const defaultMeta: PageMeta = {
+  title: '${a.name}',
+  description: 'A modern React application built with PTG UI Schematics',
+  keywords: 'react, typescript, ${a.framework !== 'none' ? a.framework + ',' : ''} web development',
+  image: '/og-image.png',
+  url: typeof window !== 'undefined' ? window.location.origin : '',
+};
+
+// Page-specific meta tags
+export const pageMeta: Record<string, PageMeta> = {
+  home: {
+    title: 'Home',
+    description: 'Welcome to ${a.name} - Your modern React application',
+    keywords: 'home, welcome, react app',
+  },
+  about: {
+    title: 'About Us',
+    description: 'Learn more about ${a.name} and our mission',
+    keywords: 'about, team, company',
+  },
+  // Add more page-specific meta tags here
+};
+
+/**
+ * Get meta tags for a specific page
+ * @param page - The page identifier
+ * @returns PageMeta object with merged default and page-specific meta
+ */
+export function getPageMeta(page: string): PageMeta {
+  const meta = pageMeta[page] || {};
+  return {
+    ...defaultMeta,
+    ...meta,
+    title: meta.title ? \`\${meta.title} | \${defaultMeta.title}\` : defaultMeta.title,
+  };
+}
+
+/**
+ * Generate WebApplication structured data (JSON-LD)
+ */
+export function getWebApplicationStructuredData() {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'WebApplication',
+    name: '${a.name}',
+    description: defaultMeta.description,
+    url: defaultMeta.url,
+    image: defaultMeta.image,
+    applicationCategory: 'WebApplication',
+    operatingSystem: 'Any',
+    offers: {
+      '@type': 'Offer',
+      price: '0',
+      priceCurrency: 'USD',
+    },
+  };
+}
+
+/**
+ * Generate Organization structured data (JSON-LD)
+ */
+export function getOrganizationStructuredData() {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'Organization',
+    name: '${a.name}',
+    url: defaultMeta.url,
+    logo: defaultMeta.image,
+    description: defaultMeta.description,
+  };
+}
+
+/**
+ * Generate Article structured data (JSON-LD) for blog posts
+ */
+export function getArticleStructuredData(article: {
+  title: string;
+  description: string;
+  image: string;
+  datePublished: string;
+  dateModified?: string;
+  author: string;
+  url: string;
+}) {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'Article',
+    headline: article.title,
+    description: article.description,
+    image: article.image,
+    datePublished: article.datePublished,
+    dateModified: article.dateModified || article.datePublished,
+    author: {
+      '@type': 'Person',
+      name: article.author,
+    },
+    publisher: {
+      '@type': 'Organization',
+      name: '${a.name}',
+      logo: {
+        '@type': 'ImageObject',
+        url: defaultMeta.image,
+      },
+    },
+    mainEntityOfPage: {
+      '@type': 'WebPage',
+      '@id': article.url,
+    },
+  };
+}
+
+/**
+ * Generate BreadcrumbList structured data (JSON-LD)
+ */
+export function getBreadcrumbStructuredData(breadcrumbs: Array<{ name: string; url: string }>) {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: breadcrumbs.map((crumb, index) => ({
+      '@type': 'ListItem',
+      position: index + 1,
+      name: crumb.name,
+      item: crumb.url,
+    })),
+  };
+}
+
+/**
+ * Generate Product structured data (JSON-LD) for e-commerce
+ */
+export function getProductStructuredData(product: {
+  name: string;
+  description: string;
+  image: string;
+  brand: string;
+  price: number;
+  currency: string;
+  availability: 'InStock' | 'OutOfStock' | 'PreOrder';
+  url: string;
+}) {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'Product',
+    name: product.name,
+    description: product.description,
+    image: product.image,
+    brand: {
+      '@type': 'Brand',
+      name: product.brand,
+    },
+    offers: {
+      '@type': 'Offer',
+      price: product.price,
+      priceCurrency: product.currency,
+      availability: \`https://schema.org/\${product.availability}\`,
+      url: product.url,
+    },
+  };
+}
+
+export default {
+  defaultMeta,
+  pageMeta,
+  getPageMeta,
+  getWebApplicationStructuredData,
+  getOrganizationStructuredData,
+  getArticleStructuredData,
+  getBreadcrumbStructuredData,
+  getProductStructuredData,
+};`,
+
+  getDockerfile: (appName: string, bundler: string = 'vite') => `# Multi-stage build for React application
 # Stage 1: Build the application
 FROM node:18-alpine AS builder
 
@@ -550,7 +1996,7 @@ RUN npm run build
 FROM nginx:alpine
 
 # Copy built assets from builder stage
-COPY --from=builder /app/${distPath} /usr/share/nginx/html
+COPY --from=builder /app/${bundler === 'vite' ? 'dist' : 'build'} /usr/share/nginx/html
 
 # Copy custom nginx configuration (optional)
 # COPY nginx.conf /etc/nginx/conf.d/default.conf
@@ -564,8 +2010,7 @@ HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \\
 
 # Start nginx
 CMD ["nginx", "-g", "daemon off;"]
-`;
-  },
+`,
 
   getDockerIgnore: () => `# Node modules
 node_modules
@@ -840,6 +2285,252 @@ docker-compose build --no-cache
 - [Docker Documentation](https://docs.docker.com/)
 - [Nginx Documentation](https://nginx.org/en/docs/)
 - [Docker Compose Reference](https://docs.docker.com/compose/compose-file/)
+`,
+
+  getMsalConfig: () => `import { Configuration, PopupRequest } from '@azure/msal-browser';
+
+export const msalConfig: Configuration = {
+  auth: {
+    clientId: 'YOUR_CLIENT_ID', // Replace with your Azure AD app client ID
+    authority: 'https://login.microsoftonline.com/YOUR_TENANT_ID', // Replace with your tenant ID
+    redirectUri: window.location.origin,
+  },
+  cache: {
+    cacheLocation: 'sessionStorage',
+    storeAuthStateInCookie: false,
+  },
+};
+
+export const loginRequest: PopupRequest = {
+  scopes: ['User.Read'],
+};
+`,
+
+  getMsalLoginButton: () => `import React from 'react';
+import { useMsal } from '@azure/msal-react';
+import { loginRequest } from '../config/msalConfig';
+
+export const MsalLoginButton: React.FC = () => {
+  const { instance, accounts } = useMsal();
+
+  const handleLogin = () => {
+    instance.loginPopup(loginRequest).catch((e) => {
+      console.error(e);
+    });
+  };
+
+  const handleLogout = () => {
+    instance.logoutPopup().catch((e) => {
+      console.error(e);
+    });
+  };
+
+  return (
+    <div>
+      {accounts.length > 0 ? (
+        <div>
+          <p>Welcome, {accounts[0].name}!</p>
+          <button onClick={handleLogout}>Sign Out</button>
+        </div>
+      ) : (
+        <button onClick={handleLogin}>Sign In with Microsoft</button>
+      )}
+    </div>
+  );
+};
+
+export default MsalLoginButton;
+`,
+
+  getOktaConfig: () => `const oktaConfig = {
+  clientId: 'YOUR_OKTA_CLIENT_ID', // Replace with your Okta app client ID
+  issuer: 'https://YOUR_OKTA_DOMAIN/oauth2/default', // Replace with your Okta domain
+  redirectUri: window.location.origin + '/login/callback',
+  scopes: ['openid', 'profile', 'email'],
+  pkce: true,
+};
+
+export default oktaConfig;
+`,
+
+  getOktaLoginButton: () => `import React from 'react';
+import { useOktaAuth } from '@okta/okta-react';
+
+export const OktaLoginButton: React.FC = () => {
+  const { oktaAuth, authState } = useOktaAuth();
+
+  const handleLogin = async () => {
+    await oktaAuth.signInWithRedirect();
+  };
+
+  const handleLogout = async () => {
+    await oktaAuth.signOut();
+  };
+
+  if (!authState) {
+    return <div>Loading...</div>;
+  }
+
+  return (
+    <div>
+      {authState.isAuthenticated ? (
+        <div>
+          <p>Welcome, {authState.idToken?.claims.name}!</p>
+          <button onClick={handleLogout}>Sign Out</button>
+        </div>
+      ) : (
+        <button onClick={handleLogin}>Sign In with Okta</button>
+      )}
+    </div>
+  );
+};
+
+export default OktaLoginButton;
+`,
+
+  getAuthReadme: (authType: string) => `# ${authType.toUpperCase()} Authentication Setup
+
+${authType === 'msal' ? `## Microsoft Authentication Library (MSAL) Setup
+
+### Prerequisites
+1. Azure AD tenant
+2. Registered application in Azure Portal
+
+### Configuration Steps
+
+1. **Register Application in Azure Portal**
+   - Go to Azure Portal > Azure Active Directory > App registrations
+   - Click "New registration"
+   - Enter application name
+   - Select supported account types
+   - Add redirect URI: \`http://localhost:3000\`
+   - Click "Register"
+
+2. **Configure Application**
+   - Copy Application (client) ID
+   - Copy Directory (tenant) ID
+   - Under "Authentication", enable "Access tokens" and "ID tokens"
+   - Add platform configuration for Single-page application
+
+3. **Update Configuration**
+   Update \`src/config/msalConfig.ts\` with your Client ID and Tenant ID:
+   \`\`\`typescript
+   clientId: 'YOUR_CLIENT_ID',
+   authority: 'https://login.microsoftonline.com/YOUR_TENANT_ID',
+   \`\`\`
+
+4. **API Permissions**
+   - Go to "API permissions" in Azure Portal
+   - Add required permissions (e.g., User.Read)
+   - Grant admin consent if needed
+
+### Usage
+
+\`\`\`tsx
+import { MsalLoginButton } from './components/MsalLoginButton';
+
+function App() {
+  return (
+    <div>
+      <MsalLoginButton />
+    </div>
+  );
+}
+\`\`\`
+
+### Resources
+- [MSAL.js Documentation](https://docs.microsoft.com/en-us/azure/active-directory/develop/msal-overview)
+- [Azure AD App Registration](https://docs.microsoft.com/en-us/azure/active-directory/develop/quickstart-register-app)
+` : `## Okta Authentication Setup
+
+### Prerequisites
+1. Okta developer account
+2. Okta application configured
+
+### Configuration Steps
+
+1. **Create Okta Application**
+   - Log in to Okta Developer Console
+   - Go to Applications > Create App Integration
+   - Select "OIDC - OpenID Connect"
+   - Select "Single-Page Application"
+   - Click "Next"
+
+2. **Configure Application**
+   - Enter application name
+   - Add Sign-in redirect URI: \`http://localhost:3000/login/callback\`
+   - Add Sign-out redirect URI: \`http://localhost:3000\`
+   - Save the application
+
+3. **Update Configuration**
+   Copy your Client ID and Okta domain, then update \`src/config/oktaConfig.ts\`:
+   \`\`\`typescript
+   clientId: 'YOUR_OKTA_CLIENT_ID',
+   issuer: 'https://YOUR_OKTA_DOMAIN/oauth2/default',
+   \`\`\`
+
+4. **Trusted Origins**
+   - Go to Security > API > Trusted Origins
+   - Add \`http://localhost:3000\` for both CORS and Redirect
+
+### Usage
+
+\`\`\`tsx
+import { OktaLoginButton } from './components/OktaLoginButton';
+
+function App() {
+  return (
+    <div>
+      <OktaLoginButton />
+    </div>
+  );
+}
+\`\`\`
+
+### Resources
+- [Okta Developer Documentation](https://developer.okta.com/docs/)
+- [Okta React SDK](https://github.com/okta/okta-react)
+`}
+
+## Testing Authentication
+
+1. Start your development server
+2. Click the login button
+3. Complete the authentication flow
+4. Verify user information is displayed
+5. Test logout functionality
+
+## Troubleshooting
+
+### Common Issues
+
+**MSAL:**
+- CORS errors: Check redirect URIs in Azure Portal
+- Token errors: Verify API permissions and consent
+- Login popup blocked: Enable popups in browser
+
+**Okta:**
+- Invalid client: Verify Client ID in configuration
+- CORS errors: Check Trusted Origins in Okta console
+- Callback errors: Verify redirect URIs match exactly
+
+### Debug Tips
+
+Enable debug logging in your configuration:
+\`\`\`typescript
+// For MSAL
+system: {
+  loggerOptions: {
+    loggerCallback: (level, message, containsPii) => {
+      console.log(message);
+    },
+    logLevel: LogLevel.Verbose,
+  },
+}
+
+// For Okta
+oktaAuth.options.devMode = true;
+\`\`\`
 `
 };
 
@@ -867,8 +2558,11 @@ const executeCommand = (command: string, options: any, description: string) => {
 };
 
 const installPackagesWithRetry = (packages: string[], isDev: boolean, workspacePath: string, description: string) => {
+  // If no packages specified, run npm install to install all dependencies from package.json
   const saveFlag = isDev ? "--save-dev" : "--save";
-  const command = `npm install ${packages.join(" ")} ${saveFlag}`;
+  const command = packages.length === 0 
+    ? "npm install" 
+    : `npm install ${packages.join(" ")} ${saveFlag}`;
   
   const strategies = [
     { cmd: `${command} --legacy-peer-deps`, desc: "with legacy peer deps" },
@@ -989,10 +2683,11 @@ const getDependenciesByFeature = (a: any) => {
   const baseDevPkgs = [
     "@types/react@latest",
     "@types/react-dom@latest",
-    "@vitejs/plugin-react@latest",
-    "vite@latest",
+    // Only add Vite if it's the selected bundler
+    ...(a.bundler === 'vite' || a.bundler === 'esbuild' ? ["@vitejs/plugin-react@latest", "vite@latest"] : []),
     ...(a.style === 'scss' ? ["sass@latest"] : []),
     ...(a.style === 'styl' ? ["stylus@latest"] : []),
+    ...(a.seo && a.bundler === 'vite' ? ["vite-plugin-ssr@latest"] : []), // Add SSR/SSG plugin for SEO (Vite only)
   ];
 
   // Add linting packages
@@ -1026,6 +2721,8 @@ const getDependenciesByFeature = (a: any) => {
       zustand: ["zustand@latest"]
     },
     i18n: ["i18next@latest", "react-i18next@latest", "i18next-browser-languagedetector@latest"],
+    seo: [],  // Using custom React hook instead of external package
+    seoDev: [],
     framework: {
       material: ["@mui/material@latest", "@emotion/react@latest", "@emotion/styled@latest"],
       bootstrap: ["bootstrap@latest", "react-bootstrap@latest"],
@@ -1051,6 +2748,10 @@ const getDependenciesByFeature = (a: any) => {
   }
   if (a.i18n) {
     basePkgs.push(...featurePackages.i18n);
+  }
+  if (a.seo) {
+    basePkgs.push(...featurePackages.seo);
+    baseDevPkgs.push(...featurePackages.seoDev);
   }
   if (a.framework === "material") {
     basePkgs.push(...featurePackages.framework.material);
@@ -1295,13 +2996,25 @@ export function reactAppGenerator() {
         "cleanup old packages"
       );
       
-      installPackagesWithRetry([
+      // Prepare bundler-specific packages
+      const nxPlugins = [
         "@nx/react@latest", 
         "@nx/js@latest", 
-        "@nx/eslint@latest", 
-        "@nx/webpack@latest", 
-        "@nx/vite@latest"
-      ], true, workspacePath, "Nx React Plugin");
+        "@nx/eslint@latest"
+      ];
+      
+      // Add bundler-specific plugins
+      if (a.bundler === 'webpack') {
+        nxPlugins.push("@nx/webpack@latest");
+      } else if (a.bundler === 'vite' || a.bundler === 'esbuild') {
+        nxPlugins.push("@nx/vite@latest");
+      } else if (a.bundler === 'rspack') {
+        nxPlugins.push("@nx/rspack@latest");
+      } else if (a.bundler === 'rsbuild') {
+        nxPlugins.push("@nx/rsbuild@latest");
+      }
+      
+      installPackagesWithRetry(nxPlugins, true, workspacePath, "Nx React Plugin");
 
       // Step 4: Install PTG React Schematics
       console.log("\n📦 Step 5/7: Installing PTG React Schematics...\n");
@@ -1480,6 +3193,20 @@ export function reactAppGenerator() {
       console.log("\n📦 Step 7/7: Installing React dependencies and additional packages...\n");
 
       const dependencies = getDependenciesByFeature(a);
+      
+      // Add specific note for SEO
+      if (a.seo) {
+        if (a.bundler === 'vite') {
+          console.log("✅ SEO enabled with custom React hook + vite-plugin-ssr for SSR/SSG");
+          console.log("   - Client-side: Custom hook for dynamic meta tags");
+          console.log("   - Server-side: vite-plugin-ssr for prerendering and SSR\n");
+        } else {
+          console.log("✅ SEO enabled with custom React hook (client-side only)");
+          console.log("   - Dynamic meta tags via custom hook");
+          console.log(`   - Note: SSR/SSG requires Vite bundler (you selected ${a.bundler})\n`);
+        }
+      }
+      
       installPackagesWithRetry(dependencies.production, false, workspacePath, "production dependencies");
       installPackagesWithRetry(dependencies.development, true, workspacePath, "development dependencies");
 
@@ -1501,6 +3228,7 @@ export function reactAppGenerator() {
       console.log(`🧭 Routing: ${a.routing ? "Yes" : "No"}`);
       console.log(`📦 State Management: ${a.stateManagement === 'redux' ? 'Redux Toolkit' : a.stateManagement === 'zustand' ? 'Zustand' : 'None'}`);
       console.log(`🌐 i18n: ${a.i18n ? "Yes" : "No"}`);
+      console.log(`🔍 SEO: ${a.seo ? (a.bundler === 'vite' ? "Yes (with vite-plugin-ssr for SSR/SSG)" : "Yes (client-side only)") : "No"}`);
       console.log(`🔧 Linter: ${a.linter === 'none' ? 'None' : a.linter === 'airbnb' ? 'ESLint with Airbnb' : a.linter === 'custom' ? 'ESLint with Custom Rules' : 'ESLint'}`);
       console.log(`✨ Prettier: ${a.prettier ? "Yes" : "No"}`);
       console.log(`🐶 Husky: ${a.husky ? "Yes" : "No"}`);
@@ -1512,6 +3240,27 @@ export function reactAppGenerator() {
       console.log(`\nOr alternatively:`);
       console.log(`  cd ${a.workspace}`);
       console.log(`  npm run start ${a.name}\n`);
+      
+      // Add SEO-specific instructions if enabled
+      if (a.seo) {
+        console.log("📝 SEO Features:");
+        console.log("   - Meta tags configured in src/app/components/SEO.tsx");
+        console.log("   - Google Analytics 4 (GA4) / Google Tag Manager (GTM) ready");
+        console.log("   - Component: src/app/components/GoogleAnalytics.tsx");
+        console.log("   ⚠️  Replace 'G-XXXXXXXXXX' with your GA4 ID or 'GTM-XXXXXXX' with your GTM ID in App.tsx");
+        console.log("   - Customize SEO defaults in src/app/utils/seo.ts");
+        console.log("   - robots.txt available in public/robots.txt");
+        console.log("   - sitemap.xml available in public/sitemap.xml");
+        console.log("   - Schema.org structured data (JSON-LD) included");
+        if (a.bundler === 'vite') {
+          console.log("   - SSR/SSG enabled via vite-plugin-ssr (prerendering)");
+          console.log("   - Run 'npm run build' to generate static HTML with meta tags");
+        } else {
+          console.log(`   - Note: Using ${a.bundler} bundler (SSR/SSG requires Vite)`);
+          console.log("   - Meta tags updated dynamically on client-side");
+        }
+        console.log("   - See SEO_INTEGRATION_GUIDE.md for detailed usage\n");
+      }
     } catch (error) {
       console.error("\n❌ Error creating React application:", error.message);
       console.error("\nTroubleshooting tips:");
@@ -1592,10 +3341,11 @@ function getArgs() {
       value: "webpack",
       label: "Webpack",
     },
-    {
-      value: "esbuild",
-      label: "esbuild",
-    },
+    //  Not supported by Nx for React apps
+    // {
+    //   value: "esbuild",
+    //   label: "esbuild",
+    // },
   ];
   const unitTestOptions: { value: string; label: string }[] = [
     {
@@ -1627,16 +3377,16 @@ function getArgs() {
   ];
   const stateManagementOptions: { value: string; label: string }[] = [
     {
-      value: "none",
-      label: "None - No state management library",
-    },
-    {
       value: "redux",
       label: "Redux Toolkit - Popular, powerful state management",
     },
     {
       value: "zustand",
       label: "Zustand - Lightweight, simple state management",
+    },
+    {
+      value: "none",
+      label: "None - No state management library",
     },
   ];
   const linterOptions: { value: string; label: string }[] = [
@@ -1753,6 +3503,12 @@ function getArgs() {
         type: "confirm",
         default: false,
       },
+      {
+        name: "seo",
+        message: "Would you like to enable SEO features? (Meta tags, Open Graph, GA4/GTM, Sitemap)",
+        type: "confirm",
+        default: true,
+      },
     ])
     .then((a: any) => {
       return a;
@@ -1773,7 +3529,7 @@ function createManualReactApp(workspacePath: string, a: any) {
   fs.mkdirSync(appSrcPath, { recursive: true });
 
   // Create basic React files
-  const indexHtml = TEMPLATES.getIndexHtml(a.name);
+  const indexHtml = TEMPLATES.getIndexHtml(a.name, a.seo);
   const mainTsx = TEMPLATES.getMainTsx(a);
   const appTsx = TEMPLATES.getBasicAppTsx(a);
   const appCss = TEMPLATES.getBasicAppCss();
@@ -1873,7 +3629,7 @@ function createManualReactApp(workspacePath: string, a: any) {
   );
 
   // Create vite.config.ts
-  const viteConfig = TEMPLATES.getViteConfig(a.name);
+  const viteConfig = TEMPLATES.getViteConfig(a.name, a.seo, a.bundler);
 
   fs.writeFileSync(path.join(appPath, "vite.config.ts"), viteConfig);
 
@@ -1998,19 +3754,156 @@ function fixLintIssues(workspacePath: string, a: any) {
   }
 }
 
+function setupAuthentication(workspacePath: string, a: any) {
+  if (!a.auth || a.auth === 'custom') {
+    return; // No setup needed for custom auth
+  }
+
+  try {
+    console.log(`\n🔐 Setting up ${a.auth.toUpperCase()} authentication...`);
+
+    // Detect app structure
+    const standaloneAppPath = path.join(workspacePath, "src");
+    const multiAppPath = path.join(workspacePath, "apps", a.name);
+
+    let appPath: string;
+    let srcPath: string;
+
+    if (fs.existsSync(standaloneAppPath)) {
+      appPath = workspacePath;
+      srcPath = standaloneAppPath;
+    } else if (fs.existsSync(multiAppPath)) {
+      appPath = multiAppPath;
+      srcPath = path.join(appPath, "src");
+    } else {
+      console.warn("⚠️  Could not detect app structure for auth setup");
+      return;
+    }
+
+    // Create config directory
+    const configPath = path.join(srcPath, "config");
+    fs.mkdirSync(configPath, { recursive: true });
+
+    // Create components directory
+    const componentsPath = path.join(srcPath, "components");
+    fs.mkdirSync(componentsPath, { recursive: true });
+
+    if (a.auth === 'msal') {
+      // Create MSAL configuration
+      const msalConfigPath = path.join(configPath, "msalConfig.ts");
+      const msalConfigContent = TEMPLATES.getMsalConfig();
+      createFileWithErrorHandling(msalConfigPath, msalConfigContent, "MSAL configuration");
+
+      // Create MSAL Login Button component
+      const msalButtonPath = path.join(componentsPath, "MsalLoginButton.tsx");
+      const msalButtonContent = TEMPLATES.getMsalLoginButton();
+      createFileWithErrorHandling(msalButtonPath, msalButtonContent, "MSAL Login Button component");
+
+      // Update main.tsx to wrap with MsalProvider
+      const mainTsxPath = path.join(srcPath, "main.tsx");
+      if (fs.existsSync(mainTsxPath)) {
+        const updatedMain = `import { StrictMode } from 'react';
+import * as ReactDOM from 'react-dom/client';
+import { MsalProvider } from '@azure/msal-react';
+import { PublicClientApplication } from '@azure/msal-browser';
+import { msalConfig } from './config/msalConfig';
+import App from './app/app';
+
+const msalInstance = new PublicClientApplication(msalConfig);
+
+const root = ReactDOM.createRoot(
+  document.getElementById('root') as HTMLElement
+);
+
+root.render(
+  <StrictMode>
+    <MsalProvider instance={msalInstance}>
+      <App />
+    </MsalProvider>
+  </StrictMode>
+);`;
+        fs.writeFileSync(mainTsxPath, updatedMain);
+        console.log("✅ Updated main.tsx with MsalProvider");
+      }
+
+      console.log("✅ MSAL authentication setup completed!");
+      console.log("   📝 Update src/config/msalConfig.ts with your Azure AD credentials");
+      console.log("   📝 Use <MsalLoginButton /> component in your app");
+
+    } else if (a.auth === 'okta') {
+      // Create Okta configuration
+      const oktaConfigPath = path.join(configPath, "oktaConfig.ts");
+      const oktaConfigContent = TEMPLATES.getOktaConfig();
+      createFileWithErrorHandling(oktaConfigPath, oktaConfigContent, "Okta configuration");
+
+      // Create Okta Login Button component
+      const oktaButtonPath = path.join(componentsPath, "OktaLoginButton.tsx");
+      const oktaButtonContent = TEMPLATES.getOktaLoginButton();
+      createFileWithErrorHandling(oktaButtonPath, oktaButtonContent, "Okta Login Button component");
+
+      // Update main.tsx to wrap with Okta Security
+      const mainTsxPath = path.join(srcPath, "main.tsx");
+      if (fs.existsSync(mainTsxPath)) {
+        const updatedMain = `import { StrictMode } from 'react';
+import * as ReactDOM from 'react-dom/client';
+import { OktaAuth } from '@okta/okta-auth-js';
+import { Security } from '@okta/okta-react';
+import { BrowserRouter as Router } from 'react-router-dom';
+import oktaConfig from './config/oktaConfig';
+import App from './app/app';
+
+const oktaAuth = new OktaAuth(oktaConfig);
+
+const restoreOriginalUri = async (_oktaAuth: any, originalUri: string) => {
+  window.location.replace(originalUri || '/');
+};
+
+const root = ReactDOM.createRoot(
+  document.getElementById('root') as HTMLElement
+);
+
+root.render(
+  <StrictMode>
+    <Router>
+      <Security oktaAuth={oktaAuth} restoreOriginalUri={restoreOriginalUri}>
+        <App />
+      </Security>
+    </Router>
+  </StrictMode>
+);`;
+        fs.writeFileSync(mainTsxPath, updatedMain);
+        console.log("✅ Updated main.tsx with Okta Security provider");
+      }
+
+      console.log("✅ Okta authentication setup completed!");
+      console.log("   📝 Update src/config/oktaConfig.ts with your Okta credentials");
+      console.log("   📝 Use <OktaLoginButton /> component in your app");
+    }
+
+    // Create README for authentication
+    const authReadmePath = path.join(srcPath, `${a.auth.toUpperCase()}_SETUP.md`);
+    const authReadmeContent = TEMPLATES.getAuthReadme(a.auth);
+    createFileWithErrorHandling(authReadmePath, authReadmeContent, "Authentication setup guide");
+
+  } catch (error) {
+    console.warn(`⚠️  Could not setup ${a.auth} authentication:`, error.message);
+  }
+}
+
 function applyPTGCustomizations(workspacePath: string, a: any) {
   try {
     console.log("🔧 Applying framework-specific customizations...");
 
-    // Update package.json to include module type for ESLint v9 compatibility
+    // Update package.json to include module type for Vite bundler
+    // Note: Webpack requires CommonJS, so we only set "module" for Vite
     const packageJsonPath = path.join(workspacePath, "package.json");
     if (fs.existsSync(packageJsonPath)) {
       try {
         const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, "utf8"));
-        if (!packageJson.type) {
+        if (!packageJson.type && a.bundler === 'vite') {
           packageJson.type = "module";
           fs.writeFileSync(packageJsonPath, JSON.stringify(packageJson, null, 2));
-          console.log("✅ Updated package.json with module type");
+          console.log("✅ Updated package.json with module type for Vite");
         }
       } catch (error) {
         console.warn("⚠️  Could not update package.json:", error.message);
@@ -2081,12 +3974,112 @@ function applyPTGCustomizations(workspacePath: string, a: any) {
       createFileWithErrorHandling(storePath, storeContent, "Zustand store");
     }
 
+    // Create SEO components and utilities if SEO is enabled
+    if (a.seo) {
+      console.log("📦 Setting up SEO components and utilities...");
+      
+      // Create components directory
+      const componentsPath = path.join(appSrcPath, "components");
+      fs.mkdirSync(componentsPath, { recursive: true });
+      
+      // Create SEO component
+      const seoComponentPath = path.join(componentsPath, "SEO.tsx");
+      const seoComponentContent = TEMPLATES.getSEOComponent(a);
+      createFileWithErrorHandling(seoComponentPath, seoComponentContent, "SEO component");
+      
+      // Create Google Analytics component
+      const gaComponentPath = path.join(componentsPath, "GoogleAnalytics.tsx");
+      const gaComponentContent = TEMPLATES.getGoogleAnalytics(a);
+      createFileWithErrorHandling(gaComponentPath, gaComponentContent, "Google Analytics component");
+      
+      // Create SEO utils
+      const utilsPath = path.join(appSrcPath, "utils");
+      fs.mkdirSync(utilsPath, { recursive: true });
+      
+      const seoUtilsPath = path.join(utilsPath, "seo.ts");
+      const seoUtilsContent = TEMPLATES.getSEOUtils(a);
+      createFileWithErrorHandling(seoUtilsPath, seoUtilsContent, "SEO utilities");
+      
+      // Create sitemap config
+      const sitemapConfigPath = path.join(utilsPath, "sitemap.config.ts");
+      const sitemapConfigContent = TEMPLATES.getSitemapConfig(a);
+      createFileWithErrorHandling(sitemapConfigPath, sitemapConfigContent, "Sitemap configuration");
+      
+      // Create public folder for SEO files
+      const publicPath = path.join(appPath, "public");
+      fs.mkdirSync(publicPath, { recursive: true });
+      
+      // Create assets/images folder and copy logo
+      const assetsPath = path.join(publicPath, "assets", "images");
+      fs.mkdirSync(assetsPath, { recursive: true });
+      
+      // Copy YashLogo from angular-schematics assets
+      // When compiled: __dirname is cli/dist/generators, need to go up 3 levels to root
+      const sourceLogoPath = path.join(__dirname, "..", "..", "..", "angular-schematics", "src", "application", "files", "src", "assets", "images", "YashLogo.jpg");
+      const destLogoPath = path.join(assetsPath, "YashLogo.jpg");
+      
+      try {
+        if (fs.existsSync(sourceLogoPath)) {
+          fs.copyFileSync(sourceLogoPath, destLogoPath);
+          console.log("✅ Logo copied to assets/images/YashLogo.jpg");
+        } else {
+          console.warn("⚠️  Warning: YashLogo.jpg not found at source location");
+          console.warn(`   Searched at: ${sourceLogoPath}`);
+        }
+      } catch (error) {
+        console.warn("⚠️  Warning: Could not copy logo:", error.message);
+      }
+      
+      // Create robots.txt
+      const robotsTxtPath = path.join(publicPath, "robots.txt");
+      const robotsTxtContent = TEMPLATES.getRobotsTxt('https://yourdomain.com');
+      createFileWithErrorHandling(robotsTxtPath, robotsTxtContent, "robots.txt");
+      
+      // Create sitemap.xml
+      const sitemapXmlPath = path.join(publicPath, "sitemap.xml");
+      const sitemapXmlContent = TEMPLATES.getSitemapXml('https://yourdomain.com');
+      createFileWithErrorHandling(sitemapXmlPath, sitemapXmlContent, "sitemap.xml");
+      
+      console.log("✅ SEO setup completed:");
+      console.log("   - Meta tags, Open Graph, Twitter Cards");
+      console.log("   - Google Analytics 4 (GA4) / Google Tag Manager (GTM) integration");
+      console.log("   - Schema.org structured data (JSON-LD)");
+      console.log("   - sitemap.xml and robots.txt");
+      console.log("   ⚠️  Replace 'G-XXXXXXXXXX' with your GA4 ID or 'GTM-XXXXXXX' with your GTM ID in App.tsx");
+    }
+
     // Add enhanced styling
     fs.mkdirSync(appSrcPath, { recursive: true });
     const stylePath = path.join(appSrcPath, `app.${a.style}`);
     const styleContent = TEMPLATES.getStyleContent(a);
     createFileWithErrorHandling(stylePath, styleContent, "style file") ||
       createFileWithErrorHandling(path.join(srcPath, `app.${a.style}`), styleContent, "style file (fallback)");
+
+    // Copy logo to public/assets/images for all apps
+    if (!a.seo) {
+      const publicPath = path.join(appPath, "public");
+      fs.mkdirSync(publicPath, { recursive: true });
+      
+      const assetsPath = path.join(publicPath, "assets", "images");
+      fs.mkdirSync(assetsPath, { recursive: true });
+      
+      // Copy YashLogo from angular-schematics assets
+      // When compiled: __dirname is cli/dist/generators, need to go up 3 levels to root
+      const sourceLogoPath = path.join(__dirname, "..", "..", "..", "angular-schematics", "src", "application", "files", "src", "assets", "images", "YashLogo.jpg");
+      const destLogoPath = path.join(assetsPath, "YashLogo.jpg");
+      
+      try {
+        if (fs.existsSync(sourceLogoPath)) {
+          fs.copyFileSync(sourceLogoPath, destLogoPath);
+          console.log("✅ Logo copied to public/assets/images/YashLogo.jpg");
+        } else {
+          console.warn("⚠️  Warning: YashLogo.jpg not found at source location");
+          console.warn(`   Searched at: ${sourceLogoPath}`);
+        }
+      } catch (error) {
+        console.warn("⚠️  Warning: Could not copy logo:", error.message);
+      }
+    }
 
     // Setup ESLint and Prettier configurations
     if (a.linter !== 'none') {
@@ -2109,6 +4102,9 @@ function applyPTGCustomizations(workspacePath: string, a: any) {
 
     // Setup Docker configuration if enabled
     setupDockerConfig(workspacePath, a);
+
+    // Setup authentication if MSAL or Okta selected
+    setupAuthentication(workspacePath, a);
 
     // Fix lint issues after all customizations
     fixLintIssues(workspacePath, a);
