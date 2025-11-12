@@ -156,13 +156,25 @@
       <h2>HTTP Client Demo</h2>
       <div class="demo-examples">
         <div class="http-demo">
-          <button (click)="loadUsers()">Load Sample Data</button>
-          <div *ngIf="loading">Loading...</div>
-          <div *ngIf="users.length > 0">
+          <p>Test HTTP client functionality:</p>
+          <button (click)="loadUsers()" class="http-btn" [disabled]="loading">
+            {{ loading ? 'Loading...' : 'Load Sample Data' }}
+          </button>
+          <div *ngIf="loading" class="loading-spinner">
+            <div class="spinner"></div>
+            <p>Fetching data...</p>
+          </div>
+          <div *ngIf="users.length > 0" class="users-display">
             <h4>Sample Users:</h4>
-            <ul>
-              <li *ngFor="let user of users">{{ user.name }} - {{ user.email }}</li>
-            </ul>
+            <div class="users-grid">
+              <div *ngFor="let user of users" class="user-card">
+                <div class="user-avatar">{{ user.name.charAt(0) }}</div>
+                <div class="user-info">
+                  <h5>{{ user.name }}</h5>
+                  <p>{{ user.email }}</p>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
