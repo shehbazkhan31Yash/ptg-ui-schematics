@@ -19,6 +19,8 @@ export interface LoginCredentials {
 }
 
 export interface DummyAuthResponse {
+  accessToken: string;
+  refreshToken: string;
   id: number;
   username: string;
   email: string;
@@ -26,7 +28,6 @@ export interface DummyAuthResponse {
   lastName: string;
   gender: string;
   image: string;
-  token: string;
 }
 
 @Injectable({
@@ -57,7 +58,7 @@ export class AuthService {
       .pipe(
         map(response => {
           console.log('Login API response:', response);
-          if (response && response.token) {
+          if (response && response.accessToken) {
             console.log('Login successful, setting session');
             const user: User = {
               id: response.id,
@@ -68,14 +69,14 @@ export class AuthService {
               gender: response.gender,
               image: response.image
             };
-            this.setSession(response.token, user);
+            this.setSession(response.accessToken, user);
             return true;
           }
-          console.log('Login failed: No token in response');
+          console.log('Login failed: No accessToken in response', response);
           return false;
         }),
         catchError(error => {
-          console.error('Login error:', error);
+          console.error('Login HTTP error:', error);
           throw error;
         })
       );

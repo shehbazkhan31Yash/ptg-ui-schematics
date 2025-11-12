@@ -8,23 +8,50 @@
 <% if (i18n) { %>    <section class="demo-section">
       <h2>Internationalization Demo</h2>
       <div class="demo-examples">
-        <app-language-example></app-language-example>
+        <div class="i18n-demo">
+          <p>Current Language: <strong>{{ getCurrentLanguage() }}</strong></p>
+          <div class="language-buttons">
+            <button 
+              (click)="switchLanguage('en')"
+              [class.active]="getCurrentLanguage() === 'en'"
+              class="lang-btn">
+              English
+            </button>
+            <button 
+              (click)="switchLanguage('de')"
+              [class.active]="getCurrentLanguage() === 'de'"
+              class="lang-btn">
+              Deutsch
+            </button>
+          </div>
+          <div class="demo-text">
+            <p>{{ 'DEMO_TEXT' | translate }}</p>
+            <p><strong>{{ 'WELCOME_MESSAGE' | translate }}</strong></p>
+          </div>
+        </div>
       </div>
     </section>
 <% } %>
 
 <% if (seoType && seoType !== 'none') { %>    <section class="demo-section">
-      <h2>SEO Features Demo</h2>
+      <h2>SEO & Analytics Demo</h2>
       <div class="demo-examples">
-        <app-seo-example></app-seo-example>
-        <div class="seo-info">
-          <p>This page includes:</p>
-          <ul>
-            <li>Meta tags for description and keywords</li>
-            <li>Open Graph tags for social sharing</li>
-            <li>Structured data markup</li>
-            <li>Google Analytics tracking</li>
-          </ul>
+        <div class="seo-demo">
+          <div class="seo-features">
+            <p><strong>Included Features:</strong></p>
+            <ul>
+              <li>✅ Dynamic meta tags</li>
+              <li>✅ Open Graph & Twitter Cards</li>
+              <li>✅ Schema.org structured data</li>
+              <li>✅ Google Analytics tracking</li>
+            </ul>
+          </div>
+          <div class="analytics-buttons">
+            <p>Test Analytics Tracking:</p>
+            <button (click)="trackButtonClick()" class="analytics-btn">Track Click</button>
+            <button (click)="trackCustomEvent()" class="analytics-btn">Custom Event</button>
+            <button (click)="updateSEO()" class="analytics-btn">Update SEO</button>
+          </div>
         </div>
       </div>
     </section>

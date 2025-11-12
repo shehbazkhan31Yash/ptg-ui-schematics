@@ -54,6 +54,40 @@
     font-size: 1.1rem;
     margin: 1rem 0;
   }
+  
+  .language-buttons {
+    margin: 1rem 0;
+    
+    .lang-btn {
+      margin: 0 0.5rem;
+      padding: 0.5rem 1rem;
+      border: 2px solid #007bff;
+      background: white;
+      color: #007bff;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      
+      &:hover {
+        background: #007bff;
+        color: white;
+      }
+      
+      &.active {
+        background: #007bff;
+        color: white;
+        font-weight: bold;
+      }
+    }
+  }
+  
+  .demo-text {
+    margin-top: 1.5rem;
+    padding: 1rem;
+    background: #f8f9fa;
+    border-radius: 4px;
+    border-left: 4px solid #007bff;
+  }
 }
 
 .ngrx-demo {
@@ -289,6 +323,64 @@
   }
 }
 
+.seo-demo {
+  .seo-features {
+    margin-bottom: 1.5rem;
+    
+    ul {
+      list-style: none;
+      padding: 0;
+      
+      li {
+        padding: 0.25rem 0;
+        font-size: 0.9rem;
+      }
+    }
+  }
+  
+  .analytics-buttons {
+    text-align: center;
+    
+    p {
+      margin-bottom: 1rem;
+      font-weight: 600;
+    }
+    
+    .analytics-btn {
+      margin: 0 0.5rem 0.5rem 0;
+      padding: 0.5rem 1rem;
+      border: none;
+      background: #28a745;
+      color: white;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 0.9rem;
+      transition: background 0.3s ease;
+      
+      &:hover {
+        background: #218838;
+      }
+      
+      &:nth-child(2) {
+        background: #17a2b8;
+        
+        &:hover {
+          background: #138496;
+        }
+      }
+      
+      &:nth-child(3) {
+        background: #ffc107;
+        color: #212529;
+        
+        &:hover {
+          background: #e0a800;
+        }
+      }
+    }
+  }
+}
+
 @media (max-width: 768px) {
   .demo-container {
     padding: 1rem;
@@ -300,5 +392,11 @@
   
   .demo-header h1 {
     font-size: 2rem;
+  }
+  
+  .language-buttons .lang-btn,
+  .analytics-buttons .analytics-btn {
+    margin: 0.25rem;
+    font-size: 0.8rem;
   }
 }
