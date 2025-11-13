@@ -242,45 +242,14 @@ export class LoginComponent {
             this.successMessage = '✅ Login successful! You are now signed in.';
           } else {
             this.successMessage = '';
-            this.errorMessage = 'Invalid username or password. Please use the demo credentials provided.';
+            this.errorMessage = 'Invalid credentials. Please use demo credentials (emilys / emilyspass)';
           }
         },
         error: (error) => {
           console.log('Login component received error:', error);
           this.isLoading = false;
           this.successMessage = '';
-          
-          // Handle different error types
-          if (error.status === 0) {
-            // Network/CORS errors
-            if (error.error instanceof ProgressEvent) {
-              this.errorMessage = 'Network error: Unable to reach server. Check your internet connection.';
-            } else if (error.message?.toLowerCase().includes('cors')) {
-              this.errorMessage = 'CORS policy error: Authentication server access blocked by browser security.';
-            } else {
-              this.errorMessage = 'Connection failed: Unable to connect to authentication server.';
-            }
-          } else if (error.status === 400) {
-            this.errorMessage = 'Invalid credentials: Please use demo credentials (emilys / emilyspass)';
-          } else if (error.status === 401) {
-            this.errorMessage = 'Unauthorized: Invalid username or password.';
-          } else if (error.status === 403) {
-            this.errorMessage = 'Access forbidden: You do not have permission to access this resource.';
-          } else if (error.status === 404) {
-            this.errorMessage = 'Service not found: Authentication endpoint is unavailable.';
-          } else if (error.status === 408) {
-            this.errorMessage = 'Request timeout: Server took too long to respond. Please try again.';
-          } else if (error.status === 429) {
-            this.errorMessage = 'Too many requests: Please wait a moment before trying again.';
-          } else if (error.status >= 500 && error.status < 600) {
-            this.errorMessage = `Server error (${error.status}): Authentication service is temporarily unavailable.`;
-          } else if (error.name === 'TimeoutError') {
-            this.errorMessage = 'Request timeout: Please check your connection and try again.';
-          } else if (error.name === 'HttpErrorResponse') {
-            this.errorMessage = `HTTP error (${error.status}): ${error.statusText || 'Unknown error occurred'}.`;
-          } else {
-            this.errorMessage = `Unexpected error: ${error.message || 'Please try again with demo credentials.'}`;
-          }
+          this.errorMessage = 'Login failed. Please check your credentials and try again.';
         }
       });
     } else {
