@@ -9,6 +9,7 @@ export interface ApplicationOptions {
  enableLinting?: boolean;
  lintingStyle?: 'none' | 'airbnb' | 'standard' | 'custom';
  husky?: boolean;
+ ci?: boolean;
  appDir?: string;
  [key: string]: any;
 }

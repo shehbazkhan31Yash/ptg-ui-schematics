@@ -249,6 +249,12 @@
           }
         ]
       }
+    },
+    "ci": {
+      "type": "boolean",
+      "description": "Add CI/CD configuration (GitHub Actions & GitLab CI)",
+      "default": false,
+      "x-prompt": "Would you like to add CI/CD configuration (GitHub Actions & GitLab CI)?"
     }
   },
   "required": ["name"]

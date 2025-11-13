@@ -33,6 +33,27 @@ import { addI18n, addI18nFiles } from "./features/i18n";
 import { setSEO } from "./features/seo";
 import { setAuthentication } from "./features/authentication";
 
+// CI/CD Configuration
+function addCIConfigToProject(options: ApplicationOptions): Rule {
+  return (host: Tree, context: SchematicContext) => {
+    if (!options.ci) {
+      return host;
+    }
+
+    context.logger.info('🔄 Adding CI/CD configuration...');
+
+    return mergeWith(
+      apply(url('./ci'), [
+        applyTemplates({
+          ...options,
+        }),
+        move('./'),
+      ]),
+      MergeStrategy.Overwrite
+    );
+  };
+}
+
 export function application(options: ApplicationOptions): Rule {
  return async (host: Tree, context: SchematicContext) => {
   const workspace = await getWorkspace(host);
@@ -49,7 +70,7 @@ export function application(options: ApplicationOptions): Rule {
   options.seo = options.seoType !== 'none';
   
   const originalOptions = JSON.parse(JSON.stringify(options));
-  const keysToDelete = ["framework", "ngrx", "i18n", "appDir", "enableLinting", "lintingStyle", "husky", "seo", "seoType", "authentication"];
+  const keysToDelete = ["framework", "ngrx", "i18n", "appDir", "enableLinting", "lintingStyle", "husky", "seo", "seoType", "authentication", "ci"];
   const schemaCompatibleOptions = deleteKeys(options, keysToDelete);
 
   return chain([
@@ -92,6 +113,7 @@ export function application(options: ApplicationOptions): Rule {
    setHusky(originalOptions),
    setSEO(originalOptions),
    setAuthentication(originalOptions),
+   addCIConfigToProject(originalOptions),
   ]);
  };
 }

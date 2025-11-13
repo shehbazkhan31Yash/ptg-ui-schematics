@@ -84,25 +84,13 @@ Enable or disable these optional features:
 - **Yes**: Adds React Router for client-side routing
 - **No**: Single-page application without routing
 
-#### State Management
-Choose your state management solution:
-- **Redux Toolkit**: Popular, powerful state management with Redux
-- **Zustand**: Lightweight, simple state management
-- **None**: Use React's built-in state management only
+#### Redux State Management
+- **Yes**: Adds Redux Toolkit for state management
+- **No**: Uses React's built-in state management
 
 #### Internationalization (i18n)
 - **Yes**: Adds react-i18next for multi-language support
 - **No**: English-only application
-
-#### SEO Features (NEW)
-- **Yes**: Adds comprehensive SEO capabilities including:
-  - React Helmet Async for dynamic meta tags
-  - Open Graph protocol support for social media sharing
-  - Twitter Cards integration
-  - SEO utility functions and components
-  - Robots.txt and sitemap configuration templates
-  - Structured data (JSON-LD) support
-- **No**: Basic application without advanced SEO features
 
 ### 🛠️ Build & Development Tools
 
@@ -140,15 +128,13 @@ Here's an example of a typical configuration session:
 ? Which Authentication you would like to add to this Application? › MSAL
 ? Which stylesheet format would you like to use? › SCSS
 ? Would you like to add React Router to this application? › Yes
-? Which state management library would you like to use? › Redux Toolkit
+? Would you like to add Redux to this application? › Yes
 ? would you like to Adds i18n in project? › Yes
-? Would you like to enable SEO features? (Meta tags, Open Graph, Twitter Cards) › Yes
 ? Which bundler would you like to use? › Vite (Recommended)
 ? Which unit test runner would you like to use? › Vitest (Recommended)
 ? Which test runner would you like to use for end to end tests? › Cypress
-? Which linter would you like to use? › Standard
+? Would you like to use ESLint for linting? › Yes
 ? Would you like to use Prettier for code formatting? › Yes
-? Would you like to add Husky for Git hooks (pre-commit)? › Yes
 ```
 
 ## 🏗️ Generated Project Structure
@@ -272,108 +258,12 @@ The generator automatically installs and configures:
 
 ### Optional Feature Dependencies (based on your selections)
 - `react-router-dom`: Client-side routing
-- `@reduxjs/toolkit` & `react-redux`: Redux state management
-- `zustand`: Zustand state management (lightweight alternative)
+- `@reduxjs/toolkit` & `react-redux`: State management
 - `react-i18next`: Internationalization
-- `react-helmet-async`: SEO and dynamic meta tag management
 - `@mui/material`: Material-UI components
 - `bootstrap` & `react-bootstrap`: Bootstrap components
 - `@azure/msal-browser` & `@azure/msal-react`: MSAL authentication
 - `@okta/okta-auth-js` & `@okta/okta-react`: Okta authentication
-
-## 🔍 SEO Features (New)
-
-When you enable SEO features during project generation, the following components and capabilities are automatically configured:
-
-### What's Included
-
-#### 1. React Helmet Async Integration
-- Dynamic management of document head
-- Async rendering to prevent blocking
-- Support for multiple instances on a single page
-
-#### 2. SEO Component (`src/app/components/SEO.tsx`)
-A fully-featured, reusable SEO component with support for:
-- Custom page titles and descriptions
-- Meta keywords and author information
-- Open Graph tags for social media sharing (Facebook, LinkedIn, etc.)
-- Twitter Card meta tags for Twitter sharing
-- Canonical URL management
-- Custom meta tag injection
-
-**Usage Example:**
-```tsx
-import { SEO } from './components/SEO';
-
-function HomePage() {
-  return (
-    <>
-      <SEO
-        title="Home - My Awesome App"
-        description="Welcome to our application"
-        keywords="react, app, awesome"
-        image="/images/home-og.png"
-      />
-      {/* Your page content */}
-    </>
-  );
-}
-```
-
-#### 3. SEO Utilities (`src/app/utils/seo.ts`)
-Helper functions for managing SEO across your application:
-- `defaultMeta`: Default meta tags configuration
-- `pageMeta`: Page-specific meta configurations
-- `getPageMeta(page)`: Retrieve meta tags for specific pages
-- `getStructuredData()`: Generate JSON-LD structured data
-
-**Usage Example:**
-```tsx
-import { getPageMeta } from './utils/seo';
-
-const meta = getPageMeta('about');
-<SEO {...meta} />
-```
-
-#### 4. Robots.txt Configuration
-Automatically generated `public/robots.txt` with:
-- Search engine crawling permissions
-- Sitemap reference
-- Customizable rules
-
-#### 5. Sitemap Configuration Template
-Pre-configured sitemap setup in `src/app/utils/sitemap.config.ts`:
-- Route definitions
-- Hostname configuration
-- Exclusion patterns
-
-#### 6. Enhanced HTML Template
-The base `index.html` includes SEO-friendly meta tags:
-- Basic meta description and keywords
-- Open Graph tags
-- Twitter Card tags
-- Proper viewport and charset configuration
-
-### SEO Best Practices Implemented
-
-✅ **Unique Titles**: Each page should have a unique title tag  
-✅ **Meta Descriptions**: Under 160 characters for optimal display  
-✅ **Open Graph**: Proper social media sharing previews  
-✅ **Canonical URLs**: Prevent duplicate content issues  
-✅ **Structured Data**: JSON-LD for better search engine understanding  
-✅ **Mobile-Friendly**: Proper viewport meta tags  
-✅ **Accessibility**: Semantic HTML structure support
-
-### Testing Your SEO Implementation
-
-Use these tools to validate your SEO setup:
-- **Google Search Console**: Monitor search performance
-- **Facebook Sharing Debugger**: Test Open Graph tags
-- **Twitter Card Validator**: Validate Twitter Cards
-- **Google Lighthouse**: Audit SEO score
-- **Google Rich Results Test**: Validate structured data
-
-For detailed SEO implementation guide, see [SEO_INTEGRATION_GUIDE.md](./SEO_INTEGRATION_GUIDE.md)
 
 ## 🔧 Customization
 

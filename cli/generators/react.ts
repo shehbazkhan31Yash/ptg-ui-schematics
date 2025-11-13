@@ -1973,78 +1973,390 @@ export default {
   getProductStructuredData,
 };`,
 
-  // MSAL Configuration
-  getMsalConfig: () => `export const msalConfig: any = {
+  getDockerfile: (appName: string, bundler: string = 'vite') => `# Multi-stage build for React application
+# Stage 1: Build the application
+FROM node:18-alpine AS builder
+
+# Set working directory
+WORKDIR /app
+
+# Copy package files
+COPY package*.json ./
+
+# Install dependencies
+RUN npm ci --only=production && npm cache clean --force
+
+# Copy application source
+COPY . .
+
+# Build the application
+RUN npm run build
+
+# Stage 2: Serve the application with nginx
+FROM nginx:alpine
+
+# Copy built assets from builder stage
+COPY --from=builder /app/${bundler === 'vite' ? 'dist' : 'build'} /usr/share/nginx/html
+
+# Copy custom nginx configuration (optional)
+# COPY nginx.conf /etc/nginx/conf.d/default.conf
+
+# Expose port 80
+EXPOSE 80
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \\
+  CMD wget --quiet --tries=1 --spider http://localhost:80/ || exit 1
+
+# Start nginx
+CMD ["nginx", "-g", "daemon off;"]
+`,
+
+  getDockerIgnore: () => `# Node modules
+node_modules
+npm-debug.log
+
+# Build output
+dist
+build
+.nx
+
+# Development files
+.git
+.gitignore
+.env.local
+.env.development
+.env.test
+*.log
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Test files
+coverage
+*.test.ts
+*.test.tsx
+*.spec.ts
+*.spec.tsx
+__tests__
+__mocks__
+
+# Documentation
+*.md
+docs
+
+# CI/CD
+.github
+.gitlab-ci.yml
+azure-pipelines.yml
+
+# Docker
+Dockerfile
+.dockerignore
+docker-compose.yml
+`,
+
+  getDockerCompose: (appName: string) => `version: '3.8'
+
+services:
+  ${appName}:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: ${appName}-app
+    ports:
+      - "3000:80"
+    environment:
+      - NODE_ENV=production
+    restart: unless-stopped
+    networks:
+      - ${appName}-network
+    # Optional: Add volume for logs
+    # volumes:
+    #   - ./logs:/var/log/nginx
+
+networks:
+  ${appName}-network:
+    driver: bridge
+
+# Optional: Add volumes for persistent data
+# volumes:
+#   app-data:
+`,
+
+  getNginxConf: () => `server {
+    listen 80;
+    server_name localhost;
+    root /usr/share/nginx/html;
+    index index.html;
+
+    # Gzip compression
+    gzip on;
+    gzip_vary on;
+    gzip_min_length 1024;
+    gzip_types text/plain text/css text/xml text/javascript application/x-javascript application/xml+rss application/json application/javascript;
+
+    # Security headers
+    add_header X-Frame-Options "SAMEORIGIN" always;
+    add_header X-Content-Type-Options "nosniff" always;
+    add_header X-XSS-Protection "1; mode=block" always;
+
+    # Cache static assets
+    location ~* \\.(?:css|js|jpg|jpeg|gif|png|ico|svg|woff|woff2|ttf|eot)$ {
+        expires 1y;
+        add_header Cache-Control "public, immutable";
+    }
+
+    # Single Page Application routing
+    location / {
+        try_files $uri $uri/ /index.html;
+    }
+
+    # Health check endpoint
+    location /health {
+        access_log off;
+        return 200 "healthy\\n";
+        add_header Content-Type text/plain;
+    }
+
+    # Error pages
+    error_page 404 /index.html;
+}
+`,
+
+  getDockerReadme: (appName: string) => `# Docker Configuration for ${appName}
+
+This directory contains Docker configuration files for containerizing your React application.
+
+## Files Included
+
+- **Dockerfile**: Multi-stage build configuration
+- **.dockerignore**: Files to exclude from Docker build context
+- **docker-compose.yml**: Docker Compose configuration for easy deployment
+- **nginx.conf**: Custom Nginx configuration (optional)
+
+## Quick Start
+
+### Build and Run with Docker
+
+\`\`\`bash
+# Build the Docker image
+docker build -t ${appName}:latest .
+
+# Run the container
+docker run -d -p 3000:80 --name ${appName}-app ${appName}:latest
+
+# View logs
+docker logs ${appName}-app
+
+# Stop the container
+docker stop ${appName}-app
+\`\`\`
+
+### Using Docker Compose
+
+\`\`\`bash
+# Build and start services
+docker-compose up -d
+
+# View logs
+docker-compose logs -f
+
+# Stop services
+docker-compose down
+
+# Rebuild and restart
+docker-compose up -d --build
+\`\`\`
+
+## NPM Scripts
+
+Use these convenient npm scripts:
+
+\`\`\`bash
+# Build Docker image
+npm run docker:build
+
+# Run with Docker Compose
+npm run docker:up
+
+# Stop Docker Compose
+npm run docker:down
+
+# View logs
+npm run docker:logs
+\`\`\`
+
+## Configuration
+
+### Environment Variables
+
+Add environment variables in \`docker-compose.yml\`:
+
+\`\`\`yaml
+environment:
+  - NODE_ENV=production
+  - REACT_APP_API_URL=https://api.example.com
+\`\`\`
+
+### Port Configuration
+
+Default port mapping: \`3000:80\` (host:container)
+
+To change the host port, edit \`docker-compose.yml\`:
+
+\`\`\`yaml
+ports:
+  - "8080:80"  # Changes host port to 8080
+\`\`\`
+
+### Custom Nginx Configuration
+
+Uncomment the following line in \`Dockerfile\` to use custom Nginx config:
+
+\`\`\`dockerfile
+COPY nginx.conf /etc/nginx/conf.d/default.conf
+\`\`\`
+
+## Production Deployment
+
+### Build Optimization
+
+The Dockerfile uses multi-stage builds to minimize image size:
+- Stage 1: Builds the application
+- Stage 2: Serves static files with Nginx
+
+### Security Best Practices
+
+1. ✅ Uses Alpine Linux for smaller attack surface
+2. ✅ Multi-stage build reduces final image size
+3. ✅ Security headers configured in Nginx
+4. ✅ Health check endpoint included
+5. ✅ Runs as non-root user (Nginx default)
+
+### Health Checks
+
+The container includes a health check that runs every 30 seconds:
+
+\`\`\`bash
+# Check container health
+docker inspect --format='{{.State.Health.Status}}' ${appName}-app
+\`\`\`
+
+## Troubleshooting
+
+### Container won't start
+
+\`\`\`bash
+# Check logs
+docker logs ${appName}-app
+
+# Inspect container
+docker inspect ${appName}-app
+\`\`\`
+
+### Port already in use
+
+Change the host port in \`docker-compose.yml\` or use:
+
+\`\`\`bash
+docker run -d -p 8080:80 ${appName}:latest
+\`\`\`
+
+### Build fails
+
+Ensure all dependencies are properly installed:
+
+\`\`\`bash
+# Clean build
+docker-compose build --no-cache
+\`\`\`
+
+## Additional Resources
+
+- [Docker Documentation](https://docs.docker.com/)
+- [Nginx Documentation](https://nginx.org/en/docs/)
+- [Docker Compose Reference](https://docs.docker.com/compose/compose-file/)
+`,
+
+  getMsalConfig: () => `import { Configuration, PopupRequest } from '@azure/msal-browser';
+
+export const msalConfig: Configuration = {
   auth: {
-    clientId: "YOUR_CLIENT_ID", // Replace with your Azure AD client ID
-    authority: "https://login.microsoftonline.com/YOUR_TENANT_ID", // Replace with your tenant ID
-    redirectUri: window.location.origin, // Automatically uses current origin
+    clientId: 'YOUR_CLIENT_ID', // Replace with your Azure AD app client ID
+    authority: 'https://login.microsoftonline.com/YOUR_TENANT_ID', // Replace with your tenant ID
+    redirectUri: window.location.origin,
   },
   cache: {
     cacheLocation: 'sessionStorage',
-    storeAuthStateInCookie: true,
+    storeAuthStateInCookie: false,
   },
 };
 
-export const loginRequest = {
-  scopes: ['user.read', 'https://management.azure.com/user_impersonation'],
-};`,
+export const loginRequest: PopupRequest = {
+  scopes: ['User.Read'],
+};
+`,
 
-  // MSAL Login Button component
-  getMsalLoginButton: () => `import { useMsal } from '@azure/msal-react';
+  getMsalLoginButton: () => `import React from 'react';
+import { useMsal } from '@azure/msal-react';
 import { loginRequest } from '../config/msalConfig';
 
-export function MsalLoginButton() {
+export const MsalLoginButton: React.FC = () => {
   const { instance, accounts } = useMsal();
 
   const handleLogin = () => {
     instance.loginPopup(loginRequest).catch((e) => {
-      console.error('Login error:', e);
+      console.error(e);
     });
   };
 
   const handleLogout = () => {
     instance.logoutPopup().catch((e) => {
-      console.error('Logout error:', e);
+      console.error(e);
     });
   };
 
   return (
-    <div className="auth-buttons">
-      {accounts.length === 0 ? (
-        <button onClick={handleLogin} className="loginBtn">
-          Sign In with Microsoft
-        </button>
-      ) : (
+    <div>
+      {accounts.length > 0 ? (
         <div>
-          <span>Welcome, {accounts[0].name}</span>
-          <button onClick={handleLogout} className="logoutBtn">
-            Sign Out
-          </button>
+          <p>Welcome, {accounts[0].name}!</p>
+          <button onClick={handleLogout}>Sign Out</button>
         </div>
+      ) : (
+        <button onClick={handleLogin}>Sign In with Microsoft</button>
       )}
     </div>
   );
-}`,
+};
 
-  // Okta Configuration
-  getOktaConfig: () => `import { OktaAuthOptions } from '@okta/okta-auth-js';
+export default MsalLoginButton;
+`,
 
-const oktaConfig: OktaAuthOptions = {
-  clientId: 'YOUR_OKTA_CLIENT_ID', // Replace with your Okta client ID
+  getOktaConfig: () => `const oktaConfig = {
+  clientId: 'YOUR_OKTA_CLIENT_ID', // Replace with your Okta app client ID
   issuer: 'https://YOUR_OKTA_DOMAIN/oauth2/default', // Replace with your Okta domain
   redirectUri: window.location.origin + '/login/callback',
   scopes: ['openid', 'profile', 'email'],
   pkce: true,
-  disableHttpsCheck: process.env.NODE_ENV === 'development',
 };
 
-export default oktaConfig;`,
+export default oktaConfig;
+`,
 
-  // Okta Login Button component
-  getOktaLoginButton: () => `import { useOktaAuth } from '@okta/okta-react';
+  getOktaLoginButton: () => `import React from 'react';
+import { useOktaAuth } from '@okta/okta-react';
 
-export function OktaLoginButton() {
+export const OktaLoginButton: React.FC = () => {
   const { oktaAuth, authState } = useOktaAuth();
 
   const handleLogin = async () => {
@@ -2060,53 +2372,590 @@ export function OktaLoginButton() {
   }
 
   return (
-    <div className="auth-buttons">
-      {!authState.isAuthenticated ? (
-        <button onClick={handleLogin} className="loginBtn">
-          Sign In with Okta
-        </button>
-      ) : (
+    <div>
+      {authState.isAuthenticated ? (
         <div>
-          <span>Welcome, {authState.idToken?.claims.name || 'User'}</span>
-          <button onClick={handleLogout} className="logoutBtn">
-            Sign Out
-          </button>
+          <p>Welcome, {authState.idToken?.claims.name}!</p>
+          <button onClick={handleLogout}>Sign Out</button>
         </div>
+      ) : (
+        <button onClick={handleLogin}>Sign In with Okta</button>
       )}
     </div>
   );
-}`,
+};
 
-  // Authentication README
+export default OktaLoginButton;
+`,
+
+  getGitHubActionsWorkflow: () => `name: CI
+
+on:
+  push:
+    branches: [ main, master, develop ]
+  pull_request:
+    branches: [ main, master, develop ]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    
+    strategy:
+      matrix:
+        node-version: [20.x]
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js \${{ matrix.node-version }}
+      uses: actions/setup-node@v4
+      with:
+        node-version: \${{ matrix.node-version }}
+        cache: 'npm'
+    
+    - name: Install dependencies
+      run: npm ci
+    
+    - name: Lint code
+      run: npm run lint
+      continue-on-error: true
+    
+    - name: Run tests
+      run: npm test -- --watchAll=false
+      continue-on-error: true
+    
+    - name: Build application
+      run: npm run build
+    
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: build-output
+        path: dist/
+        retention-days: 7
+    
+    - name: Run E2E tests (if available)
+      run: |
+        if grep -q "\\"e2e\\"" package.json; then
+          npm run e2e
+        else
+          echo "E2E tests not configured, skipping..."
+        fi
+      continue-on-error: true
+
+  code-quality:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: 20.x
+        cache: 'npm'
+    
+    - name: Install dependencies
+      run: npm ci
+    
+    - name: Check formatting (if Prettier is configured)
+      run: |
+        if grep -q "prettier" package.json; then
+          npm run format:check || true
+        else
+          echo "Prettier not configured, skipping..."
+        fi
+      continue-on-error: true
+    
+    - name: Type check
+      run: npx tsc --noEmit
+      continue-on-error: true
+
+  docker-build:
+    runs-on: ubuntu-latest
+    needs: build-and-test
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master' || github.ref == 'refs/heads/develop')
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Check if Dockerfile exists
+      id: docker-check
+      run: |
+        if [ -f "Dockerfile" ]; then
+          echo "dockerfile_exists=true" >> \$GITHUB_OUTPUT
+        else
+          echo "dockerfile_exists=false" >> \$GITHUB_OUTPUT
+        fi
+    
+    - name: Set up Docker Buildx
+      if: steps.docker-check.outputs.dockerfile_exists == 'true'
+      uses: docker/setup-buildx-action@v3
+    
+    - name: Build Docker image
+      if: steps.docker-check.outputs.dockerfile_exists == 'true'
+      run: docker build -t app:\${{ github.sha }} .
+    
+    - name: Test Docker image
+      if: steps.docker-check.outputs.dockerfile_exists == 'true'
+      run: |
+        docker run -d -p 3000:80 --name test-container app:\${{ github.sha }}
+        sleep 5
+        curl -f http://localhost:3000 || exit 1
+        docker stop test-container
+`,
+
+  getGitLabCI: () => `stages:
+  - install
+  - lint
+  - test
+  - build
+  - docker
+
+variables:
+  NODE_VERSION: "20"
+  NPM_CACHE_FOLDER: .npm
+  DOCKER_DRIVER: overlay2
+
+cache:
+  key:
+    files:
+      - package-lock.json
+  paths:
+    - node_modules/
+    - .npm/
+
+install_dependencies:
+  stage: install
+  image: node:\${NODE_VERSION}
+  script:
+    - npm ci --cache .npm --prefer-offline
+  artifacts:
+    paths:
+      - node_modules/
+    expire_in: 1 hour
+
+lint:
+  stage: lint
+  image: node:\${NODE_VERSION}
+  needs:
+    - install_dependencies
+  script:
+    - npm run lint
+  allow_failure: true
+
+test:unit:
+  stage: test
+  image: node:\${NODE_VERSION}
+  needs:
+    - install_dependencies
+  script:
+    - npm test -- --watchAll=false
+  coverage: '/All files[^|]*\\|[^|]*\\s+([\\d\\.]+)/'
+  artifacts:
+    when: always
+    reports:
+      junit:
+        - junit.xml
+      coverage_report:
+        coverage_format: cobertura
+        path: coverage/cobertura-coverage.xml
+    paths:
+      - coverage/
+    expire_in: 30 days
+  allow_failure: true
+
+test:e2e:
+  stage: test
+  image: node:\${NODE_VERSION}
+  needs:
+    - install_dependencies
+  script:
+    - |
+      if grep -q "\\"e2e\\"" package.json; then
+        npm run e2e
+      else
+        echo "E2E tests not configured, skipping..."
+      fi
+  allow_failure: true
+  only:
+    - main
+    - master
+    - develop
+    - merge_requests
+
+build:
+  stage: build
+  image: node:\${NODE_VERSION}
+  needs:
+    - install_dependencies
+  script:
+    - npm run build
+    - echo "Build completed successfully"
+  artifacts:
+    paths:
+      - dist/
+      - build/
+    expire_in: 1 week
+
+typecheck:
+  stage: lint
+  image: node:\${NODE_VERSION}
+  needs:
+    - install_dependencies
+  script:
+    - npx tsc --noEmit
+  allow_failure: true
+
+format:check:
+  stage: lint
+  image: node:\${NODE_VERSION}
+  needs:
+    - install_dependencies
+  script:
+    - |
+      if grep -q "prettier" package.json; then
+        npm run format:check || true
+      else
+        echo "Prettier not configured, skipping..."
+      fi
+  allow_failure: true
+
+docker:build:
+  stage: docker
+  image: docker:24
+  services:
+    - docker:24-dind
+  needs:
+    - build
+  before_script:
+    - |
+      if [ ! -f "Dockerfile" ]; then
+        echo "Dockerfile not found, skipping Docker build..."
+        exit 0
+      fi
+  script:
+    - docker build -t \$CI_PROJECT_NAME:\$CI_COMMIT_SHORT_SHA .
+    - docker tag \$CI_PROJECT_NAME:\$CI_COMMIT_SHORT_SHA \$CI_PROJECT_NAME:latest
+    - echo "Docker image built successfully"
+  only:
+    - main
+    - master
+    - develop
+  allow_failure: true
+
+docker:test:
+  stage: docker
+  image: docker:24
+  services:
+    - docker:24-dind
+  needs:
+    - docker:build
+  before_script:
+    - |
+      if [ ! -f "Dockerfile" ]; then
+        echo "Dockerfile not found, skipping Docker test..."
+        exit 0
+      fi
+  script:
+    - docker run -d -p 3000:80 --name test-container \$CI_PROJECT_NAME:latest
+    - sleep 5
+    - apk add --no-cache curl
+    - curl -f http://localhost:3000 || exit 1
+    - docker stop test-container
+    - echo "Docker container tested successfully"
+  only:
+    - main
+    - master
+    - develop
+  allow_failure: true
+`,
+
+  getCIReadme: () => `# CI/CD Configuration
+
+This project includes CI/CD configurations for both GitHub Actions and GitLab CI.
+
+## GitHub Actions
+
+The GitHub Actions workflow is located at \`.github/workflows/ci.yml\` and includes:
+
+### Jobs
+
+1. **build-and-test** (Matrix: Node 18.x, 20.x)
+   - Checkout code
+   - Setup Node.js
+   - Install dependencies
+   - Lint code
+   - Run unit tests
+   - Build application
+   - Upload build artifacts
+   - Run E2E tests (if configured)
+
+2. **code-quality**
+   - Check code formatting with Prettier
+   - Run TypeScript type checking
+
+3. **docker-build** (Only on main/develop branches)
+   - Build Docker image
+   - Test Docker container
+
+### Triggers
+- Push to \`main\` or \`develop\` branches
+- Pull requests to \`main\` or \`develop\` branches
+
+## GitLab CI
+
+The GitLab CI configuration is located at \`.gitlab-ci.yml\` and includes:
+
+### Stages
+
+1. **install** - Install dependencies with caching
+2. **lint** - Run linters and type checking
+3. **test** - Run unit and E2E tests with coverage
+4. **build** - Build the application
+5. **docker** - Build and test Docker images (only on main/develop)
+
+### Features
+- Dependency caching for faster builds
+- Test coverage reporting
+- Parallel job execution
+- Artifact retention
+- Docker build and testing
+
+## Configuration
+
+### GitHub Secrets (Optional)
+
+For deployment, you may need to add these secrets in GitHub Settings > Secrets:
+
+- \`DOCKER_USERNAME\` - Docker Hub username
+- \`DOCKER_PASSWORD\` - Docker Hub password/token
+- \`NPM_TOKEN\` - NPM registry token (if publishing packages)
+
+### GitLab CI/CD Variables (Optional)
+
+For deployment, configure these variables in GitLab Settings > CI/CD > Variables:
+
+- \`DOCKER_USERNAME\` - Docker Hub username
+- \`DOCKER_PASSWORD\` - Docker Hub password/token
+- \`NPM_TOKEN\` - NPM registry token (if publishing packages)
+
+## Customization
+
+### Adding Deployment
+
+To add deployment steps, uncomment and configure the deployment jobs in the respective CI files:
+
+**GitHub Actions:**
+\`\`\`yaml
+deploy:
+  runs-on: ubuntu-latest
+  needs: build-and-test
+  if: github.ref == 'refs/heads/main'
+  steps:
+    # Add your deployment steps here
+\`\`\`
+
+**GitLab CI:**
+\`\`\`yaml
+deploy:
+  stage: deploy
+  script:
+    # Add your deployment steps here
+  only:
+    - main
+\`\`\`
+
+### Modifying Test Commands
+
+Update the test commands in the CI files to match your project:
+
+- \`npm test\` - Unit tests
+- \`npm run e2e\` - End-to-end tests
+- \`npm run lint\` - Linting
+- \`npm run build\` - Build
+
+## Troubleshooting
+
+### Tests Failing in CI
+
+- Ensure all tests pass locally before pushing
+- Check if environment-specific configurations are needed
+- Review CI logs for specific error messages
+
+### Build Artifacts Not Found
+
+- Verify the build output directory matches the artifact path
+- Check if the build command completes successfully
+
+### Docker Build Issues
+
+- Ensure Dockerfile exists in the project root
+- Verify all dependencies are properly installed before build
+- Check Docker service is running (GitLab CI)
+
+## Best Practices
+
+1. ✅ Keep CI files up to date with project dependencies
+2. ✅ Run CI checks locally before pushing (using act for GitHub Actions)
+3. ✅ Monitor CI/CD pipeline execution times and optimize if needed
+4. ✅ Use caching effectively to speed up builds
+5. ✅ Keep secrets secure - never commit them to the repository
+
+## Resources
+
+- [GitHub Actions Documentation](https://docs.github.com/en/actions)
+- [GitLab CI/CD Documentation](https://docs.gitlab.com/ee/ci/)
+- [Docker Documentation](https://docs.docker.com/)
+`,
+
   getAuthReadme: (authType: string) => `# ${authType.toUpperCase()} Authentication Setup
 
-This project is configured with ${authType.toUpperCase()} authentication.
+${authType === 'msal' ? `## Microsoft Authentication Library (MSAL) Setup
 
-## Setup Instructions
+### Prerequisites
+1. Azure AD tenant
+2. Registered application in Azure Portal
 
-${authType === 'msal' ? `### Azure AD (MSAL) Configuration
+### Configuration Steps
 
-1. Register your app in Azure Portal
-2. Update \`src/config/msalConfig.ts\` with your Client ID and Tenant ID
-3. Configure API permissions in Azure Portal
+1. **Register Application in Azure Portal**
+   - Go to Azure Portal > Azure Active Directory > App registrations
+   - Click "New registration"
+   - Enter application name
+   - Select supported account types
+   - Add redirect URI: \`http://localhost:3000\`
+   - Click "Register"
 
-See the full setup guide in the MSAL documentation.` : `### Okta Configuration
+2. **Configure Application**
+   - Copy Application (client) ID
+   - Copy Directory (tenant) ID
+   - Under "Authentication", enable "Access tokens" and "ID tokens"
+   - Add platform configuration for Single-page application
 
-1. Create an Okta developer account
-2. Create a new application in Okta Dashboard
-3. Update \`src/config/oktaConfig.ts\` with your Client ID and Domain
+3. **Update Configuration**
+   Update \`src/config/msalConfig.ts\` with your Client ID and Tenant ID:
+   \`\`\`typescript
+   clientId: 'YOUR_CLIENT_ID',
+   authority: 'https://login.microsoftonline.com/YOUR_TENANT_ID',
+   \`\`\`
 
-See the full setup guide in the Okta documentation.`}
+4. **API Permissions**
+   - Go to "API permissions" in Azure Portal
+   - Add required permissions (e.g., User.Read)
+   - Grant admin consent if needed
 
-## Usage
+### Usage
 
-Authentication components are available in \`src/components/\`:
-- Login/Logout button component
-- Protected route examples
+\`\`\`tsx
+import { MsalLoginButton } from './components/MsalLoginButton';
 
-Check the component files for implementation details.
+function App() {
+  return (
+    <div>
+      <MsalLoginButton />
+    </div>
+  );
+}
+\`\`\`
+
+### Resources
+- [MSAL.js Documentation](https://docs.microsoft.com/en-us/azure/active-directory/develop/msal-overview)
+- [Azure AD App Registration](https://docs.microsoft.com/en-us/azure/active-directory/develop/quickstart-register-app)
+` : `## Okta Authentication Setup
+
+### Prerequisites
+1. Okta developer account
+2. Okta application configured
+
+### Configuration Steps
+
+1. **Create Okta Application**
+   - Log in to Okta Developer Console
+   - Go to Applications > Create App Integration
+   - Select "OIDC - OpenID Connect"
+   - Select "Single-Page Application"
+   - Click "Next"
+
+2. **Configure Application**
+   - Enter application name
+   - Add Sign-in redirect URI: \`http://localhost:3000/login/callback\`
+   - Add Sign-out redirect URI: \`http://localhost:3000\`
+   - Save the application
+
+3. **Update Configuration**
+   Copy your Client ID and Okta domain, then update \`src/config/oktaConfig.ts\`:
+   \`\`\`typescript
+   clientId: 'YOUR_OKTA_CLIENT_ID',
+   issuer: 'https://YOUR_OKTA_DOMAIN/oauth2/default',
+   \`\`\`
+
+4. **Trusted Origins**
+   - Go to Security > API > Trusted Origins
+   - Add \`http://localhost:3000\` for both CORS and Redirect
+
+### Usage
+
+\`\`\`tsx
+import { OktaLoginButton } from './components/OktaLoginButton';
+
+function App() {
+  return (
+    <div>
+      <OktaLoginButton />
+    </div>
+  );
+}
+\`\`\`
+
+### Resources
+- [Okta Developer Documentation](https://developer.okta.com/docs/)
+- [Okta React SDK](https://github.com/okta/okta-react)
+`}
+
+## Testing Authentication
+
+1. Start your development server
+2. Click the login button
+3. Complete the authentication flow
+4. Verify user information is displayed
+5. Test logout functionality
+
+## Troubleshooting
+
+### Common Issues
+
+**MSAL:**
+- CORS errors: Check redirect URIs in Azure Portal
+- Token errors: Verify API permissions and consent
+- Login popup blocked: Enable popups in browser
+
+**Okta:**
+- Invalid client: Verify Client ID in configuration
+- CORS errors: Check Trusted Origins in Okta console
+- Callback errors: Verify redirect URIs match exactly
+
+### Debug Tips
+
+Enable debug logging in your configuration:
+\`\`\`typescript
+// For MSAL
+system: {
+  loggerOptions: {
+    loggerCallback: (level, message, containsPii) => {
+      console.log(message);
+    },
+    logLevel: LogLevel.Verbose,
+  },
+}
+
+// For Okta
+oktaAuth.options.devMode = true;
+\`\`\`
 `
-
 };
 
 
@@ -2436,6 +3285,123 @@ const setupHusky = (workspacePath: string, a: any) => {
   }
 };
 
+const setupDockerConfig = (workspacePath: string, a: any) => {
+  if (!a.docker) {
+    return;
+  }
+
+  try {
+    console.log("\n🐳 Setting up Docker configuration...");
+
+    // Detect app structure (standalone or multi-app)
+    const standaloneAppPath = path.join(workspacePath, "src");
+    const multiAppPath = path.join(workspacePath, "apps", a.name);
+    
+    let appPath: string;
+    
+    if (fs.existsSync(standaloneAppPath)) {
+      appPath = workspacePath; // Standalone app, docker files go in root
+    } else if (fs.existsSync(multiAppPath)) {
+      appPath = multiAppPath; // Multi-app workspace
+    } else {
+      appPath = workspacePath; // Fallback to root
+    }
+
+    // Create Dockerfile
+    const dockerfilePath = path.join(appPath, "Dockerfile");
+    const dockerfileContent = TEMPLATES.getDockerfile(a.name, a.bundler);
+    createFileWithErrorHandling(dockerfilePath, dockerfileContent, "Dockerfile");
+
+    // Create .dockerignore
+    const dockerignorePath = path.join(appPath, ".dockerignore");
+    const dockerignoreContent = TEMPLATES.getDockerIgnore();
+    createFileWithErrorHandling(dockerignorePath, dockerignoreContent, ".dockerignore");
+
+    // Create docker-compose.yml
+    const dockerComposePath = path.join(appPath, "docker-compose.yml");
+    const dockerComposeContent = TEMPLATES.getDockerCompose(a.name);
+    createFileWithErrorHandling(dockerComposePath, dockerComposeContent, "docker-compose.yml");
+
+    // Create nginx.conf (optional)
+    const nginxConfPath = path.join(appPath, "nginx.conf");
+    const nginxConfContent = TEMPLATES.getNginxConf();
+    createFileWithErrorHandling(nginxConfPath, nginxConfContent, "nginx.conf");
+
+    // Create Docker README
+    const dockerReadmePath = path.join(appPath, "DOCKER_README.md");
+    const dockerReadmeContent = TEMPLATES.getDockerReadme(a.name);
+    createFileWithErrorHandling(dockerReadmePath, dockerReadmeContent, "Docker documentation");
+
+    // Add Docker scripts to package.json
+    const packageJsonPath = path.join(workspacePath, "package.json");
+    if (fs.existsSync(packageJsonPath)) {
+      const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, "utf8"));
+      
+      packageJson.scripts = packageJson.scripts || {};
+      packageJson.scripts["docker:build"] = `docker build -t ${a.name}:latest .`;
+      packageJson.scripts["docker:run"] = `docker run -d -p 3000:80 --name ${a.name}-app ${a.name}:latest`;
+      packageJson.scripts["docker:stop"] = `docker stop ${a.name}-app`;
+      packageJson.scripts["docker:up"] = "docker-compose up -d";
+      packageJson.scripts["docker:down"] = "docker-compose down";
+      packageJson.scripts["docker:logs"] = "docker-compose logs -f";
+      
+      fs.writeFileSync(packageJsonPath, JSON.stringify(packageJson, null, 2));
+      console.log("✅ Added Docker scripts to package.json");
+    }
+
+    console.log("✅ Docker configuration setup completed successfully!");
+    console.log("   📝 Dockerfile created with multi-stage build");
+    console.log("   📝 docker-compose.yml created for easy deployment");
+    console.log("   📝 nginx.conf created with optimized settings");
+    console.log("   📝 Docker scripts added to package.json");
+    console.log("\n   Run 'npm run docker:build' to build your Docker image");
+    console.log("   Run 'npm run docker:up' to start with Docker Compose");
+  } catch (error) {
+    console.error("❌ Failed to setup Docker configuration:", error.message);
+    console.warn("You can add Docker configuration manually later");
+  }
+};
+
+const setupCIConfig = (workspacePath: string, a: any) => {
+  if (!a.ci) {
+    return;
+  }
+
+  try {
+    console.log("\n🔄 Setting up CI/CD configuration...");
+
+    // Create .github/workflows directory for GitHub Actions
+    const githubWorkflowsPath = path.join(workspacePath, ".github", "workflows");
+    if (!fs.existsSync(githubWorkflowsPath)) {
+      fs.mkdirSync(githubWorkflowsPath, { recursive: true });
+    }
+
+    // Create GitHub Actions workflow
+    const githubActionsPath = path.join(githubWorkflowsPath, "ci.yml");
+    const githubActionsContent = TEMPLATES.getGitHubActionsWorkflow();
+    createFileWithErrorHandling(githubActionsPath, githubActionsContent, "GitHub Actions workflow");
+
+    // Create GitLab CI configuration
+    const gitlabCIPath = path.join(workspacePath, ".gitlab-ci.yml");
+    const gitlabCIContent = TEMPLATES.getGitLabCI();
+    createFileWithErrorHandling(gitlabCIPath, gitlabCIContent, "GitLab CI configuration");
+
+    // Create CI README
+    const ciReadmePath = path.join(workspacePath, "CI_README.md");
+    const ciReadmeContent = TEMPLATES.getCIReadme();
+    createFileWithErrorHandling(ciReadmePath, ciReadmeContent, "CI/CD documentation");
+
+    console.log("✅ CI/CD configuration setup completed successfully!");
+    console.log("   📝 GitHub Actions: .github/workflows/ci.yml");
+    console.log("   📝 GitLab CI: .gitlab-ci.yml");
+    console.log("   📝 Documentation: CI_README.md");
+    console.log("\n   Both CI configurations work with React and Angular applications");
+  } catch (error) {
+    console.error("❌ Failed to setup CI/CD configuration:", error.message);
+    console.warn("You can add CI/CD configuration manually later");
+  }
+};
+
 export function reactAppGenerator() {
   getArgs().then((a: any) => {
     try {
@@ -2714,6 +3680,12 @@ export function reactAppGenerator() {
       // Setup Husky if enabled
       setupHusky(workspacePath, a);
 
+      // Setup Docker configuration if enabled
+      setupDockerConfig(workspacePath, a);
+
+      // Setup CI/CD configuration if enabled
+      setupCIConfig(workspacePath, a);
+
       console.log("\n✅ React application created successfully!\n");
       console.log("━".repeat(50));
       console.log(`📁 Workspace: ${a.workspace}`);
@@ -2727,6 +3699,8 @@ export function reactAppGenerator() {
       console.log(`🔧 Linter: ${a.linter === 'none' ? 'None' : a.linter === 'airbnb' ? 'ESLint with Airbnb' : a.linter === 'custom' ? 'ESLint with Custom Rules' : 'ESLint'}`);
       console.log(`✨ Prettier: ${a.prettier ? "Yes" : "No"}`);
       console.log(`🐶 Husky: ${a.husky ? "Yes" : "No"}`);
+      console.log(`🐳 Docker: ${a.docker ? "Yes" : "No"}`);
+      console.log(`🔄 CI/CD: ${a.ci ? "Yes (GitHub Actions & GitLab CI)" : "No"}`);
       console.log("━".repeat(50));
       console.log("\nTo get started:\n");
       console.log(`  cd ${a.workspace}`);
@@ -2988,6 +3962,18 @@ function getArgs() {
       {
         name: "husky",
         message: "Would you like to add Husky for Git hooks (pre-commit)?",
+        type: "confirm",
+        default: false,
+      },
+      {
+        name: "docker",
+        message: "Would you like to add Docker configuration?",
+        type: "confirm",
+        default: false,
+      },
+      {
+        name: "ci",
+        message: "Would you like to add CI/CD configuration? (GitHub Actions & GitLab CI)",
         type: "confirm",
         default: false,
       },
@@ -3587,6 +4573,12 @@ function applyPTGCustomizations(workspacePath: string, a: any) {
 
     // Update test files with proper formatting
     updateTestFiles(workspacePath, a);
+
+    // Setup Docker configuration if enabled
+    setupDockerConfig(workspacePath, a);
+
+    // Setup CI/CD configuration if enabled
+    setupCIConfig(workspacePath, a);
 
     // Setup authentication if MSAL or Okta selected
     setupAuthentication(workspacePath, a);

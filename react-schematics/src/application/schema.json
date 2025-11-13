@@ -142,6 +142,24 @@
         "message": "Would you like to add Husky for Git hooks (pre-commit)?",
         "type": "confirmation"
       }
+    },
+    "docker": {
+      "type": "boolean",
+      "default": false,
+      "description": "Add Docker configuration (Dockerfile, .dockerignore, docker-compose.yml)",
+      "x-prompt": {
+        "message": "Would you like to add Docker configuration?",
+        "type": "confirmation"
+      }
+    },
+    "ci": {
+      "type": "boolean",
+      "default": false,
+      "description": "Add CI/CD configuration (GitHub Actions & GitLab CI)",
+      "x-prompt": {
+        "message": "Would you like to add CI/CD configuration (GitHub Actions & GitLab CI)?",
+        "type": "confirmation"
+      }
     }
   },
   "required": [
@@ -151,6 +169,8 @@
     "routing",
     "auth",
     "i18n",
-    "husky"
+    "husky",
+    "docker",
+    "ci"
   ]
 }
