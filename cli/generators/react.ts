@@ -32,13 +32,13 @@ function getNormalizedStyleForNx(style: string): string {
 const TEMPLATES = {
   getAppContent: (a: any) => `import React, { useState } from 'react';
 import './app.${a.style}';
-${a.routing ? "import { Routes, Route, Link, useLocation, BrowserRouter } from 'react-router-dom';" : ''}
+${a.routing ? "import { Routes, Route, Link, useLocation } from 'react-router-dom';" : ''}
 ${a.stateManagement === 'redux' ? "import { Provider, useSelector, useDispatch } from 'react-redux';\nimport { store, RootState, increment, decrement } from './store';" : ''}
 ${a.stateManagement === 'zustand' ? "import { useAppStore } from './store';" : ''}
 ${a.i18n ? "import { useTranslation } from 'react-i18next';\nimport './i18n';" : ''}
 ${a.seo ? "import { SEO } from './components/SEO';\nimport { GoogleAnalytics } from './components/GoogleAnalytics';" : ''}
-${a.auth === 'msal' ? "import { MsalLoginButton } from '../components/MsalLoginButton';\nimport { useMsal } from '@azure/msal-react';" : ''}
-${a.auth === 'okta' ? "import { OktaLoginButton } from '../components/OktaLoginButton';\nimport { useOktaAuth } from '@okta/okta-react';" : ''}
+${a.auth === 'msal' ? "import { MsalLoginButton } from './components/MsalLoginButton';\nimport { useMsal } from '@azure/msal-react';" : ''}
+${a.auth === 'okta' ? "import { OktaLoginButton } from './components/OktaLoginButton';\nimport { useOktaAuth } from '@okta/okta-react';" : ''}
 
 ${a.routing ? `
 // Home Page Component
@@ -501,9 +501,9 @@ const AppContent = () => {
 
 const App = () => {
   return (
-    ${a.auth === 'okta' 
-      ? (a.stateManagement === 'redux' ? '<Provider store={store}><AppContent /></Provider>' : '<AppContent />')
-      : (a.stateManagement === 'redux' ? '<Provider store={store}><BrowserRouter><AppContent /></BrowserRouter></Provider>' : '<BrowserRouter><AppContent /></BrowserRouter>')
+    ${a.stateManagement === 'redux' 
+      ? '<Provider store={store}><AppContent /></Provider>' 
+      : '<AppContent />'
     }
   );
 };
@@ -2308,7 +2308,7 @@ export const loginRequest: PopupRequest = {
 
   getMsalLoginButton: () => `import React from 'react';
 import { useMsal } from '@azure/msal-react';
-import { loginRequest } from '../config/msalConfig';
+import { loginRequest } from '../../config/msalConfig';
 
 export const MsalLoginButton: React.FC = () => {
   const { instance, accounts } = useMsal();
@@ -2955,6 +2955,696 @@ system: {
 // For Okta
 oktaAuth.options.devMode = true;
 \`\`\`
+`,
+
+  getFormikContactForm: () => `import React from 'react';
+import { Formik, Form, Field, ErrorMessage } from 'formik';
+import * as Yup from 'yup';
+
+interface ContactFormValues {
+  name: string;
+  email: string;
+  subject: string;
+  message: string;
+}
+
+const ContactFormSchema = Yup.object().shape({
+  name: Yup.string()
+    .min(2, 'Name must be at least 2 characters')
+    .max(50, 'Name must be less than 50 characters')
+    .required('Name is required'),
+  email: Yup.string()
+    .email('Invalid email address')
+    .required('Email is required'),
+  subject: Yup.string()
+    .min(5, 'Subject must be at least 5 characters')
+    .max(100, 'Subject must be less than 100 characters')
+    .required('Subject is required'),
+  message: Yup.string()
+    .min(10, 'Message must be at least 10 characters')
+    .max(500, 'Message must be less than 500 characters')
+    .required('Message is required'),
+});
+
+export const ContactForm: React.FC = () => {
+  const initialValues: ContactFormValues = {
+    name: '',
+    email: '',
+    subject: '',
+    message: '',
+  };
+
+  const handleSubmit = (
+    values: ContactFormValues,
+    { setSubmitting, resetForm }: any
+  ) => {
+    // Simulate API call
+    setTimeout(() => {
+      console.log('Form submitted:', values);
+      alert('Form submitted successfully!');
+      resetForm();
+      setSubmitting(false);
+    }, 1000);
+  };
+
+  return (
+    <div className="form-container">
+      <h2>Contact Us</h2>
+      <Formik
+        initialValues={initialValues}
+        validationSchema={ContactFormSchema}
+        onSubmit={handleSubmit}
+      >
+        {({ isSubmitting, errors, touched }) => (
+          <Form className="contact-form">
+            <div className="form-group">
+              <label htmlFor="name">Name *</label>
+              <Field
+                type="text"
+                id="name"
+                name="name"
+                className={\`form-control \${
+                  errors.name && touched.name ? 'error' : ''
+                }\`}
+                placeholder="Enter your name"
+              />
+              <ErrorMessage
+                name="name"
+                component="div"
+                className="error-message"
+              />
+            </div>
+
+            <div className="form-group">
+              <label htmlFor="email">Email *</label>
+              <Field
+                type="email"
+                id="email"
+                name="email"
+                className={\`form-control \${
+                  errors.email && touched.email ? 'error' : ''
+                }\`}
+                placeholder="Enter your email"
+              />
+              <ErrorMessage
+                name="email"
+                component="div"
+                className="error-message"
+              />
+            </div>
+
+            <div className="form-group">
+              <label htmlFor="subject">Subject *</label>
+              <Field
+                type="text"
+                id="subject"
+                name="subject"
+                className={\`form-control \${
+                  errors.subject && touched.subject ? 'error' : ''
+                }\`}
+                placeholder="Enter subject"
+              />
+              <ErrorMessage
+                name="subject"
+                component="div"
+                className="error-message"
+              />
+            </div>
+
+            <div className="form-group">
+              <label htmlFor="message">Message *</label>
+              <Field
+                as="textarea"
+                id="message"
+                name="message"
+                rows={5}
+                className={\`form-control \${
+                  errors.message && touched.message ? 'error' : ''
+                }\`}
+                placeholder="Enter your message"
+              />
+              <ErrorMessage
+                name="message"
+                component="div"
+                className="error-message"
+              />
+            </div>
+
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className="btn-submit"
+            >
+              {isSubmitting ? 'Submitting...' : 'Submit'}
+            </button>
+          </Form>
+        )}
+      </Formik>
+    </div>
+  );
+};
+
+export default ContactForm;
+`,
+
+  getFormikLoginForm: () => `import React from 'react';
+import { Formik, Form, Field, ErrorMessage } from 'formik';
+import * as Yup from 'yup';
+
+interface LoginFormValues {
+  email: string;
+  password: string;
+  rememberMe: boolean;
+}
+
+const LoginSchema = Yup.object().shape({
+  email: Yup.string()
+    .email('Invalid email address')
+    .required('Email is required'),
+  password: Yup.string()
+    .min(8, 'Password must be at least 8 characters')
+    .required('Password is required'),
+});
+
+export const LoginForm: React.FC = () => {
+  const initialValues: LoginFormValues = {
+    email: '',
+    password: '',
+    rememberMe: false,
+  };
+
+  const handleSubmit = (
+    values: LoginFormValues,
+    { setSubmitting }: any
+  ) => {
+    // Simulate API call
+    setTimeout(() => {
+      console.log('Login submitted:', values);
+      alert('Login successful!');
+      setSubmitting(false);
+    }, 1000);
+  };
+
+  return (
+    <div className="form-container">
+      <h2>Login</h2>
+      <Formik
+        initialValues={initialValues}
+        validationSchema={LoginSchema}
+        onSubmit={handleSubmit}
+      >
+        {({ isSubmitting, errors, touched }) => (
+          <Form className="login-form">
+            <div className="form-group">
+              <label htmlFor="email">Email *</label>
+              <Field
+                type="email"
+                id="email"
+                name="email"
+                className={\`form-control \${
+                  errors.email && touched.email ? 'error' : ''
+                }\`}
+                placeholder="Enter your email"
+              />
+              <ErrorMessage
+                name="email"
+                component="div"
+                className="error-message"
+              />
+            </div>
+
+            <div className="form-group">
+              <label htmlFor="password">Password *</label>
+              <Field
+                type="password"
+                id="password"
+                name="password"
+                className={\`form-control \${
+                  errors.password && touched.password ? 'error' : ''
+                }\`}
+                placeholder="Enter your password"
+              />
+              <ErrorMessage
+                name="password"
+                component="div"
+                className="error-message"
+              />
+            </div>
+
+            <div className="form-group checkbox-group">
+              <label>
+                <Field type="checkbox" name="rememberMe" />
+                <span>Remember me</span>
+              </label>
+            </div>
+
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className="btn-submit"
+            >
+              {isSubmitting ? 'Logging in...' : 'Login'}
+            </button>
+          </Form>
+        )}
+      </Formik>
+    </div>
+  );
+};
+
+export default LoginForm;
+`,
+
+  getFormStyles: () => `.form-container {
+  max-width: 600px;
+  margin: 2rem auto;
+  padding: 2rem;
+  background: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.form-container h2 {
+  margin-bottom: 1.5rem;
+  color: #333;
+  text-align: center;
+}
+
+.contact-form,
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.form-group label {
+  font-weight: 600;
+  color: #555;
+  font-size: 0.95rem;
+}
+
+.form-control {
+  padding: 0.75rem;
+  border: 2px solid #e0e0e0;
+  border-radius: 4px;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+  font-family: inherit;
+}
+
+.form-control:focus {
+  outline: none;
+  border-color: #4CAF50;
+  box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.1);
+}
+
+.form-control.error {
+  border-color: #f44336;
+}
+
+.form-control.error:focus {
+  box-shadow: 0 0 0 3px rgba(244, 67, 54, 0.1);
+}
+
+textarea.form-control {
+  resize: vertical;
+  min-height: 100px;
+}
+
+.error-message {
+  color: #f44336;
+  font-size: 0.875rem;
+  margin-top: 0.25rem;
+}
+
+.checkbox-group {
+  flex-direction: row;
+  align-items: center;
+}
+
+.checkbox-group label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: normal;
+  cursor: pointer;
+}
+
+.checkbox-group input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+}
+
+.btn-submit {
+  padding: 0.75rem 2rem;
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.btn-submit:hover:not(:disabled) {
+  background-color: #45a049;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.btn-submit:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.btn-submit:disabled {
+  background-color: #cccccc;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+@media (max-width: 768px) {
+  .form-container {
+    padding: 1.5rem;
+    margin: 1rem;
+  }
+}
+`,
+
+  getFormikReadme: () => `# Formik Integration Guide
+
+This project includes Formik for building and managing forms with validation.
+
+## 📦 Installed Packages
+
+- **formik** - Form management library
+- **yup** - Schema validation library
+
+## 🚀 Quick Start
+
+### Basic Form Example
+
+\`\`\`tsx
+import { Formik, Form, Field, ErrorMessage } from 'formik';
+import * as Yup from 'yup';
+
+const MyForm = () => {
+  const validationSchema = Yup.object().shape({
+    email: Yup.string().email('Invalid email').required('Required'),
+    name: Yup.string().min(2, 'Too short').required('Required'),
+  });
+
+  return (
+    <Formik
+      initialValues={{ email: '', name: '' }}
+      validationSchema={validationSchema}
+      onSubmit={(values) => {
+        console.log(values);
+      }}
+    >
+      {({ isSubmitting }) => (
+        <Form>
+          <Field name="email" type="email" />
+          <ErrorMessage name="email" component="div" />
+          
+          <Field name="name" type="text" />
+          <ErrorMessage name="name" component="div" />
+          
+          <button type="submit" disabled={isSubmitting}>
+            Submit
+          </button>
+        </Form>
+      )}
+    </Formik>
+  );
+};
+\`\`\`
+
+## 📝 Example Forms Included
+
+### 1. Contact Form
+Location: \`src/components/ContactForm.tsx\`
+
+Features:
+- Name, email, subject, and message fields
+- Full validation with Yup
+- Success/error handling
+- Styled with CSS
+
+Usage:
+\`\`\`tsx
+import { ContactForm } from './components/ContactForm';
+
+function App() {
+  return <ContactForm />;
+}
+\`\`\`
+
+### 2. Login Form
+Location: \`src/components/LoginForm.tsx\`
+
+Features:
+- Email and password fields
+- Remember me checkbox
+- Form validation
+- Loading state
+
+Usage:
+\`\`\`tsx
+import { LoginForm } from './components/LoginForm';
+
+function App() {
+  return <LoginForm />;
+}
+\`\`\`
+
+## 🎨 Styling
+
+Form styles are included in \`src/styles/forms.css\`. Import in your component:
+
+\`\`\`tsx
+import '../styles/forms.css';
+\`\`\`
+
+Or include globally in \`src/main.tsx\`:
+
+\`\`\`tsx
+import './styles/forms.css';
+\`\`\`
+
+## 🔧 Advanced Usage
+
+### Custom Validation
+
+\`\`\`tsx
+const schema = Yup.object().shape({
+  password: Yup.string()
+    .min(8, 'Must be at least 8 characters')
+    .matches(/[A-Z]/, 'Must contain uppercase letter')
+    .matches(/[0-9]/, 'Must contain number')
+    .required('Required'),
+  confirmPassword: Yup.string()
+    .oneOf([Yup.ref('password')], 'Passwords must match')
+    .required('Required'),
+});
+\`\`\`
+
+### Async Validation
+
+\`\`\`tsx
+const checkEmailExists = async (email: string) => {
+  const response = await fetch(\`/api/check-email?email=\${email}\`);
+  return response.json();
+};
+
+const schema = Yup.object().shape({
+  email: Yup.string()
+    .email('Invalid email')
+    .required('Required')
+    .test('email-exists', 'Email already exists', async (value) => {
+      if (!value) return true;
+      const exists = await checkEmailExists(value);
+      return !exists;
+    }),
+});
+\`\`\`
+
+### Field Arrays (Dynamic Forms)
+
+\`\`\`tsx
+import { FieldArray } from 'formik';
+
+<Formik
+  initialValues={{ friends: [''] }}
+  onSubmit={(values) => console.log(values)}
+>
+  {({ values }) => (
+    <Form>
+      <FieldArray name="friends">
+        {({ push, remove }) => (
+          <div>
+            {values.friends.map((friend, index) => (
+              <div key={index}>
+                <Field name={\`friends.\${index}\`} />
+                <button type="button" onClick={() => remove(index)}>
+                  Remove
+                </button>
+              </div>
+            ))}
+            <button type="button" onClick={() => push('')}>
+              Add Friend
+            </button>
+          </div>
+        )}
+      </FieldArray>
+      <button type="submit">Submit</button>
+    </Form>
+  )}
+</Formik>
+\`\`\`
+
+### Custom Input Components
+
+\`\`\`tsx
+import { useField } from 'formik';
+
+const CustomInput = ({ label, ...props }) => {
+  const [field, meta] = useField(props);
+  
+  return (
+    <div>
+      <label htmlFor={props.id || props.name}>{label}</label>
+      <input {...field} {...props} />
+      {meta.touched && meta.error ? (
+        <div className="error">{meta.error}</div>
+      ) : null}
+    </div>
+  );
+};
+
+// Usage
+<Formik initialValues={{ email: '' }} onSubmit={handleSubmit}>
+  <Form>
+    <CustomInput
+      label="Email"
+      name="email"
+      type="email"
+    />
+  </Form>
+</Formik>
+\`\`\`
+
+## 📚 Common Patterns
+
+### Handling File Uploads
+
+\`\`\`tsx
+<Formik
+  initialValues={{ file: null }}
+  onSubmit={(values) => {
+    const formData = new FormData();
+    formData.append('file', values.file);
+    // Send formData to API
+  }}
+>
+  {({ setFieldValue }) => (
+    <Form>
+      <input
+        type="file"
+        name="file"
+        onChange={(event) => {
+          setFieldValue('file', event.currentTarget.files[0]);
+        }}
+      />
+      <button type="submit">Upload</button>
+    </Form>
+  )}
+</Formik>
+\`\`\`
+
+### Dependent Fields
+
+\`\`\`tsx
+<Formik
+  initialValues={{ country: '', state: '' }}
+  onSubmit={handleSubmit}
+>
+  {({ values, setFieldValue }) => (
+    <Form>
+      <Field
+        as="select"
+        name="country"
+        onChange={(e) => {
+          setFieldValue('country', e.target.value);
+          setFieldValue('state', ''); // Reset state when country changes
+        }}
+      >
+        <option value="">Select Country</option>
+        <option value="us">United States</option>
+        <option value="ca">Canada</option>
+      </Field>
+      
+      {values.country && (
+        <Field as="select" name="state">
+          <option value="">Select State</option>
+          {/* Render states based on selected country */}
+        </Field>
+      )}
+    </Form>
+  )}
+</Formik>
+\`\`\`
+
+## 🐛 Troubleshooting
+
+### Form Not Submitting
+
+- Check if validation is passing
+- Ensure \`onSubmit\` is properly defined
+- Check browser console for errors
+
+### Validation Not Working
+
+- Ensure Yup schema is properly defined
+- Check field names match between \`Field\` and validation schema
+- Verify \`validationSchema\` prop is passed to Formik
+
+### Values Not Updating
+
+- Ensure field \`name\` prop matches \`initialValues\` key
+- Check if you're using controlled vs uncontrolled inputs correctly
+- Use \`setFieldValue\` for programmatic updates
+
+## 🔗 Resources
+
+- [Formik Documentation](https://formik.org/docs/overview)
+- [Yup Validation](https://github.com/jquense/yup)
+- [Formik Examples](https://formik.org/docs/examples/basic)
+- [API Reference](https://formik.org/docs/api/formik)
+
+## 💡 Best Practices
+
+1. ✅ Always use validation schemas for consistent validation
+2. ✅ Keep forms modular - create reusable field components
+3. ✅ Handle loading and error states properly
+4. ✅ Use TypeScript for type-safe forms
+5. ✅ Implement proper error handling and user feedback
+6. ✅ Test forms thoroughly, including edge cases
+7. ✅ Consider accessibility (labels, ARIA attributes, keyboard navigation)
+
+## 🎯 Tips
+
+- Use \`validateOnChange={false}\` to validate only on blur for better UX
+- Implement debouncing for async validation to reduce API calls
+- Use \`resetForm()\` to clear form after successful submission
+- Consider using \`enableReinitialize\` for forms that depend on external data
 `
 };
 
@@ -3151,6 +3841,11 @@ const getDependenciesByFeature = (a: any) => {
       material: ["@mui/material@latest", "@emotion/react@latest", "@emotion/styled@latest"],
       bootstrap: ["bootstrap@latest", "react-bootstrap@latest"],
       bootstrapDev: ["@types/bootstrap@latest"]
+    },
+    formBuilder: {
+      formik: ["formik@latest", "yup@latest"],
+      formikDev: ["@types/yup@latest"],
+      "react-hook-form": ["react-hook-form@latest", "@hookform/resolvers@latest", "yup@latest"]
     }
   };
 
@@ -3182,6 +3877,12 @@ const getDependenciesByFeature = (a: any) => {
   } else if (a.framework === "bootstrap") {
     basePkgs.push(...featurePackages.framework.bootstrap);
     baseDevPkgs.push(...featurePackages.framework.bootstrapDev);
+  }
+  if (a.formBuilder === 'formik') {
+    basePkgs.push(...featurePackages.formBuilder.formik);
+    baseDevPkgs.push(...featurePackages.formBuilder.formikDev);
+  } else if (a.formBuilder === 'react-hook-form') {
+    basePkgs.push(...featurePackages.formBuilder["react-hook-form"]);
   }
 
   return { production: basePkgs, development: baseDevPkgs };
@@ -3399,6 +4100,109 @@ const setupCIConfig = (workspacePath: string, a: any) => {
   } catch (error) {
     console.error("❌ Failed to setup CI/CD configuration:", error.message);
     console.warn("You can add CI/CD configuration manually later");
+  }
+};
+
+const setupFormBuilder = (workspacePath: string, a: any) => {
+  if (!a.formBuilder || a.formBuilder === 'none') {
+    return;
+  }
+
+  try {
+    console.log(`\n📝 Setting up ${a.formBuilder === 'formik' ? 'Formik' : 'React Hook Form'} form builder...`);
+
+    // Detect app structure
+    const standaloneAppPath = path.join(workspacePath, "src");
+    const multiAppPath = path.join(workspacePath, "apps", a.name);
+    
+    let appPath: string;
+    let srcPath: string;
+    
+    if (fs.existsSync(standaloneAppPath)) {
+      appPath = workspacePath;
+      srcPath = standaloneAppPath;
+    } else if (fs.existsSync(multiAppPath)) {
+      appPath = multiAppPath;
+      srcPath = path.join(multiAppPath, "src");
+    } else {
+      appPath = workspacePath;
+      srcPath = path.join(workspacePath, "src");
+    }
+
+    // Install form builder dependencies
+    if (a.formBuilder === 'formik') {
+      console.log("📦 Installing Formik and Yup...");
+      installPackagesWithRetry(
+        ["formik", "yup"],
+        false,
+        workspacePath,
+        "Formik form builder packages"
+      );
+
+      // Install TypeScript types
+      installPackagesWithRetry(
+        ["@types/yup"],
+        true,
+        workspacePath,
+        "Formik TypeScript types"
+      );
+
+      // Create components directory
+      const componentsPath = path.join(srcPath, "components");
+      if (!fs.existsSync(componentsPath)) {
+        fs.mkdirSync(componentsPath, { recursive: true });
+      }
+
+      // Create Contact Form component
+      const contactFormPath = path.join(componentsPath, "ContactForm.tsx");
+      const contactFormContent = TEMPLATES.getFormikContactForm();
+      createFileWithErrorHandling(contactFormPath, contactFormContent, "Contact Form component");
+
+      // Create Login Form component
+      const loginFormPath = path.join(componentsPath, "LoginForm.tsx");
+      const loginFormContent = TEMPLATES.getFormikLoginForm();
+      createFileWithErrorHandling(loginFormPath, loginFormContent, "Login Form component");
+
+      // Create styles directory and form styles
+      const stylesPath = path.join(srcPath, "styles");
+      if (!fs.existsSync(stylesPath)) {
+        fs.mkdirSync(stylesPath, { recursive: true });
+      }
+
+      const formStylesPath = path.join(stylesPath, "forms.css");
+      const formStylesContent = TEMPLATES.getFormStyles();
+      createFileWithErrorHandling(formStylesPath, formStylesContent, "Form styles");
+
+      // Create Formik README
+      const formikReadmePath = path.join(workspacePath, "FORMIK_GUIDE.md");
+      const formikReadmeContent = TEMPLATES.getFormikReadme();
+      createFileWithErrorHandling(formikReadmePath, formikReadmeContent, "Formik documentation");
+
+      console.log("✅ Formik form builder setup completed successfully!");
+      console.log("   📝 ContactForm: src/components/ContactForm.tsx");
+      console.log("   📝 LoginForm: src/components/LoginForm.tsx");
+      console.log("   📝 Form Styles: src/styles/forms.css");
+      console.log("   📝 Documentation: FORMIK_GUIDE.md");
+      console.log("\n   Import in your components:");
+      console.log("   import { ContactForm } from './components/ContactForm';");
+      console.log("   import '../styles/forms.css';");
+    } else if (a.formBuilder === 'react-hook-form') {
+      console.log("📦 Installing React Hook Form...");
+      installPackagesWithRetry(
+        ["react-hook-form"],
+        false,
+        workspacePath,
+        "React Hook Form package"
+      );
+
+      console.log("✅ React Hook Form installed successfully!");
+      console.log("   📚 Documentation: https://react-hook-form.com/");
+      console.log("\n   Basic usage:");
+      console.log("   import { useForm } from 'react-hook-form';");
+    }
+  } catch (error) {
+    console.error("❌ Failed to setup form builder:", error.message);
+    console.warn("You can add form builder manually later");
   }
 };
 
@@ -3686,6 +4490,9 @@ export function reactAppGenerator() {
       // Setup CI/CD configuration if enabled
       setupCIConfig(workspacePath, a);
 
+      // Setup form builder if enabled
+      setupFormBuilder(workspacePath, a);
+
       console.log("\n✅ React application created successfully!\n");
       console.log("━".repeat(50));
       console.log(`📁 Workspace: ${a.workspace}`);
@@ -3701,6 +4508,7 @@ export function reactAppGenerator() {
       console.log(`🐶 Husky: ${a.husky ? "Yes" : "No"}`);
       console.log(`🐳 Docker: ${a.docker ? "Yes" : "No"}`);
       console.log(`🔄 CI/CD: ${a.ci ? "Yes (GitHub Actions & GitLab CI)" : "No"}`);
+      console.log(`📝 Form Builder: ${a.formBuilder === 'formik' ? 'Formik' : a.formBuilder === 'react-hook-form' ? 'React Hook Form' : 'None'}`);
       console.log("━".repeat(50));
       console.log("\nTo get started:\n");
       console.log(`  cd ${a.workspace}`);
@@ -3978,6 +4786,13 @@ function getArgs() {
         default: false,
       },
       {
+        name: "formBuilder",
+        message: "Add form builder?",
+        type: "list",
+        choices: ["none", "formik", "react-hook-form"],
+        default: "none",
+      },
+      {
         name: "seo",
         message: "Would you like to enable SEO features? (Meta tags, Open Graph, GA4/GTM, Sitemap)",
         type: "confirm",
@@ -4242,13 +5057,16 @@ function setupAuthentication(workspacePath: string, a: any) {
 
     let appPath: string;
     let srcPath: string;
+    let appSrcPath: string;
 
     if (fs.existsSync(standaloneAppPath)) {
       appPath = workspacePath;
       srcPath = standaloneAppPath;
+      appSrcPath = path.join(srcPath, "app");
     } else if (fs.existsSync(multiAppPath)) {
       appPath = multiAppPath;
       srcPath = path.join(appPath, "src");
+      appSrcPath = path.join(srcPath, "app");
     } else {
       console.warn("⚠️  Could not detect app structure for auth setup");
       return;
@@ -4258,8 +5076,8 @@ function setupAuthentication(workspacePath: string, a: any) {
     const configPath = path.join(srcPath, "config");
     fs.mkdirSync(configPath, { recursive: true });
 
-    // Create components directory
-    const componentsPath = path.join(srcPath, "components");
+    // Create components directory inside app folder (src/app/components)
+    const componentsPath = path.join(appSrcPath, "components");
     fs.mkdirSync(componentsPath, { recursive: true });
 
     if (a.auth === 'msal') {
@@ -4276,10 +5094,15 @@ function setupAuthentication(workspacePath: string, a: any) {
       // Update main.tsx to wrap with MsalProvider
       const mainTsxPath = path.join(srcPath, "main.tsx");
       if (fs.existsSync(mainTsxPath)) {
+        const routerImport = a.routing ? "import { BrowserRouter as Router } from 'react-router-dom';" : "";
+        const routerOpen = a.routing ? "<Router>" : "";
+        const routerClose = a.routing ? "</Router>" : "";
+        
         const updatedMain = `import { StrictMode } from 'react';
 import * as ReactDOM from 'react-dom/client';
 import { MsalProvider } from '@azure/msal-react';
 import { PublicClientApplication } from '@azure/msal-browser';
+${routerImport}
 import { msalConfig } from './config/msalConfig';
 import App from './app/app';
 
@@ -4291,9 +5114,11 @@ const root = ReactDOM.createRoot(
 
 root.render(
   <StrictMode>
-    <MsalProvider instance={msalInstance}>
-      <App />
-    </MsalProvider>
+    ${routerOpen}
+      <MsalProvider instance={msalInstance}>
+        <App />
+      </MsalProvider>
+    ${routerClose}
   </StrictMode>
 );`;
         fs.writeFileSync(mainTsxPath, updatedMain);
@@ -4318,11 +5143,15 @@ root.render(
       // Update main.tsx to wrap with Okta Security
       const mainTsxPath = path.join(srcPath, "main.tsx");
       if (fs.existsSync(mainTsxPath)) {
+        const routerImport = a.routing ? "import { BrowserRouter as Router } from 'react-router-dom';" : "";
+        const routerOpen = a.routing ? "<Router>" : "";
+        const routerClose = a.routing ? "</Router>" : "";
+        
         const updatedMain = `import { StrictMode } from 'react';
 import * as ReactDOM from 'react-dom/client';
 import { OktaAuth } from '@okta/okta-auth-js';
 import { Security } from '@okta/okta-react';
-import { BrowserRouter as Router } from 'react-router-dom';
+${routerImport}
 import oktaConfig from './config/oktaConfig';
 import App from './app/app';
 
@@ -4338,11 +5167,11 @@ const root = ReactDOM.createRoot(
 
 root.render(
   <StrictMode>
-    <Router>
+    ${routerOpen}
       <Security oktaAuth={oktaAuth} restoreOriginalUri={restoreOriginalUri}>
         <App />
       </Security>
-    </Router>
+    ${routerClose}
   </StrictMode>
 );`;
         fs.writeFileSync(mainTsxPath, updatedMain);
@@ -4579,6 +5408,9 @@ function applyPTGCustomizations(workspacePath: string, a: any) {
 
     // Setup CI/CD configuration if enabled
     setupCIConfig(workspacePath, a);
+
+    // Setup form builder if enabled
+    setupFormBuilder(workspacePath, a);
 
     // Setup authentication if MSAL or Okta selected
     setupAuthentication(workspacePath, a);
