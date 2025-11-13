@@ -2392,9 +2392,9 @@ export default OktaLoginButton;
 
 on:
   push:
-    branches: [ main, develop ]
+    branches: [ main, master, develop ]
   pull_request:
-    branches: [ main, develop ]
+    branches: [ main, master, develop ]
 
 jobs:
   build-and-test:
@@ -2402,7 +2402,7 @@ jobs:
     
     strategy:
       matrix:
-        node-version: [18.x, 20.x]
+        node-version: [20.x]
     
     steps:
     - name: Checkout code
@@ -2430,7 +2430,6 @@ jobs:
     
     - name: Upload build artifacts
       uses: actions/upload-artifact@v4
-      if: matrix.node-version == '20.x'
       with:
         name: build-output
         path: dist/
@@ -2477,7 +2476,7 @@ jobs:
   docker-build:
     runs-on: ubuntu-latest
     needs: build-and-test
-    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop')
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master' || github.ref == 'refs/heads/develop')
     
     steps:
     - name: Checkout code
@@ -2584,6 +2583,7 @@ test:e2e:
   allow_failure: true
   only:
     - main
+    - master
     - develop
     - merge_requests
 
@@ -2643,6 +2643,7 @@ docker:build:
     - echo "Docker image built successfully"
   only:
     - main
+    - master
     - develop
   allow_failure: true
 
@@ -2668,6 +2669,7 @@ docker:test:
     - echo "Docker container tested successfully"
   only:
     - main
+    - master
     - develop
   allow_failure: true
 `,

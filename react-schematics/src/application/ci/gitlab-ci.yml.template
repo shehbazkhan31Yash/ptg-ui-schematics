@@ -78,6 +78,7 @@ test:e2e:
   allow_failure: true
   only:
     - main
+    - master
     - develop
     - merge_requests
 
@@ -141,6 +142,7 @@ docker:build:
     - echo "Docker image built successfully"
   only:
     - main
+    - master
     - develop
   allow_failure: true
 
@@ -167,5 +169,6 @@ docker:test:
     - echo "Docker container tested successfully"
   only:
     - main
+    - master
     - develop
   allow_failure: true
