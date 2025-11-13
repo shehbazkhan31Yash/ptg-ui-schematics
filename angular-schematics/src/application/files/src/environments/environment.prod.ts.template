@@ -1,0 +1,15 @@
+export const environment = {
+  production: true<% if (authentication && authentication !== 'none') { %>,
+  auth: {
+    <% if (authentication === 'msal') { %>
+    clientId: 'YOUR_CLIENT_ID',
+    tenantId: 'YOUR_TENANT_ID'
+    <% } else if (authentication === 'okta') { %>
+    oktaDomain: 'YOUR_OKTA_DOMAIN',
+    oktaClientId: 'YOUR_OKTA_CLIENT_ID'
+    <% } else if (authentication === 'custom') { %>
+    apiUrl: 'https://dummyjson.com'
+    <% } %>
+  }<% } %><% if (seoType && seoType !== 'none') { %>,
+  googleAnalyticsId: 'GA_MEASUREMENT_ID'<% } %>
+};

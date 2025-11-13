@@ -5,7 +5,9 @@ import { TranslateService } from '@ngx-translate/core';
 <% if (authentication && authentication !== 'none') { %>
 import { AuthService } from '../core/services/auth.service';
 <% } %>
-
+<% if (seoType && seoType !== 'none') { %>
+declare let gtag: Function;
+<% } %>
 
 interface User {
   id: number;
@@ -60,6 +62,37 @@ export class DemoComponent {
     if (this.translate) {
       this.translate.use(language);
     }
+  }
+  <% } %>
+
+  <% if (seoType && seoType !== 'none') { %>
+  trackButtonClick(): void {
+    console.log('Button click tracked');
+    // Track button click event
+    if (typeof gtag !== 'undefined') {
+      gtag('event', 'click', {
+        event_category: 'demo',
+        event_label: 'button_click'
+      });
+    }
+  }
+
+  trackCustomEvent(): void {
+    console.log('Custom event tracked');
+    // Track custom event
+    if (typeof gtag !== 'undefined') {
+      gtag('event', 'demo_interaction', {
+        event_category: 'engagement',
+        event_label: 'custom_demo'
+      });
+    }
+  }
+
+  updateSEO(): void {
+    console.log('SEO meta tags updated');
+    // Simulate SEO update
+    const newTitle = 'Updated Demo Page - ' + new Date().toLocaleTimeString();
+    document.title = newTitle;
   }
   <% } %>
 
