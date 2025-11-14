@@ -84,6 +84,8 @@ const HomePage = () => {
             ${a.linter !== 'none' ? '<li>✅ ESLint Linting</li>' : ''}
             ${a.prettier ? '<li>✅ Prettier Formatting</li>' : ''}
             ${a.husky ? '<li>✅ Husky Git Hooks</li>' : ''}
+            ${a.formBuilder === 'formik' ? '<li>✅ Formik Form Management</li>' : ''}
+            ${a.formBuilder === 'react-hook-form' ? '<li>✅ React Hook Form</li>' : ''}
           </ul>
         </div>
 
@@ -234,6 +236,42 @@ const FeaturesPage = () => {
           <div className="usage-example">
             <h3>Zustand State Management</h3>
             <code>const &#123; count, increment &#125; = useAppStore();<br/>&lt;button onClick=&#123;increment&#125;&gt;+&lt;/button&gt;</code>
+          </div>` : ''}
+          
+          ${a.formBuilder === 'formik' ? `
+          <div className="usage-example">
+            <h3>📝 Formik Form Management</h3>
+            <div className="setup-step">Your app includes Formik with Yup validation</div>
+            <div className="setup-step">
+              <strong>Pre-built components:</strong> ContactForm and LoginForm are ready to use
+            </div>
+            <div className="setup-step">
+              <strong>Import and use:</strong>
+            </div>
+            <code>import &#123; ContactForm &#125; from './components/ContactForm';<br/>import '../styles/forms.css';<br/><br/>&lt;ContactForm /&gt;</code>
+            <div className="setup-step">
+              <strong>Custom form example:</strong>
+            </div>
+            <code>import &#123; Formik, Form, Field &#125; from 'formik';<br/>import * as Yup from 'yup';<br/><br/>const schema = Yup.object(&#123;<br/>  email: Yup.string().email().required()<br/>&#125;);<br/><br/>&lt;Formik initialValues=&#123;&#123; email: '' &#125;&#125; validationSchema=&#123;schema&#125;&gt;<br/>  &lt;Form&gt;<br/>    &lt;Field name="email" type="email" /&gt;<br/>  &lt;/Form&gt;<br/>&lt;/Formik&gt;</code>
+            <div className="setup-step">
+              📚 <strong>Documentation:</strong> See <code>FORMIK_GUIDE.md</code> for complete examples
+            </div>
+            <div className="setup-step">
+              ✨ <strong>Try it:</strong> Visit the <a href="/demo">Demo page</a> to see live forms!
+            </div>
+          </div>` : ''}
+          
+          ${a.formBuilder === 'react-hook-form' ? `
+          <div className="usage-example">
+            <h3>📝 React Hook Form</h3>
+            <div className="setup-step">Your app includes React Hook Form for performant form management</div>
+            <div className="setup-step">
+              <strong>Basic usage:</strong>
+            </div>
+            <code>import &#123; useForm &#125; from 'react-hook-form';<br/><br/>const &#123; register, handleSubmit, formState: &#123; errors &#125; &#125; = useForm();<br/><br/>&lt;form onSubmit=&#123;handleSubmit(onSubmit)&#125;&gt;<br/>  &lt;input &#123;...register('email', &#123; required: true &#125;)&#125; /&gt;<br/>  &#123;errors.email && &lt;span&gt;Required&lt;/span&gt;&#125;<br/>&lt;/form&gt;</code>
+            <div className="setup-step">
+              📚 <strong>Documentation:</strong> <a href="https://react-hook-form.com" target="_blank">react-hook-form.com</a>
+            </div>
           </div>` : ''}
           
           <div className="usage-example">
@@ -400,6 +438,51 @@ const DemoPage = () => {
               <button onClick={decrement}>-</button>
               <button onClick={increment}>+</button>
               <button onClick={reset}>Reset</button>
+            </div>
+          </div>
+        </section>` : ''}
+
+        ${a.formBuilder === 'formik' ? `
+        <section className="demo-section">
+          <h2>📝 Formik Forms Demo</h2>
+          <div className="demo-examples">
+            <div className="form-demo">
+              <h3>Contact Form Example</h3>
+              <p>Pre-built form with validation using Formik and Yup:</p>
+              <div className="form-info">
+                <p>✅ <strong>Features:</strong></p>
+                <ul>
+                  <li>Email validation</li>
+                  <li>Required field validation</li>
+                  <li>Character limits (name: 50, subject: 100, message: 500)</li>
+                  <li>Real-time error messages</li>
+                  <li>Loading state handling</li>
+                </ul>
+                <p>📚 Check <code>FORMIK_GUIDE.md</code> for more examples and patterns</p>
+              </div>
+            </div>
+          </div>
+        </section>` : ''}
+
+        ${a.formBuilder === 'react-hook-form' ? `
+        <section className="demo-section">
+          <h2>📝 React Hook Form Demo</h2>
+          <div className="demo-examples">
+            <div className="form-demo">
+              <h3>Form Management</h3>
+              <p>React Hook Form provides performant, flexible form validation:</p>
+              <div className="form-info">
+                <p>✅ <strong>Features:</strong></p>
+                <ul>
+                  <li>Minimal re-renders</li>
+                  <li>Built-in validation</li>
+                  <li>Easy integration with UI libraries</li>
+                  <li>TypeScript support</li>
+                </ul>
+                <p>📝 <strong>Quick Start:</strong></p>
+                <code>const &#123; register, handleSubmit &#125; = useForm();<br/>&lt;input &#123;...register('email')&#125; /&gt;</code>
+                <p>📚 Visit <a href="https://react-hook-form.com" target="_blank">react-hook-form.com</a> for documentation</p>
+              </div>
             </div>
           </div>
         </section>` : ''}
