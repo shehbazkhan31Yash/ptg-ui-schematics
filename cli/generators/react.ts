@@ -4299,6 +4299,759 @@ const CustomInput = ({ label, ...props }) => {
 - Implement debouncing for async validation to reduce API calls
 - Use \`resetForm()\` to clear form after successful submission
 - Consider using \`enableReinitialize\` for forms that depend on external data
+`,
+
+  // React Hook Form Templates
+  getReactHookFormContactForm: () => `import React, { useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { yupResolver } from '@hookform/resolvers/yup';
+import * as Yup from 'yup';
+
+interface ContactFormValues {
+  name: string;
+  email: string;
+  subject: string;
+  message: string;
+}
+
+const contactFormSchema = Yup.object().shape({
+  name: Yup.string()
+    .min(2, 'Name must be at least 2 characters')
+    .max(50, 'Name must be less than 50 characters')
+    .required('Name is required'),
+  email: Yup.string()
+    .email('Invalid email address')
+    .required('Email is required'),
+  subject: Yup.string()
+    .min(5, 'Subject must be at least 5 characters')
+    .max(100, 'Subject must be less than 100 characters')
+    .required('Subject is required'),
+  message: Yup.string()
+    .min(10, 'Message must be at least 10 characters')
+    .max(500, 'Message must be less than 500 characters')
+    .required('Message is required'),
+});
+
+export const ContactForm: React.FC = () => {
+  const [isSubmitted, setIsSubmitted] = useState(false);
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+    reset,
+  } = useForm<ContactFormValues>({
+    resolver: yupResolver(contactFormSchema),
+    mode: 'onBlur',
+  });
+
+  const onSubmit = async (data: ContactFormValues) => {
+    try {
+      // Simulate API call
+      await new Promise((resolve) => setTimeout(resolve, 1500));
+      
+      console.log('Form submitted:', data);
+      setIsSubmitted(true);
+      reset();
+      
+      // Hide success message after 5 seconds
+      setTimeout(() => setIsSubmitted(false), 5000);
+    } catch (error) {
+      console.error('Form submission error:', error);
+      alert('Failed to send message. Please try again.');
+    }
+  };
+
+  return (
+    <div className="form-container">
+      <h2>Contact Us</h2>
+      
+      {isSubmitted && (
+        <div className="success-message">
+          ✓ Message sent successfully! We'll get back to you soon.
+        </div>
+      )}
+
+      <form onSubmit={handleSubmit(onSubmit)} className="contact-form">
+        <div className="form-group">
+          <label htmlFor="name">Name *</label>
+          <input
+            id="name"
+            type="text"
+            className={\`form-control \${errors.name ? 'error' : ''}\`}
+            placeholder="Enter your name"
+            {...register('name')}
+          />
+          {errors.name && (
+            <span className="error-message">{errors.name.message}</span>
+          )}
+        </div>
+
+        <div className="form-group">
+          <label htmlFor="email">Email *</label>
+          <input
+            id="email"
+            type="email"
+            className={\`form-control \${errors.email ? 'error' : ''}\`}
+            placeholder="your.email@example.com"
+            {...register('email')}
+          />
+          {errors.email && (
+            <span className="error-message">{errors.email.message}</span>
+          )}
+        </div>
+
+        <div className="form-group">
+          <label htmlFor="subject">Subject *</label>
+          <input
+            id="subject"
+            type="text"
+            className={\`form-control \${errors.subject ? 'error' : ''}\`}
+            placeholder="What is this about?"
+            {...register('subject')}
+          />
+          {errors.subject && (
+            <span className="error-message">{errors.subject.message}</span>
+          )}
+        </div>
+
+        <div className="form-group">
+          <label htmlFor="message">Message *</label>
+          <textarea
+            id="message"
+            className={\`form-control \${errors.message ? 'error' : ''}\`}
+            placeholder="Tell us more..."
+            rows={5}
+            {...register('message')}
+          />
+          {errors.message && (
+            <span className="error-message">{errors.message.message}</span>
+          )}
+        </div>
+
+        <button
+          type="submit"
+          className="btn-submit"
+          disabled={isSubmitting}
+        >
+          {isSubmitting ? 'Sending...' : 'Send Message'}
+        </button>
+      </form>
+    </div>
+  );
+};
+
+export default ContactForm;
+`,
+
+  getReactHookFormLoginForm: () => `import React, { useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { yupResolver } from '@hookform/resolvers/yup';
+import * as Yup from 'yup';
+
+interface LoginFormValues {
+  email: string;
+  password: string;
+  rememberMe: boolean;
+}
+
+const loginFormSchema = Yup.object().shape({
+  email: Yup.string()
+    .email('Invalid email address')
+    .required('Email is required'),
+  password: Yup.string()
+    .min(6, 'Password must be at least 6 characters')
+    .required('Password is required'),
+  rememberMe: Yup.boolean(),
+});
+
+export const LoginForm: React.FC = () => {
+  const [showPassword, setShowPassword] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false);
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+    reset,
+  } = useForm<LoginFormValues>({
+    resolver: yupResolver(loginFormSchema),
+    defaultValues: {
+      email: '',
+      password: '',
+      rememberMe: false,
+    },
+    mode: 'onBlur',
+  });
+
+  const onSubmit = async (data: LoginFormValues) => {
+    try {
+      // Simulate API call
+      await new Promise((resolve) => setTimeout(resolve, 1500));
+      
+      console.log('Login submitted:', { ...data, password: '***' });
+      setIsSuccess(true);
+      
+      // Reset success message after 5 seconds
+      setTimeout(() => {
+        setIsSuccess(false);
+        reset();
+      }, 5000);
+    } catch (error) {
+      console.error('Login error:', error);
+      alert('Login failed. Please try again.');
+    }
+  };
+
+  return (
+    <div className="form-container">
+      <h2>Login</h2>
+      
+      {isSuccess && (
+        <div className="success-message">
+          ✓ Login successful! Redirecting...
+        </div>
+      )}
+
+      <form onSubmit={handleSubmit(onSubmit)} className="login-form">
+        <div className="form-group">
+          <label htmlFor="email">Email *</label>
+          <input
+            id="email"
+            type="email"
+            className={\`form-control \${errors.email ? 'error' : ''}\`}
+            placeholder="your.email@example.com"
+            autoComplete="email"
+            {...register('email')}
+          />
+          {errors.email && (
+            <span className="error-message">{errors.email.message}</span>
+          )}
+        </div>
+
+        <div className="form-group">
+          <label htmlFor="password">Password *</label>
+          <div style={{ position: 'relative' }}>
+            <input
+              id="password"
+              type={showPassword ? 'text' : 'password'}
+              className={\`form-control \${errors.password ? 'error' : ''}\`}
+              placeholder="Enter your password"
+              autoComplete="current-password"
+              {...register('password')}
+            />
+            <button
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              style={{
+                position: 'absolute',
+                right: '10px',
+                top: '50%',
+                transform: 'translateY(-50%)',
+                background: 'none',
+                border: 'none',
+                cursor: 'pointer',
+                fontSize: '0.9rem',
+                color: '#667eea',
+              }}
+            >
+              {showPassword ? 'Hide' : 'Show'}
+            </button>
+          </div>
+          {errors.password && (
+            <span className="error-message">{errors.password.message}</span>
+          )}
+        </div>
+
+        <div className="form-group checkbox-group">
+          <label htmlFor="rememberMe">
+            <input
+              id="rememberMe"
+              type="checkbox"
+              {...register('rememberMe')}
+            />
+            Remember me
+          </label>
+        </div>
+
+        <button
+          type="submit"
+          className="btn-submit"
+          disabled={isSubmitting}
+        >
+          {isSubmitting ? 'Logging in...' : 'Login'}
+        </button>
+      </form>
+    </div>
+  );
+};
+
+export default LoginForm;
+`,
+
+  getReactHookFormReadme: () => `# React Hook Form Integration Guide
+
+This project includes React Hook Form for building performant, flexible forms with validation.
+
+## 📦 Installed Packages
+
+- **react-hook-form** - Performant form management library
+- **@hookform/resolvers** - Validation schema resolvers
+- **yup** - Schema validation library
+
+## 🚀 Quick Start
+
+### Basic Form Example
+
+\`\`\`tsx
+import { useForm } from 'react-hook-form';
+
+interface FormValues {
+  email: string;
+  name: string;
+}
+
+const MyForm = () => {
+  const { register, handleSubmit, formState: { errors } } = useForm<FormValues>();
+
+  const onSubmit = (data: FormValues) => {
+    console.log(data);
+  };
+
+  return (
+    <form onSubmit={handleSubmit(onSubmit)}>
+      <input {...register('email', { required: 'Email is required' })} />
+      {errors.email && <span>{errors.email.message}</span>}
+      
+      <input {...register('name', { required: 'Name is required' })} />
+      {errors.name && <span>{errors.name.message}</span>}
+      
+      <button type="submit">Submit</button>
+    </form>
+  );
+};
+\`\`\`
+
+## 📝 Example Forms Included
+
+### 1. Contact Form
+Location: \`src/components/ContactForm.tsx\`
+
+Features:
+- Name, email, subject, and message fields
+- Yup validation with @hookform/resolvers
+- Success/error handling
+- Modern styled design
+
+Usage:
+\`\`\`tsx
+import { ContactForm } from './components/ContactForm';
+
+function App() {
+  return <ContactForm />;
+}
+\`\`\`
+
+### 2. Login Form
+Location: \`src/components/LoginForm.tsx\`
+
+Features:
+- Email and password fields
+- "Remember me" checkbox
+- Show/hide password toggle
+- Yup validation
+- Loading states
+
+Usage:
+\`\`\`tsx
+import { LoginForm } from './components/LoginForm';
+
+function App() {
+  return <LoginForm />;
+}
+\`\`\`
+
+## 🎨 Styling
+
+Form styles are included in \`src/styles/forms.[css|scss|less]\` (based on your chosen style). Import in your component:
+
+\`\`\`tsx
+// For CSS
+import '../styles/forms.css';
+
+// For SCSS
+import '../styles/forms.scss';
+
+// For LESS
+import '../styles/forms.less';
+\`\`\`
+
+Or include globally in \`src/main.tsx\`:
+
+\`\`\`tsx
+import './styles/forms.css'; // or .scss, .less
+\`\`\`
+
+The styles include:
+- Modern gradient design with purple theme
+- Smooth animations and transitions
+- Focus states with shadow effects
+- Error state styling with warning icons
+- Responsive design for mobile devices
+- Accessible form controls
+
+## 🔧 Advanced Usage
+
+### With Yup Validation
+
+\`\`\`tsx
+import { useForm } from 'react-hook-form';
+import { yupResolver } from '@hookform/resolvers/yup';
+import * as Yup from 'yup';
+
+const schema = Yup.object().shape({
+  email: Yup.string().email('Invalid email').required('Required'),
+  password: Yup.string()
+    .min(8, 'Must be at least 8 characters')
+    .matches(/[A-Z]/, 'Must contain uppercase')
+    .matches(/[0-9]/, 'Must contain number')
+    .required('Required'),
+});
+
+const MyForm = () => {
+  const { register, handleSubmit, formState: { errors } } = useForm({
+    resolver: yupResolver(schema),
+  });
+
+  return (
+    <form onSubmit={handleSubmit(onSubmit)}>
+      <input {...register('email')} />
+      {errors.email && <span>{errors.email.message}</span>}
+      
+      <input type="password" {...register('password')} />
+      {errors.password && <span>{errors.password.message}</span>}
+      
+      <button type="submit">Submit</button>
+    </form>
+  );
+};
+\`\`\`
+
+### Async Validation
+
+\`\`\`tsx
+const { register } = useForm();
+
+<input
+  {...register('username', {
+    validate: async (value) => {
+      const response = await fetch(\`/api/check-username?username=\${value}\`);
+      const data = await response.json();
+      return data.available || 'Username already taken';
+    }
+  })}
+/>
+\`\`\`
+
+### Watch Field Values
+
+\`\`\`tsx
+const { register, watch } = useForm();
+const watchedEmail = watch('email');
+
+<div>Email: {watchedEmail}</div>
+\`\`\`
+
+### Conditional Fields
+
+\`\`\`tsx
+const { register, watch } = useForm();
+const watchShowAddress = watch('showAddress');
+
+<input type="checkbox" {...register('showAddress')} />
+
+{watchShowAddress && (
+  <input {...register('address')} placeholder="Address" />
+)}
+\`\`\`
+
+### Reset Form
+
+\`\`\`tsx
+const { register, handleSubmit, reset } = useForm();
+
+const onSubmit = (data) => {
+  console.log(data);
+  reset(); // Reset form to initial values
+};
+\`\`\`
+
+### Set Field Values Programmatically
+
+\`\`\`tsx
+const { register, setValue } = useForm();
+
+<button onClick={() => setValue('email', 'test@example.com')}>
+  Fill Email
+</button>
+\`\`\`
+
+## 📱 Form Arrays (Dynamic Fields)
+
+\`\`\`tsx
+import { useForm, useFieldArray } from 'react-hook-form';
+
+const MyForm = () => {
+  const { register, control, handleSubmit } = useForm({
+    defaultValues: {
+      items: [{ name: '' }]
+    }
+  });
+
+  const { fields, append, remove } = useFieldArray({
+    control,
+    name: 'items'
+  });
+
+  return (
+    <form onSubmit={handleSubmit(onSubmit)}>
+      {fields.map((field, index) => (
+        <div key={field.id}>
+          <input {...register(\`items.\${index}.name\`)} />
+          <button type="button" onClick={() => remove(index)}>
+            Remove
+          </button>
+        </div>
+      ))}
+      <button type="button" onClick={() => append({ name: '' })}>
+        Add Item
+      </button>
+      <button type="submit">Submit</button>
+    </form>
+  );
+};
+\`\`\`
+
+## 🎯 Mode Options
+
+Control when validation occurs:
+
+\`\`\`tsx
+useForm({
+  mode: 'onBlur',      // Validate on blur (recommended)
+  mode: 'onChange',    // Validate on every change
+  mode: 'onSubmit',    // Validate only on submit (default)
+  mode: 'onTouched',   // Validate on first blur, then on every change
+  mode: 'all'          // Validate on both blur and change
+});
+\`\`\`
+
+## 🔄 Integration with APIs
+
+### POST Request Example
+
+\`\`\`tsx
+const onSubmit = async (data: FormValues) => {
+  try {
+    const response = await fetch('/api/submit', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data)
+    });
+    
+    if (!response.ok) throw new Error('Submission failed');
+    
+    const result = await response.json();
+    console.log('Success:', result);
+    reset();
+  } catch (error) {
+    console.error('Error:', error);
+  }
+};
+\`\`\`
+
+### With Axios
+
+\`\`\`tsx
+import axios from 'axios';
+
+const onSubmit = async (data: FormValues) => {
+  try {
+    const response = await axios.post('/api/submit', data);
+    console.log('Success:', response.data);
+    reset();
+  } catch (error) {
+    console.error('Error:', error);
+  }
+};
+\`\`\`
+
+## ✅ Testing
+
+### With React Testing Library
+
+\`\`\`tsx
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { ContactForm } from './ContactForm';
+
+describe('ContactForm', () => {
+  it('submits form with valid data', async () => {
+    render(<ContactForm />);
+    
+    fireEvent.change(screen.getByLabelText(/name/i), {
+      target: { value: 'John Doe' }
+    });
+    fireEvent.change(screen.getByLabelText(/email/i), {
+      target: { value: 'john@example.com' }
+    });
+    
+    fireEvent.click(screen.getByRole('button', { name: /submit/i }));
+    
+    await waitFor(() => {
+      expect(screen.getByText(/success/i)).toBeInTheDocument();
+    });
+  });
+
+  it('shows validation errors', async () => {
+    render(<ContactForm />);
+    
+    fireEvent.click(screen.getByRole('button', { name: /submit/i }));
+    
+    await waitFor(() => {
+      expect(screen.getByText(/name is required/i)).toBeInTheDocument();
+    });
+  });
+});
+\`\`\`
+
+## 🎨 Custom Styling
+
+Override default styles:
+
+\`\`\`css
+.form-control {
+  background-color: #your-color;
+  border-color: #your-border;
+}
+
+.btn-submit {
+  background: linear-gradient(135deg, #your-start, #your-end);
+}
+\`\`\`
+
+## 🐛 Troubleshooting
+
+### Form Not Submitting
+
+**Problem:** Form doesn't submit when button is clicked
+
+**Solution:** Ensure button has \`type="submit"\` and form has \`onSubmit={handleSubmit(onSubmit)}\`
+
+### Validation Not Working
+
+**Problem:** Validation rules not triggering
+
+**Solution:** Check that you're using the correct mode and validation rules are properly defined
+
+### TypeScript Errors
+
+**Problem:** Type errors with form values
+
+**Solution:** Define proper interfaces:
+
+\`\`\`tsx
+interface FormValues {
+  email: string;
+  password: string;
+}
+
+const { register } = useForm<FormValues>();
+\`\`\`
+
+### Controlled Components
+
+**Problem:** Need controlled inputs
+
+**Solution:** Use \`Controller\` component:
+
+\`\`\`tsx
+import { Controller, useForm } from 'react-hook-form';
+
+<Controller
+  name="myField"
+  control={control}
+  render={({ field }) => <input {...field} />}
+/>
+\`\`\`
+
+## 📚 Resources
+
+- **Official Documentation**: https://react-hook-form.com/
+- **API Reference**: https://react-hook-form.com/api
+- **Examples**: https://react-hook-form.com/form-builder
+- **DevTools**: https://react-hook-form.com/dev-tools
+
+## ⚡ Performance Tips
+
+1. ✅ Use \`mode: 'onBlur'\` for better performance
+2. ✅ Avoid using \`watch()\` excessively
+3. ✅ Use \`useFieldArray\` for dynamic fields
+4. ✅ Leverage uncontrolled components (default)
+5. ✅ Use \`shouldUnregister: false\` for conditional fields
+
+## 🎯 Best Practices
+
+1. ✅ Always define TypeScript interfaces for form values
+2. ✅ Use Yup or Zod for complex validation
+3. ✅ Handle loading and error states properly
+4. ✅ Provide clear error messages
+5. ✅ Test forms thoroughly
+6. ✅ Consider accessibility (labels, ARIA attributes)
+7. ✅ Use \`reset()\` after successful submission
+
+## 🎓 Migration from Formik
+
+### Formik
+\`\`\`tsx
+<Formik
+  initialValues={{ email: '' }}
+  onSubmit={handleSubmit}
+  validationSchema={schema}
+>
+  {({ errors, touched }) => (
+    <Form>
+      <Field name="email" />
+      <ErrorMessage name="email" />
+    </Form>
+  )}
+</Formik>
+\`\`\`
+
+### React Hook Form
+\`\`\`tsx
+const { register, handleSubmit, formState: { errors } } = useForm({
+  defaultValues: { email: '' },
+  resolver: yupResolver(schema)
+});
+
+<form onSubmit={handleSubmit(onSubmit)}>
+  <input {...register('email')} />
+  {errors.email && <span>{errors.email.message}</span>}
+</form>
+\`\`\`
+
+## 🎉 Why React Hook Form?
+
+- ⚡ **Performance**: Minimal re-renders
+- 📦 **Bundle Size**: ~9KB (vs Formik ~15KB)
+- 🎯 **DX**: Simple API, less boilerplate
+- 🔧 **Flexible**: Works with any UI library
+- ✅ **Validation**: Built-in + external schema support
+- 📱 **React Native**: Full support
+
+---
+
+**Happy Coding!** 🚀
 `
 };
 
@@ -4843,18 +5596,64 @@ const setupFormBuilder = (workspacePath: string, a: any) => {
       console.log("   import { ContactForm } from './components/ContactForm';");
       console.log(`   import '../styles/forms.${styleExt}';`);
     } else if (a.formBuilder === 'react-hook-form') {
-      console.log("📦 Installing React Hook Form...");
+      console.log("📦 Installing React Hook Form packages...");
+      
+      // Install React Hook Form and dependencies
       installPackagesWithRetry(
-        ["react-hook-form"],
+        ["react-hook-form", "@hookform/resolvers", "yup"],
         false,
         workspacePath,
-        "React Hook Form package"
+        "React Hook Form packages"
       );
 
-      console.log("✅ React Hook Form installed successfully!");
-      console.log("   📚 Documentation: https://react-hook-form.com/");
-      console.log("\n   Basic usage:");
-      console.log("   import { useForm } from 'react-hook-form';");
+      // Install TypeScript types
+      installPackagesWithRetry(
+        ["@types/yup"],
+        true,
+        workspacePath,
+        "React Hook Form TypeScript types"
+      );
+
+      // Create components directory
+      const componentsPath = path.join(srcPath, "components");
+      if (!fs.existsSync(componentsPath)) {
+        fs.mkdirSync(componentsPath, { recursive: true });
+      }
+
+      // Create Contact Form component
+      const contactFormPath = path.join(componentsPath, "ContactForm.tsx");
+      const contactFormContent = TEMPLATES.getReactHookFormContactForm();
+      createFileWithErrorHandling(contactFormPath, contactFormContent, "Contact Form component (React Hook Form)");
+
+      // Create Login Form component
+      const loginFormPath = path.join(componentsPath, "LoginForm.tsx");
+      const loginFormContent = TEMPLATES.getReactHookFormLoginForm();
+      createFileWithErrorHandling(loginFormPath, loginFormContent, "Login Form component (React Hook Form)");
+
+      // Create styles directory and form styles (reuse the same styles as Formik)
+      const stylesPath = path.join(srcPath, "styles");
+      if (!fs.existsSync(stylesPath)) {
+        fs.mkdirSync(stylesPath, { recursive: true });
+      }
+
+      const styleExt = a.style === 'scss' ? 'scss' : a.style === 'less' ? 'less' : 'css';
+      const formStylesPath = path.join(stylesPath, `forms.${styleExt}`);
+      const formStylesContent = TEMPLATES.getFormStyles(a.style);
+      createFileWithErrorHandling(formStylesPath, formStylesContent, "Form styles");
+
+      // Create React Hook Form README
+      const rhfReadmePath = path.join(workspacePath, "REACT_HOOK_FORM_GUIDE.md");
+      const rhfReadmeContent = TEMPLATES.getReactHookFormReadme();
+      createFileWithErrorHandling(rhfReadmePath, rhfReadmeContent, "React Hook Form documentation");
+
+      console.log("✅ React Hook Form setup completed successfully!");
+      console.log("   📝 ContactForm: src/components/ContactForm.tsx");
+      console.log("   📝 LoginForm: src/components/LoginForm.tsx");
+      console.log(`   📝 Form Styles: src/styles/forms.${styleExt}`);
+      console.log("   📝 Documentation: REACT_HOOK_FORM_GUIDE.md");
+      console.log("\n   Import in your components:");
+      console.log("   import { ContactForm } from './components/ContactForm';");
+      console.log(`   import '../styles/forms.${styleExt}';`);
     }
   } catch (error) {
     console.error("❌ Failed to setup form builder:", error.message);
