@@ -3298,72 +3298,586 @@ export const LoginForm: React.FC = () => {
 export default LoginForm;
 `,
 
-  getFormStyles: () => `.form-container {
+  getFormStyles: (style: string) => {
+    const isSCSS = style === 'scss';
+    const isLESS = style === 'less';
+    
+    if (isSCSS) {
+      return `// Formik Form Styles - SCSS
+// Color palette
+$primary-color: #667eea;
+$primary-hover: #5568d3;
+$primary-light: rgba(102, 126, 234, 0.1);
+$success-color: #48bb78;
+$error-color: #f56565;
+$error-light: rgba(245, 101, 101, 0.1);
+$text-dark: #2d3748;
+$text-light: #718096;
+$border-color: #e2e8f0;
+$bg-white: #ffffff;
+$shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.12);
+$shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
+$shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
+
+.form-container {
   max-width: 600px;
   margin: 2rem auto;
-  padding: 2rem;
-  background: #ffffff;
-  border-radius: 8px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-}
-
-.form-container h2 {
-  margin-bottom: 1.5rem;
-  color: #333;
-  text-align: center;
+  padding: 2.5rem;
+  background: $bg-white;
+  border-radius: 12px;
+  box-shadow: $shadow-lg;
+  border: 1px solid $border-color;
+  
+  h2 {
+    margin-bottom: 2rem;
+    color: $text-dark;
+    text-align: center;
+    font-size: 1.875rem;
+    font-weight: 700;
+    background: linear-gradient(135deg, $primary-color 0%, $primary-hover 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
 }
 
 .contact-form,
 .login-form {
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
+  gap: 1.75rem;
 }
 
 .form-group {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
-}
-
-.form-group label {
-  font-weight: 600;
-  color: #555;
-  font-size: 0.95rem;
+  gap: 0.625rem;
+  
+  label {
+    font-weight: 600;
+    color: $text-dark;
+    font-size: 0.9375rem;
+    letter-spacing: 0.02em;
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+    
+    &::before {
+      content: '';
+      display: inline-block;
+      width: 4px;
+      height: 16px;
+      background: linear-gradient(135deg, $primary-color 0%, $primary-hover 100%);
+      border-radius: 2px;
+    }
+  }
 }
 
 .form-control {
-  padding: 0.75rem;
-  border: 2px solid #e0e0e0;
-  border-radius: 4px;
+  padding: 0.875rem 1rem;
+  border: 2px solid $border-color;
+  border-radius: 8px;
   font-size: 1rem;
-  transition: all 0.3s ease;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   font-family: inherit;
-}
-
-.form-control:focus {
-  outline: none;
-  border-color: #4CAF50;
-  box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.1);
-}
-
-.form-control.error {
-  border-color: #f44336;
-}
-
-.form-control.error:focus {
-  box-shadow: 0 0 0 3px rgba(244, 67, 54, 0.1);
+  background-color: #fafafa;
+  
+  &:focus {
+    outline: none;
+    border-color: $primary-color;
+    box-shadow: 0 0 0 4px $primary-light;
+    background-color: $bg-white;
+    transform: translateY(-1px);
+  }
+  
+  &.error {
+    border-color: $error-color;
+    background-color: $error-light;
+    
+    &:focus {
+      box-shadow: 0 0 0 4px rgba(245, 101, 101, 0.2);
+    }
+  }
+  
+  &::placeholder {
+    color: #a0aec0;
+    opacity: 0.7;
+  }
 }
 
 textarea.form-control {
   resize: vertical;
-  min-height: 100px;
+  min-height: 120px;
+  line-height: 1.6;
 }
 
 .error-message {
-  color: #f44336;
+  color: $error-color;
   font-size: 0.875rem;
   margin-top: 0.25rem;
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  animation: slideIn 0.3s ease;
+  
+  &::before {
+    content: '⚠';
+    font-size: 1rem;
+  }
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.checkbox-group {
+  flex-direction: row;
+  align-items: center;
+  
+  label {
+    display: flex;
+    align-items: center;
+    gap: 0.625rem;
+    font-weight: normal;
+    cursor: pointer;
+    padding: 0.5rem;
+    border-radius: 6px;
+    transition: background-color 0.2s ease;
+    
+    &:hover {
+      background-color: #f7fafc;
+    }
+    
+    &::before {
+      display: none;
+    }
+  }
+  
+  input[type="checkbox"] {
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
+    border: 2px solid $border-color;
+    border-radius: 4px;
+    accent-color: $primary-color;
+  }
+}
+
+.btn-submit {
+  padding: 0.875rem 2rem;
+  background: linear-gradient(135deg, $primary-color 0%, $primary-hover 100%);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: $shadow-md;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  
+  &:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 16px rgba(102, 126, 234, 0.3);
+  }
+  
+  &:active:not(:disabled) {
+    transform: translateY(0);
+  }
+  
+  &:disabled {
+    background: #cbd5e0;
+    cursor: not-allowed;
+    opacity: 0.6;
+    box-shadow: none;
+  }
+}
+
+.success-message {
+  padding: 1rem;
+  background-color: rgba(72, 187, 120, 0.1);
+  border: 2px solid $success-color;
+  border-radius: 8px;
+  color: #2f855a;
+  font-weight: 600;
+  text-align: center;
+  animation: slideIn 0.3s ease;
+}
+
+@media (max-width: 768px) {
+  .form-container {
+    padding: 1.5rem;
+    margin: 1rem;
+    
+    h2 {
+      font-size: 1.5rem;
+    }
+  }
+  
+  .form-control {
+    font-size: 0.9375rem;
+  }
+  
+  .btn-submit {
+    width: 100%;
+  }
+}
+`;
+    } else if (isLESS) {
+      return `// Formik Form Styles - LESS
+@primary-color: #667eea;
+@primary-hover: #5568d3;
+@primary-light: rgba(102, 126, 234, 0.1);
+@success-color: #48bb78;
+@error-color: #f56565;
+@error-light: rgba(245, 101, 101, 0.1);
+@text-dark: #2d3748;
+@text-light: #718096;
+@border-color: #e2e8f0;
+@bg-white: #ffffff;
+@shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.12);
+@shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
+@shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
+
+.form-container {
+  max-width: 600px;
+  margin: 2rem auto;
+  padding: 2.5rem;
+  background: @bg-white;
+  border-radius: 12px;
+  box-shadow: @shadow-lg;
+  border: 1px solid @border-color;
+  
+  h2 {
+    margin-bottom: 2rem;
+    color: @text-dark;
+    text-align: center;
+    font-size: 1.875rem;
+    font-weight: 700;
+    background: linear-gradient(135deg, @primary-color 0%, @primary-hover 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+}
+
+.contact-form,
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.75rem;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.625rem;
+  
+  label {
+    font-weight: 600;
+    color: @text-dark;
+    font-size: 0.9375rem;
+    letter-spacing: 0.02em;
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+    
+    &::before {
+      content: '';
+      display: inline-block;
+      width: 4px;
+      height: 16px;
+      background: linear-gradient(135deg, @primary-color 0%, @primary-hover 100%);
+      border-radius: 2px;
+    }
+  }
+}
+
+.form-control {
+  padding: 0.875rem 1rem;
+  border: 2px solid @border-color;
+  border-radius: 8px;
+  font-size: 1rem;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  font-family: inherit;
+  background-color: #fafafa;
+  
+  &:focus {
+    outline: none;
+    border-color: @primary-color;
+    box-shadow: 0 0 0 4px @primary-light;
+    background-color: @bg-white;
+    transform: translateY(-1px);
+  }
+  
+  &.error {
+    border-color: @error-color;
+    background-color: @error-light;
+    
+    &:focus {
+      box-shadow: 0 0 0 4px rgba(245, 101, 101, 0.2);
+    }
+  }
+  
+  &::placeholder {
+    color: #a0aec0;
+    opacity: 0.7;
+  }
+}
+
+textarea.form-control {
+  resize: vertical;
+  min-height: 120px;
+  line-height: 1.6;
+}
+
+.error-message {
+  color: @error-color;
+  font-size: 0.875rem;
+  margin-top: 0.25rem;
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  animation: slideIn 0.3s ease;
+  
+  &::before {
+    content: '⚠';
+    font-size: 1rem;
+  }
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.checkbox-group {
+  flex-direction: row;
+  align-items: center;
+  
+  label {
+    display: flex;
+    align-items: center;
+    gap: 0.625rem;
+    font-weight: normal;
+    cursor: pointer;
+    padding: 0.5rem;
+    border-radius: 6px;
+    transition: background-color 0.2s ease;
+    
+    &:hover {
+      background-color: #f7fafc;
+    }
+    
+    &::before {
+      display: none;
+    }
+  }
+  
+  input[type="checkbox"] {
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
+    border: 2px solid @border-color;
+    border-radius: 4px;
+    accent-color: @primary-color;
+  }
+}
+
+.btn-submit {
+  padding: 0.875rem 2rem;
+  background: linear-gradient(135deg, @primary-color 0%, @primary-hover 100%);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: @shadow-md;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  
+  &:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 16px rgba(102, 126, 234, 0.3);
+  }
+  
+  &:active:not(:disabled) {
+    transform: translateY(0);
+  }
+  
+  &:disabled {
+    background: #cbd5e0;
+    cursor: not-allowed;
+    opacity: 0.6;
+    box-shadow: none;
+  }
+}
+
+.success-message {
+  padding: 1rem;
+  background-color: rgba(72, 187, 120, 0.1);
+  border: 2px solid @success-color;
+  border-radius: 8px;
+  color: #2f855a;
+  font-weight: 600;
+  text-align: center;
+  animation: slideIn 0.3s ease;
+}
+
+@media (max-width: 768px) {
+  .form-container {
+    padding: 1.5rem;
+    margin: 1rem;
+    
+    h2 {
+      font-size: 1.5rem;
+    }
+  }
+  
+  .form-control {
+    font-size: 0.9375rem;
+  }
+  
+  .btn-submit {
+    width: 100%;
+  }
+}
+`;
+    } else {
+      // Default CSS with modern design
+      return `/* Formik Form Styles - Modern CSS */
+.form-container {
+  max-width: 600px;
+  margin: 2rem auto;
+  padding: 2.5rem;
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
+  border: 1px solid #e2e8f0;
+}
+
+.form-container h2 {
+  margin-bottom: 2rem;
+  color: #2d3748;
+  text-align: center;
+  font-size: 1.875rem;
+  font-weight: 700;
+  background: linear-gradient(135deg, #667eea 0%, #5568d3 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.contact-form,
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.75rem;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.625rem;
+}
+
+.form-group label {
+  font-weight: 600;
+  color: #2d3748;
+  font-size: 0.9375rem;
+  letter-spacing: 0.02em;
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+}
+
+.form-group label::before {
+  content: '';
+  display: inline-block;
+  width: 4px;
+  height: 16px;
+  background: linear-gradient(135deg, #667eea 0%, #5568d3 100%);
+  border-radius: 2px;
+}
+
+.form-control {
+  padding: 0.875rem 1rem;
+  border: 2px solid #e2e8f0;
+  border-radius: 8px;
+  font-size: 1rem;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  font-family: inherit;
+  background-color: #fafafa;
+}
+
+.form-control:focus {
+  outline: none;
+  border-color: #667eea;
+  box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+  background-color: #ffffff;
+  transform: translateY(-1px);
+}
+
+.form-control.error {
+  border-color: #f56565;
+  background-color: rgba(245, 101, 101, 0.1);
+}
+
+.form-control.error:focus {
+  box-shadow: 0 0 0 4px rgba(245, 101, 101, 0.2);
+}
+
+.form-control::placeholder {
+  color: #a0aec0;
+  opacity: 0.7;
+}
+
+textarea.form-control {
+  resize: vertical;
+  min-height: 120px;
+  line-height: 1.6;
+}
+
+.error-message {
+  color: #f56565;
+  font-size: 0.875rem;
+  margin-top: 0.25rem;
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  animation: slideIn 0.3s ease;
+}
+
+.error-message::before {
+  content: '⚠';
+  font-size: 1rem;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .checkbox-group {
@@ -3374,33 +3888,49 @@ textarea.form-control {
 .checkbox-group label {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.625rem;
   font-weight: normal;
   cursor: pointer;
+  padding: 0.5rem;
+  border-radius: 6px;
+  transition: background-color 0.2s ease;
+}
+
+.checkbox-group label:hover {
+  background-color: #f7fafc;
+}
+
+.checkbox-group label::before {
+  display: none;
 }
 
 .checkbox-group input[type="checkbox"] {
-  width: 18px;
-  height: 18px;
+  width: 20px;
+  height: 20px;
   cursor: pointer;
+  border: 2px solid #e2e8f0;
+  border-radius: 4px;
+  accent-color: #667eea;
 }
 
 .btn-submit {
-  padding: 0.75rem 2rem;
-  background-color: #4CAF50;
+  padding: 0.875rem 2rem;
+  background: linear-gradient(135deg, #667eea 0%, #5568d3 100%);
   color: white;
   border: none;
-  border-radius: 4px;
+  border-radius: 8px;
   font-size: 1rem;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
 }
 
 .btn-submit:hover:not(:disabled) {
-  background-color: #45a049;
   transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 8px 16px rgba(102, 126, 234, 0.3);
 }
 
 .btn-submit:active:not(:disabled) {
@@ -3408,9 +3938,21 @@ textarea.form-control {
 }
 
 .btn-submit:disabled {
-  background-color: #cccccc;
+  background: #cbd5e0;
   cursor: not-allowed;
   opacity: 0.6;
+  box-shadow: none;
+}
+
+.success-message {
+  padding: 1rem;
+  background-color: rgba(72, 187, 120, 0.1);
+  border: 2px solid #48bb78;
+  border-radius: 8px;
+  color: #2f855a;
+  font-weight: 600;
+  text-align: center;
+  animation: slideIn 0.3s ease;
 }
 
 @media (max-width: 768px) {
@@ -3418,8 +3960,22 @@ textarea.form-control {
     padding: 1.5rem;
     margin: 1rem;
   }
+  
+  .form-container h2 {
+    font-size: 1.5rem;
+  }
+  
+  .form-control {
+    font-size: 0.9375rem;
+  }
+  
+  .btn-submit {
+    width: 100%;
+  }
 }
-`,
+`;
+    }
+  },
 
   getFormikReadme: () => `# Formik Integration Guide
 
@@ -3510,17 +4066,32 @@ function App() {
 
 ## 🎨 Styling
 
-Form styles are included in \`src/styles/forms.css\`. Import in your component:
+Form styles are included in \`src/styles/forms.[css|scss|less]\` (based on your chosen style). Import in your component:
 
 \`\`\`tsx
+// For CSS
 import '../styles/forms.css';
+
+// For SCSS
+import '../styles/forms.scss';
+
+// For LESS
+import '../styles/forms.less';
 \`\`\`
 
 Or include globally in \`src/main.tsx\`:
 
 \`\`\`tsx
-import './styles/forms.css';
+import './styles/forms.css'; // or .scss, .less
 \`\`\`
+
+The styles include:
+- Modern gradient design with purple theme
+- Smooth animations and transitions
+- Focus states with shadow effects
+- Error state styling with warning icons
+- Responsive design for mobile devices
+- Accessible form controls
 
 ## 🔧 Advanced Usage
 
@@ -4252,8 +4823,10 @@ const setupFormBuilder = (workspacePath: string, a: any) => {
         fs.mkdirSync(stylesPath, { recursive: true });
       }
 
-      const formStylesPath = path.join(stylesPath, "forms.css");
-      const formStylesContent = TEMPLATES.getFormStyles();
+      // Determine file extension based on style
+      const styleExt = a.style === 'scss' ? 'scss' : a.style === 'less' ? 'less' : 'css';
+      const formStylesPath = path.join(stylesPath, `forms.${styleExt}`);
+      const formStylesContent = TEMPLATES.getFormStyles(a.style);
       createFileWithErrorHandling(formStylesPath, formStylesContent, "Form styles");
 
       // Create Formik README
@@ -4264,11 +4837,11 @@ const setupFormBuilder = (workspacePath: string, a: any) => {
       console.log("✅ Formik form builder setup completed successfully!");
       console.log("   📝 ContactForm: src/components/ContactForm.tsx");
       console.log("   📝 LoginForm: src/components/LoginForm.tsx");
-      console.log("   📝 Form Styles: src/styles/forms.css");
+      console.log(`   📝 Form Styles: src/styles/forms.${styleExt}`);
       console.log("   📝 Documentation: FORMIK_GUIDE.md");
       console.log("\n   Import in your components:");
       console.log("   import { ContactForm } from './components/ContactForm';");
-      console.log("   import '../styles/forms.css';");
+      console.log(`   import '../styles/forms.${styleExt}';`);
     } else if (a.formBuilder === 'react-hook-form') {
       console.log("📦 Installing React Hook Form...");
       installPackagesWithRetry(
