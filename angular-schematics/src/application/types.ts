@@ -10,6 +10,8 @@ export interface ApplicationOptions {
  lintingStyle?: 'none' | 'airbnb' | 'standard' | 'custom';
  husky?: boolean;
  ci?: boolean;
+ formBuilder?: 'none' | 'reactive';
+ style?: 'css' | 'scss' | 'sass' | 'less';
  appDir?: string;
  [key: string]: any;
 }

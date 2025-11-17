@@ -32,6 +32,7 @@ import { setHusky } from "./features/husky";
 import { addI18n, addI18nFiles } from "./features/i18n";
 import { setSEO } from "./features/seo";
 import { setAuthentication } from "./features/authentication";
+import { setFormBuilder } from "./features/forms";
 
 // CI/CD Configuration
 function addCIConfigToProject(options: ApplicationOptions): Rule {
@@ -70,7 +71,7 @@ export function application(options: ApplicationOptions): Rule {
   options.seo = options.seoType !== 'none';
   
   const originalOptions = JSON.parse(JSON.stringify(options));
-  const keysToDelete = ["framework", "ngrx", "i18n", "appDir", "enableLinting", "lintingStyle", "husky", "seo", "seoType", "authentication", "ci"];
+  const keysToDelete = ["framework", "ngrx", "i18n", "appDir", "enableLinting", "lintingStyle", "husky", "seo", "seoType", "authentication", "ci", "formBuilder"];
   const schemaCompatibleOptions = deleteKeys(options, keysToDelete);
 
   return chain([
@@ -114,6 +115,7 @@ export function application(options: ApplicationOptions): Rule {
    setSEO(originalOptions),
    setAuthentication(originalOptions),
    addCIConfigToProject(originalOptions),
+   setFormBuilder(originalOptions),
   ]);
  };
 }

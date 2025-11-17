@@ -1,0 +1,91 @@
+# Angular Reactive Forms - Usage Guide
+
+This application includes pre-built form components using Angular Reactive Forms with validation.
+
+## 📦 Available Components
+
+### 1. ContactForm
+A complete contact form with validation:
+- Name (required, min 2 characters)
+- Email (required, valid email format)
+- Subject (required, min 5 characters)
+- Message (required, min 10 characters)
+
+### 2. LoginForm
+A login form with authentication fields:
+- Email (required, valid email format)
+- Password (required, min 6 characters)
+- Remember Me (checkbox)
+- Show/Hide password toggle
+
+## 🚀 Quick Start
+
+### Use in Templates
+
+```html
+<!-- Contact Form -->
+<app-contact-form></app-contact-form>
+
+<!-- Login Form -->
+<app-login-form></app-login-form>
+```
+
+### Use in Routes
+
+```typescript
+// app-routing.module.ts
+import { ContactFormComponent } from './forms/contact-form/contact-form.component';
+import { LoginFormComponent } from './forms/login-form/login-form.component';
+
+const routes: Routes = [
+  { path: 'contact', component: ContactFormComponent },
+  { path: 'login', component: LoginFormComponent },
+];
+```
+
+## 🔧 Customization
+
+### Modify Validation
+
+Edit the component TypeScript files:
+
+```typescript
+// forms/contact-form/contact-form.component.ts
+ngOnInit(): void {
+  this.contactForm = this.fb.group({
+    name: ['', [Validators.required, Validators.minLength(2)]],
+    email: ['', [Validators.required, Validators.email]],
+    // Add or modify validators here
+  });
+}
+```
+
+### Handle Form Submission
+
+```typescript
+onSubmit(): void {
+  if (this.contactForm.invalid) {
+    return;
+  }
+
+  // Your API call here
+  this.yourService.submitForm(this.contactForm.value).subscribe(
+    response => {
+      console.log('Success:', response);
+      this.resetForm();
+    },
+    error => {
+      console.error('Error:', error);
+    }
+  );
+}
+```
+
+## 📚 Learn More
+
+- [Angular Reactive Forms Documentation](https://angular.io/guide/reactive-forms)
+- [Form Validation Guide](https://angular.io/guide/form-validation)
+
+---
+
+Happy coding! 🚀
