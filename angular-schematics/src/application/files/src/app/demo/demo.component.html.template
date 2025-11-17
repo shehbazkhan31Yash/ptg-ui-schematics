@@ -125,6 +125,34 @@
     </section>
 <% } %>
 
+<% if (formBuilder && formBuilder !== 'none') { %>    <section class="demo-section">
+      <h2>📝 Reactive Forms Demo</h2>
+      <div class="demo-examples">
+        <div class="forms-demo">
+          <h4>Contact Form</h4>
+          <p>Interactive contact form with validation:</p>
+          <app-contact-form></app-contact-form>
+          
+          <h4 style="margin-top: 2rem;">Login Form</h4>
+          <p>Login form with password toggle:</p>
+          <app-login-form></app-login-form>
+          
+          <div class="form-info">
+            <p><strong>Features:</strong></p>
+            <ul>
+              <li>Angular Reactive Forms</li>
+              <li>Real-time validation</li>
+              <li>Custom error messages</li>
+              <li>Modern UI with gradients</li>
+              <li>Responsive design</li>
+              <li>Loading states</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+<% } %>
+
     <% if (framework === 'material') { %>
     <section class="demo-section">
       <h2>Angular Material Demo</h2>

@@ -63,6 +63,22 @@
       </div>
       <% } %>
       
+      <% if (formBuilder && formBuilder !== 'none') { %>
+      <div class="usage-example">
+        <h3>📝 Reactive Forms</h3>
+        <div class="setup-step">Available form components:</div>
+        <code>&lt;app-contact-form&gt;&lt;/app-contact-form&gt; // Contact form with validation</code>
+        <code>&lt;app-login-form&gt;&lt;/app-login-form&gt; // Login form with password toggle</code>
+        <div class="setup-step">Features:</div>
+        <ul>
+          <li>Built-in validation (required, email, minLength)</li>
+          <li>Dynamic error messages</li>
+          <li>Modern gradient styling</li>
+          <li>Loading states</li>
+        </ul>
+      </div>
+      <% } %>
+      
       <% if (authentication && authentication !== 'none') { %>
       <div class="usage-example">
         <h3>🔐 Authentication Setup</h3>
