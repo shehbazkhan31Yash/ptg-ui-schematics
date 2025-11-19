@@ -43,7 +43,6 @@ ${a.auth === 'okta' ? "import { OktaLoginButton } from './components/OktaLoginBu
 ${a.routing ? `
 // Home Page Component
 const HomePage = () => {
-  ${a.i18n ? "const { t } = useTranslation();" : ''}
   const getCurrentDate = () => new Date().toISOString().split('T')[0];
   
   return (
@@ -86,6 +85,7 @@ const HomePage = () => {
             ${a.husky ? '<li>✅ Husky Git Hooks</li>' : ''}
             ${a.formBuilder === 'formik' ? '<li>✅ Formik Form Management</li>' : ''}
             ${a.formBuilder === 'react-hook-form' ? '<li>✅ React Hook Form</li>' : ''}
+            ${a.crud ? '<li>✅ CRUD Operations with Axios</li>' : ''}
           </ul>
         </div>
 
@@ -170,7 +170,7 @@ const FeaturesPage = () => {
             <div className="setup-step">
               <strong>Get access token:</strong>
             </div>
-            <code>const response = await instance.acquireTokenSilent(&#123;<br/>  scopes: ['user.read'],<br/>  account: accounts[0]<br/>&#125;);</code>
+            <code>const response = await instance.acquireTokenSilent(&#123;<br/>  scopes: [&apos;user.read&apos;],<br/>  account: accounts[0]<br/>&#125;);</code>
             <div className="setup-step">
               ✨ <strong>Try it:</strong> Visit the <a href="/demo">Demo page</a> to see live authentication!
             </div>
@@ -193,7 +193,7 @@ const FeaturesPage = () => {
             <div className="setup-step">
               <strong>Protected routes:</strong>
             </div>
-            <code>import &#123; SecureRoute &#125; from '@okta/okta-react';<br/>&lt;SecureRoute path="/protected" component=&#123;ProtectedPage&#125; /&gt;</code>
+            <code>import &#123; SecureRoute &#125; from &apos;@okta/okta-react&apos;;<br/>&lt;SecureRoute path=&quot;/protected&quot; component=&#123;ProtectedPage&#125; /&gt;</code>
             <div className="setup-step">
               ✨ <strong>Try it:</strong> Visit the <a href="/demo">Demo page</a> to see live authentication!
             </div>
@@ -203,9 +203,9 @@ const FeaturesPage = () => {
           <div className="usage-example">
             <h3>🔧 Google Analytics Setup</h3>
             <div className="setup-step">1. Add your Measurement ID in the GoogleAnalytics component</div>
-            <code>&lt;GoogleAnalytics measurementId="G-XXXXXXXXXX" /&gt;</code>
+             <code>&lt;GoogleAnalytics measurementId=&quot;G-XXXXXXXXXX&quot; /&gt;</code>
             <div className="setup-step">2. Track custom events:</div>
-            <code>trackEvent('button_click', &#123; button_name: 'signup' &#125;);</code>
+            <code>trackEvent(&apos;button_click&apos;, &#123; button_name: &apos;signup&apos; &#125;);</code>
           </div>` : ''}
           
           ${a.husky ? `
@@ -220,9 +220,9 @@ const FeaturesPage = () => {
           <div className="usage-example">
             <h3>🔧 i18n Setup</h3>
             <div className="setup-step">1. Usage in components:</div>
-            <code>const &#123; t, i18n &#125; = useTranslation();<br/>&#123;t('welcome')&#125;</code>
+            <code>const &#123; t, i18n &#125; = useTranslation();<br/>&#123;t(&apos;welcome&apos;)&#125;</code>
             <div className="setup-step">2. Change language:</div>
-            <code>i18n.changeLanguage('es');</code>
+            <code>i18n.changeLanguage(&apos;es&apos;);</code>
           </div>` : ''}
           
           ${a.stateManagement === 'redux' ? `
@@ -248,11 +248,11 @@ const FeaturesPage = () => {
             <div className="setup-step">
               <strong>Import and use:</strong>
             </div>
-            <code>import &#123; ContactForm &#125; from './components/ContactForm';<br/>import '../styles/forms.css';<br/><br/>&lt;ContactForm /&gt;</code>
+            <code>import &#123; ContactForm &#125; from &apos;./components/ContactForm&apos;;<br/>import &apos;../styles/forms.css&apos;;<br/><br/>&lt;ContactForm /&gt;</code>
             <div className="setup-step">
               <strong>Custom form example:</strong>
             </div>
-            <code>import &#123; Formik, Form, Field &#125; from 'formik';<br/>import * as Yup from 'yup';<br/><br/>const schema = Yup.object(&#123;<br/>  email: Yup.string().email().required()<br/>&#125;);<br/><br/>&lt;Formik initialValues=&#123;&#123; email: '' &#125;&#125; validationSchema=&#123;schema&#125;&gt;<br/>  &lt;Form&gt;<br/>    &lt;Field name="email" type="email" /&gt;<br/>  &lt;/Form&gt;<br/>&lt;/Formik&gt;</code>
+            <code>import &#123; Formik, Form, Field &#125; from &apos;formik&apos;;<br/>import * as Yup from &apos;yup&apos;;<br/><br/>const schema = Yup.object(&#123;<br/>  email: Yup.string().email().required()<br/>&#125;);<br/><br/>&lt;Formik initialValues=&#123;&#123; email: &apos;&apos; &#125;&#125; validationSchema=&#123;schema&#125;&gt;<br/>  &lt;Form&gt;<br/>    &lt;Field name=&quot;email&quot; type=&quot;email&quot; /&gt;<br/>  &lt;/Form&gt;<br/>&lt;/Formik&gt;</code>
             <div className="setup-step">
               📚 <strong>Documentation:</strong> See <code>FORMIK_GUIDE.md</code> for complete examples
             </div>
@@ -268,22 +268,52 @@ const FeaturesPage = () => {
             <div className="setup-step">
               <strong>Basic usage:</strong>
             </div>
-            <code>import &#123; useForm &#125; from 'react-hook-form';<br/><br/>const &#123; register, handleSubmit, formState: &#123; errors &#125; &#125; = useForm();<br/><br/>&lt;form onSubmit=&#123;handleSubmit(onSubmit)&#125;&gt;<br/>  &lt;input &#123;...register('email', &#123; required: true &#125;)&#125; /&gt;<br/>  &#123;errors.email && &lt;span&gt;Required&lt;/span&gt;&#125;<br/>&lt;/form&gt;</code>
+            <code>import &#123; useForm &#125; from &apos;react-hook-form&apos;;<br/><br/>const &#123; register, handleSubmit, formState: &#123; errors &#125; &#125; = useForm();<br/><br/>&lt;form onSubmit=&#123;handleSubmit(onSubmit)&#125;&gt;<br/>  &lt;input &#123;...register(&apos;email&apos;, &#123; required: true &#125;)&#125; /&gt;<br/>  &#123;errors.email &amp;&amp; &lt;span&gt;Required&lt;/span&gt;&#125;<br/>&lt;/form&gt;</code>
             <div className="setup-step">
               📚 <strong>Documentation:</strong> <a href="https://react-hook-form.com" target="_blank">react-hook-form.com</a>
             </div>
           </div>` : ''}
           
+          ${a.crud ? `
+          <div className="usage-example">
+            <h3>🔧 CRUD Operations with Axios</h3>
+            <div className="setup-step">Your app includes a complete CRUD setup with Axios and interceptors</div>
+            <div className="setup-step">
+              <strong>API Client:</strong> Pre-configured Axios instance in <code>src/services/apiClient.ts</code>
+            </div>
+            <div className="setup-step">
+              <strong>Generic Service:</strong> Reusable CrudService&lt;T&gt; class in <code>src/services/crudService.ts</code>
+            </div>
+            <div className="setup-step">
+              <strong>Usage example:</strong>
+            </div>
+            <code>import &#123; userService &#125; from &apos;./services/crudService&apos;;<br/><br/>&#47;&#47; Get all users<br/>const users = await userService.getAll();<br/><br/>&#47;&#47; Create new user<br/>await userService.create(&#123; name: &apos;John&apos; &#125;);<br/><br/>&#47;&#47; Update user<br/>await userService.update(1, &#123; name: &apos;Jane&apos; &#125;);<br/><br/>&#47;&#47; Delete user<br/>await userService.delete(1);</code>
+            <div className="setup-step">
+              <strong>Interceptors:</strong>
+            </div>
+            <code>&#47;&#47; Request: Adds auth token, logs requests<br/>&#47;&#47; Response: Handles errors (401, 403, 404, 500)</code>
+            <div className="setup-step">
+              <strong>Configuration:</strong> Update <code>.env</code> with your API base URL
+            </div>
+            <code>REACT_APP_API_BASE_URL=https://your-api.com/api</code>
+            <div className="setup-step">
+              📚 <strong>Documentation:</strong> See <code>CRUD_GUIDE.md</code> for complete guide
+            </div>
+            <div className="setup-step">
+              ✨ <strong>Try it:</strong> Visit the <a href="/demo">Demo page</a> to see live CRUD operations!
+            </div>
+          </div>` : ''}
+          
           <div className="usage-example">
             <h3>Routing</h3>
-            <code>import &#123; useNavigate, Link &#125; from 'react-router-dom';<br/>const navigate = useNavigate();<br/>navigate('/about');</code>
-            <code>&lt;Link to="/about"&gt;About&lt;/Link&gt;</code>
+            <code>import &#123; useNavigate, Link &#125; from &apos;react-router-dom&apos;;<br/>const navigate = useNavigate();<br/>navigate(&apos;/about&apos;);</code>
+            <code>&lt;Link to=&quot;/about&quot;&gt;About&lt;/Link&gt;</code>
           </div>
           
           <div className="usage-example">
             <h3>HTTP Client</h3>
-            <code>fetch('/api/users').then(res =&gt; res.json()).then(data =&gt; console.log(data));</code>
-            <code>// Or use axios, fetch, or any HTTP library</code>
+            <code>fetch(&apos;/api/users&apos;).then(res =&gt; res.json()).then(data =&gt; console.log(data));</code>
+            <code>&#47;&#47; Or use axios, fetch, or any HTTP library</code>
           </div>
         </section>
       </main>
@@ -340,13 +370,13 @@ const DemoPage = () => {
   ${a.i18n ? "const { t, i18n } = useTranslation();" : ''}
   ${a.stateManagement === 'redux' ? "const dispatch = useDispatch();\n  const count = useSelector((state: RootState) => state.app.count);" : ''}
   ${a.stateManagement === 'zustand' ? "const { count, increment, decrement, reset } = useAppStore();" : ''}
-  const [users, setUsers] = useState<any[]>([]);
+  const [users, setUsers] = useState<Array<{ id: number; name: string; email: string }>>([]);
   const [loading, setLoading] = useState(false);
 
   const loadUsers = async () => {
     setLoading(true);
     try {
-      const response = await fetch('https://jsonplaceholder.typicode.com/users?_limit=5');
+      const response = await window.fetch('https://jsonplaceholder.typicode.com/users?_limit=5');
       const data = await response.json();
       setUsers(data);
     } catch (error) {
@@ -482,6 +512,35 @@ const DemoPage = () => {
                 <p>📝 <strong>Quick Start:</strong></p>
                 <code>const &#123; register, handleSubmit &#125; = useForm();<br/>&lt;input &#123;...register('email')&#125; /&gt;</code>
                 <p>📚 Visit <a href="https://react-hook-form.com" target="_blank">react-hook-form.com</a> for documentation</p>
+              </div>
+            </div>
+          </div>
+        </section>` : ''}
+
+        ${a.crud ? `
+        <section className="demo-section">
+          <h2>🔧 CRUD Operations Demo</h2>
+          <div className="demo-examples">
+            <div className="form-demo">
+              <h3>Full CRUD with Axios & Interceptors</h3>
+              <p>Complete Create, Read, Update, Delete operations with API client:</p>
+              <div className="form-info">
+                <p>✅ <strong>Features:</strong></p>
+                <ul>
+                  <li>Axios HTTP client with interceptors</li>
+                  <li>Request interceptor (auth tokens, logging)</li>
+                  <li>Response interceptor (error handling)</li>
+                  <li>Generic CrudService&lt;T&gt; class</li>
+                  <li>Pre-built demo with Users and Posts</li>
+                  <li>Error handling (401, 403, 404, 500)</li>
+                </ul>
+                <p>📝 <strong>Usage:</strong></p>
+                <code>
+                  const users = await userService.getAll();<br/>
+                  await userService.create(newUser);<br/>
+                  await userService.update(id, updatedUser);
+                </code>
+                <p>📚 Check <code>CRUD_GUIDE.md</code> for complete documentation and customization</p>
               </div>
             </div>
           </div>
@@ -1482,7 +1541,7 @@ export default defineConfig({
 
   getPrettierConfig: () => getPrettierConfig(),
 
-  getSEOComponent: (a: any) => `import { useEffect } from 'react';
+  getSEOComponent: (a: any) => `import React, { useEffect } from 'react';
 
 interface SEOProps {
   title?: string;
@@ -1493,7 +1552,7 @@ interface SEOProps {
   url?: string;
   type?: string;
   twitterCard?: string;
-  structuredData?: Record<string, any>;
+  structuredData?: Record<string, unknown>;
 }
 
 export const SEO: React.FC<SEOProps> = ({
@@ -1676,7 +1735,7 @@ export function generateSitemap(): string {
 
 export default sitemapConfig;`,
 
-  getGoogleAnalytics: (a: any) => `import { useEffect } from 'react';
+  getGoogleAnalytics: (a: any) => `import React, { useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 
 interface GoogleAnalyticsProps {
@@ -1814,7 +1873,7 @@ export const GoogleAnalytics: React.FC<GoogleAnalyticsProps> = ({
  */
 export const trackEvent = (
   eventName: string,
-  eventParams?: Record<string, any>
+  eventParams?: Record<string, string | number | boolean>
 ) => {
   // Try GTM dataLayer first
   if (window.dataLayer) {
@@ -1837,7 +1896,7 @@ export const trackEvent = (
  * @example
  * setUserProperties({ user_type: 'premium', plan: 'pro' });
  */
-export const setUserProperties = (properties: Record<string, any>) => {
+export const setUserProperties = (properties: Record<string, string | number | boolean>) => {
   // GTM dataLayer
   if (window.dataLayer) {
     window.dataLayer.push({
@@ -1858,7 +1917,7 @@ export const setUserProperties = (properties: Record<string, any>) => {
  * @example
  * pushToDataLayer({ event: 'custom_event', customData: 'value' });
  */
-export const pushToDataLayer = (data: Record<string, any>) => {
+export const pushToDataLayer = (data: Record<string, unknown>) => {
   if (window.dataLayer) {
     window.dataLayer.push(data);
   }
@@ -1867,8 +1926,8 @@ export const pushToDataLayer = (data: Record<string, any>) => {
 // TypeScript declarations for gtag and dataLayer
 declare global {
   interface Window {
-    dataLayer: any[];
-    gtag: (...args: any[]) => void;
+    dataLayer: Array<Record<string, unknown>>;
+    gtag: (...args: unknown[]) => void;
   }
 }
 
@@ -1881,7 +1940,7 @@ export interface PageMeta {
   keywords?: string;
   image?: string;
   url?: string;
-  structuredData?: Record<string, any>;
+  structuredData?: Record<string, unknown>;
 }
 
 // Default meta tags for the application
@@ -3079,12 +3138,12 @@ export const ContactForm: React.FC = () => {
 
   const handleSubmit = (
     values: ContactFormValues,
-    { setSubmitting, resetForm }: any
+    { setSubmitting, resetForm }: { setSubmitting: (isSubmitting: boolean) => void; resetForm: () => void }
   ) => {
     // Simulate API call
-    setTimeout(() => {
+    window.setTimeout(() => {
       console.log('Form submitted:', values);
-      alert('Form submitted successfully!');
+      window.alert('Form submitted successfully!');
       resetForm();
       setSubmitting(false);
     }, 1000);
@@ -3218,12 +3277,12 @@ export const LoginForm: React.FC = () => {
 
   const handleSubmit = (
     values: LoginFormValues,
-    { setSubmitting }: any
+    { setSubmitting }: { setSubmitting: (isSubmitting: boolean) => void }
   ) => {
     // Simulate API call
-    setTimeout(() => {
+    window.setTimeout(() => {
       console.log('Login submitted:', values);
-      alert('Login successful!');
+      window.alert('Login successful!');
       setSubmitting(false);
     }, 1000);
   };
@@ -5052,7 +5111,12 @@ const { register, handleSubmit, formState: { errors } } = useForm({
 ---
 
 **Happy Coding!** 🚀
-`
+`,
+  getCrudApiClient: () => fs.readFileSync(path.join(__dirname, "templates/crud/apiClient.ts.template"), "utf8"),
+  getCrudService: () => fs.readFileSync(path.join(__dirname, "templates/crud/crudService.ts.template"), "utf8"),
+  getCrudDemo: () => fs.readFileSync(path.join(__dirname, "templates/crud/CrudDemo.tsx.template"), "utf8"),
+  getCrudDemoCSS: () => fs.readFileSync(path.join(__dirname, "templates/crud/CrudDemo.css.template"), "utf8"),
+  getCrudReadme: () => fs.readFileSync(path.join(__dirname, "templates/crud/CRUD_README.md.template"), "utf8"),
 };
 
 
@@ -5253,7 +5317,9 @@ const getDependenciesByFeature = (a: any) => {
       formik: ["formik@latest", "yup@latest"],
       formikDev: ["@types/yup@latest"],
       "react-hook-form": ["react-hook-form@latest", "@hookform/resolvers@latest", "yup@latest"]
-    }
+    },
+    crud: ["axios@latest"],
+    crudDev: ["@types/axios@latest"]
   };
 
   // Add feature-specific packages
@@ -5290,6 +5356,10 @@ const getDependenciesByFeature = (a: any) => {
     baseDevPkgs.push(...featurePackages.formBuilder.formikDev);
   } else if (a.formBuilder === 'react-hook-form') {
     basePkgs.push(...featurePackages.formBuilder["react-hook-form"]);
+  }
+  if (a.crud) {
+    basePkgs.push(...featurePackages.crud);
+    baseDevPkgs.push(...featurePackages.crudDev);
   }
 
   return { production: basePkgs, development: baseDevPkgs };
@@ -5661,6 +5731,108 @@ const setupFormBuilder = (workspacePath: string, a: any) => {
   }
 };
 
+const setupCrud = (workspacePath: string, a: any) => {
+  if (!a.crud) {
+    return;
+  }
+
+  try {
+    console.log(`\n🔧 Setting up CRUD operations with Axios...`);
+
+    // Detect app structure
+    const standaloneAppPath = path.join(workspacePath, "src");
+    const multiAppPath = path.join(workspacePath, "apps", a.name);
+    
+    let appPath: string;
+    let srcPath: string;
+    
+    if (fs.existsSync(standaloneAppPath)) {
+      appPath = workspacePath;
+      srcPath = standaloneAppPath;
+    } else if (fs.existsSync(multiAppPath)) {
+      appPath = multiAppPath;
+      srcPath = path.join(multiAppPath, "src");
+    } else {
+      appPath = workspacePath;
+      srcPath = path.join(workspacePath, "src");
+    }
+
+    // Install axios
+    console.log("📦 Installing Axios...");
+    installPackagesWithRetry(
+      ["axios"],
+      false,
+      workspacePath,
+      "Axios HTTP client"
+    );
+
+    // Install TypeScript types
+    installPackagesWithRetry(
+      ["@types/axios"],
+      true,
+      workspacePath,
+      "Axios TypeScript types"
+    );
+
+    // Create services directory
+    const servicesPath = path.join(srcPath, "services");
+    if (!fs.existsSync(servicesPath)) {
+      fs.mkdirSync(servicesPath, { recursive: true });
+    }
+
+    // Create API client
+    const apiClientPath = path.join(servicesPath, "apiClient.ts");
+    const apiClientContent = TEMPLATES.getCrudApiClient();
+    createFileWithErrorHandling(apiClientPath, apiClientContent, "API Client with interceptors");
+
+    // Create CRUD service
+    const crudServicePath = path.join(servicesPath, "crudService.ts");
+    const crudServiceContent = TEMPLATES.getCrudService();
+    createFileWithErrorHandling(crudServicePath, crudServiceContent, "CRUD Service");
+
+    // Create components directory if it doesn't exist
+    const componentsPath = path.join(srcPath, "components");
+    if (!fs.existsSync(componentsPath)) {
+      fs.mkdirSync(componentsPath, { recursive: true });
+    }
+
+    // Create CRUD Demo component
+    const crudDemoPath = path.join(componentsPath, "CrudDemo.tsx");
+    const crudDemoContent = TEMPLATES.getCrudDemo();
+    createFileWithErrorHandling(crudDemoPath, crudDemoContent, "CRUD Demo component");
+
+    // Create CRUD Demo styles
+    const crudDemoCSSPath = path.join(componentsPath, "CrudDemo.css");
+    const crudDemoCSSContent = TEMPLATES.getCrudDemoCSS();
+    createFileWithErrorHandling(crudDemoCSSPath, crudDemoCSSContent, "CRUD Demo styles");
+
+    // Create CRUD README
+    const crudReadmePath = path.join(workspacePath, "CRUD_GUIDE.md");
+    const crudReadmeContent = TEMPLATES.getCrudReadme();
+    createFileWithErrorHandling(crudReadmePath, crudReadmeContent, "CRUD documentation");
+
+    // Create .env file if it doesn't exist
+    const envPath = path.join(workspacePath, ".env");
+    if (!fs.existsSync(envPath)) {
+      const envContent = `# API Configuration\nREACT_APP_API_URL=https://jsonplaceholder.typicode.com\n`;
+      createFileWithErrorHandling(envPath, envContent, ".env file");
+    }
+
+    console.log("✅ CRUD operations setup completed successfully!");
+    console.log("   🔧 API Client: src/services/apiClient.ts");
+    console.log("   🔧 CRUD Service: src/services/crudService.ts");
+    console.log("   🔧 Demo Component: src/components/CrudDemo.tsx");
+    console.log("   🔧 Demo Styles: src/components/CrudDemo.css");
+    console.log("   📝 Documentation: CRUD_GUIDE.md");
+    console.log("\n   Import in your components:");
+    console.log("   import { CrudDemo } from './components/CrudDemo';");
+    console.log("   import { userService, postService } from './services/crudService';");
+  } catch (error) {
+    console.error("❌ Failed to setup CRUD operations:", error.message);
+    console.warn("You can add CRUD operations manually later");
+  }
+};
+
 export function reactAppGenerator() {
   getArgs().then((a: any) => {
     try {
@@ -5948,6 +6120,9 @@ export function reactAppGenerator() {
       // Setup form builder if enabled
       setupFormBuilder(workspacePath, a);
 
+      // Setup CRUD operations if enabled
+      setupCrud(workspacePath, a);
+
       console.log("\n✅ React application created successfully!\n");
       console.log("━".repeat(50));
       console.log(`📁 Workspace: ${a.workspace}`);
@@ -5964,6 +6139,7 @@ export function reactAppGenerator() {
       console.log(`🐳 Docker: ${a.docker ? "Yes" : "No"}`);
       console.log(`🔄 CI/CD: ${a.ci ? "Yes (GitHub Actions & GitLab CI)" : "No"}`);
       console.log(`📝 Form Builder: ${a.formBuilder === 'formik' ? 'Formik' : a.formBuilder === 'react-hook-form' ? 'React Hook Form' : 'None'}`);
+      console.log(`🔧 CRUD Operations: ${a.crud ? "Yes (Axios + Interceptors)" : "No"}`);
       console.log("━".repeat(50));
       console.log("\nTo get started:\n");
       console.log(`  cd ${a.workspace}`);
@@ -6246,6 +6422,12 @@ function getArgs() {
         type: "list",
         choices: ["none", "formik", "react-hook-form"],
         default: "none",
+      },
+      {
+        name: "crud",
+        message: "Add CRUD operations? (Axios + API Client + Interceptors)",
+        type: "confirm",
+        default: false,
       },
       {
         name: "seo",

@@ -1,0 +1,110 @@
+import apiClient from './apiClient';
+
+// Generic type for API responses
+export interface ApiResponse<T> {
+  data: T;
+  message?: string;
+  status?: number;
+}
+
+// Generic CRUD Service
+export class CrudService<T> {
+  private endpoint: string;
+
+  constructor(endpoint: string) {
+    this.endpoint = endpoint;
+  }
+
+  // CREATE: Add a new item
+  async create(item: Partial<T>): Promise<T> {
+    try {
+      const response = await apiClient.post<T>(this.endpoint, item);
+      return response.data;
+    } catch (error) {
+      console.error(`Error creating item at ${this.endpoint}:`, error);
+      throw error;
+    }
+  }
+
+  // READ: Get all items
+  async getAll(params?: Record<string, string | number | boolean>): Promise<T[]> {
+    try {
+      const response = await apiClient.get<T[]>(this.endpoint, { params });
+      return response.data;
+    } catch (error) {
+      console.error(`Error fetching items from ${this.endpoint}:`, error);
+      throw error;
+    }
+  }
+
+  // READ: Get a single item by ID
+  async getById(id: string | number): Promise<T> {
+    try {
+      const response = await apiClient.get<T>(`${this.endpoint}/${id}`);
+      return response.data;
+    } catch (error) {
+      console.error(`Error fetching item ${id} from ${this.endpoint}:`, error);
+      throw error;
+    }
+  }
+
+  // UPDATE: Update an existing item
+  async update(id: string | number, item: Partial<T>): Promise<T> {
+    try {
+      const response = await apiClient.put<T>(`${this.endpoint}/${id}`, item);
+      return response.data;
+    } catch (error) {
+      console.error(`Error updating item ${id} at ${this.endpoint}:`, error);
+      throw error;
+    }
+  }
+
+  // PATCH: Partially update an item
+  async patch(id: string | number, item: Partial<T>): Promise<T> {
+    try {
+      const response = await apiClient.patch<T>(`${this.endpoint}/${id}`, item);
+      return response.data;
+    } catch (error) {
+      console.error(`Error patching item ${id} at ${this.endpoint}:`, error);
+      throw error;
+    }
+  }
+
+  // DELETE: Remove an item
+  async delete(id: string | number): Promise<void> {
+    try {
+      await apiClient.delete(`${this.endpoint}/${id}`);
+    } catch (error) {
+      console.error(`Error deleting item ${id} from ${this.endpoint}:`, error);
+      throw error;
+    }
+  }
+}
+
+// Example: User Service
+export interface User {
+  id: number;
+  name: string;
+  email: string;
+  phone?: string;
+  website?: string;
+}
+
+export const userService = new CrudService<User>('/users');
+
+// Example: Post Service
+export interface Post {
+  id: number;
+  userId: number;
+  title: string;
+  body: string;
+}
+
+export const postService = new CrudService<Post>('/posts');
+
+// Example usage:
+// const users = await userService.getAll();
+// const user = await userService.getById(1);
+// const newUser = await userService.create({ name: 'John', email: 'john@example.com' });
+// await userService.update(1, { name: 'John Updated' });
+// await userService.delete(1);
