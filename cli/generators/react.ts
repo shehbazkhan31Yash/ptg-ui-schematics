@@ -32,13 +32,13 @@ function getNormalizedStyleForNx(style: string): string {
 const TEMPLATES = {
   getAppContent: (a: any) => `import React, { useState } from 'react';
 import './app.${a.style}';
-${a.routing ? "import { Routes, Route, Link, useLocation, BrowserRouter } from 'react-router-dom';" : ''}
+${a.routing ? "import { Routes, Route, Link, useLocation } from 'react-router-dom';" : ''}
 ${a.stateManagement === 'redux' ? "import { Provider, useSelector, useDispatch } from 'react-redux';\nimport { store, RootState, increment, decrement } from './store';" : ''}
 ${a.stateManagement === 'zustand' ? "import { useAppStore } from './store';" : ''}
 ${a.i18n ? "import { useTranslation } from 'react-i18next';\nimport './i18n';" : ''}
 ${a.seo ? "import { SEO } from './components/SEO';\nimport { GoogleAnalytics } from './components/GoogleAnalytics';" : ''}
-${a.auth === 'msal' ? "import { MsalLoginButton } from '../components/MsalLoginButton';\nimport { useMsal } from '@azure/msal-react';" : ''}
-${a.auth === 'okta' ? "import { OktaLoginButton } from '../components/OktaLoginButton';\nimport { useOktaAuth } from '@okta/okta-react';" : ''}
+${a.auth === 'msal' ? "import { MsalLoginButton } from './components/MsalLoginButton';\nimport { useMsal } from '@azure/msal-react';" : ''}
+${a.auth === 'okta' ? "import { OktaLoginButton } from './components/OktaLoginButton';\nimport { useOktaAuth } from '@okta/okta-react';" : ''}
 
 ${a.routing ? `
 // Home Page Component
@@ -84,6 +84,8 @@ const HomePage = () => {
             ${a.linter !== 'none' ? '<li>✅ ESLint Linting</li>' : ''}
             ${a.prettier ? '<li>✅ Prettier Formatting</li>' : ''}
             ${a.husky ? '<li>✅ Husky Git Hooks</li>' : ''}
+            ${a.formBuilder === 'formik' ? '<li>✅ Formik Form Management</li>' : ''}
+            ${a.formBuilder === 'react-hook-form' ? '<li>✅ React Hook Form</li>' : ''}
           </ul>
         </div>
 
@@ -234,6 +236,42 @@ const FeaturesPage = () => {
           <div className="usage-example">
             <h3>Zustand State Management</h3>
             <code>const &#123; count, increment &#125; = useAppStore();<br/>&lt;button onClick=&#123;increment&#125;&gt;+&lt;/button&gt;</code>
+          </div>` : ''}
+          
+          ${a.formBuilder === 'formik' ? `
+          <div className="usage-example">
+            <h3>📝 Formik Form Management</h3>
+            <div className="setup-step">Your app includes Formik with Yup validation</div>
+            <div className="setup-step">
+              <strong>Pre-built components:</strong> ContactForm and LoginForm are ready to use
+            </div>
+            <div className="setup-step">
+              <strong>Import and use:</strong>
+            </div>
+            <code>import &#123; ContactForm &#125; from './components/ContactForm';<br/>import '../styles/forms.css';<br/><br/>&lt;ContactForm /&gt;</code>
+            <div className="setup-step">
+              <strong>Custom form example:</strong>
+            </div>
+            <code>import &#123; Formik, Form, Field &#125; from 'formik';<br/>import * as Yup from 'yup';<br/><br/>const schema = Yup.object(&#123;<br/>  email: Yup.string().email().required()<br/>&#125;);<br/><br/>&lt;Formik initialValues=&#123;&#123; email: '' &#125;&#125; validationSchema=&#123;schema&#125;&gt;<br/>  &lt;Form&gt;<br/>    &lt;Field name="email" type="email" /&gt;<br/>  &lt;/Form&gt;<br/>&lt;/Formik&gt;</code>
+            <div className="setup-step">
+              📚 <strong>Documentation:</strong> See <code>FORMIK_GUIDE.md</code> for complete examples
+            </div>
+            <div className="setup-step">
+              ✨ <strong>Try it:</strong> Visit the <a href="/demo">Demo page</a> to see live forms!
+            </div>
+          </div>` : ''}
+          
+          ${a.formBuilder === 'react-hook-form' ? `
+          <div className="usage-example">
+            <h3>📝 React Hook Form</h3>
+            <div className="setup-step">Your app includes React Hook Form for performant form management</div>
+            <div className="setup-step">
+              <strong>Basic usage:</strong>
+            </div>
+            <code>import &#123; useForm &#125; from 'react-hook-form';<br/><br/>const &#123; register, handleSubmit, formState: &#123; errors &#125; &#125; = useForm();<br/><br/>&lt;form onSubmit=&#123;handleSubmit(onSubmit)&#125;&gt;<br/>  &lt;input &#123;...register('email', &#123; required: true &#125;)&#125; /&gt;<br/>  &#123;errors.email && &lt;span&gt;Required&lt;/span&gt;&#125;<br/>&lt;/form&gt;</code>
+            <div className="setup-step">
+              📚 <strong>Documentation:</strong> <a href="https://react-hook-form.com" target="_blank">react-hook-form.com</a>
+            </div>
           </div>` : ''}
           
           <div className="usage-example">
@@ -404,6 +442,51 @@ const DemoPage = () => {
           </div>
         </section>` : ''}
 
+        ${a.formBuilder === 'formik' ? `
+        <section className="demo-section">
+          <h2>📝 Formik Forms Demo</h2>
+          <div className="demo-examples">
+            <div className="form-demo">
+              <h3>Contact Form Example</h3>
+              <p>Pre-built form with validation using Formik and Yup:</p>
+              <div className="form-info">
+                <p>✅ <strong>Features:</strong></p>
+                <ul>
+                  <li>Email validation</li>
+                  <li>Required field validation</li>
+                  <li>Character limits (name: 50, subject: 100, message: 500)</li>
+                  <li>Real-time error messages</li>
+                  <li>Loading state handling</li>
+                </ul>
+                <p>📚 Check <code>FORMIK_GUIDE.md</code> for more examples and patterns</p>
+              </div>
+            </div>
+          </div>
+        </section>` : ''}
+
+        ${a.formBuilder === 'react-hook-form' ? `
+        <section className="demo-section">
+          <h2>📝 React Hook Form Demo</h2>
+          <div className="demo-examples">
+            <div className="form-demo">
+              <h3>Form Management</h3>
+              <p>React Hook Form provides performant, flexible form validation:</p>
+              <div className="form-info">
+                <p>✅ <strong>Features:</strong></p>
+                <ul>
+                  <li>Minimal re-renders</li>
+                  <li>Built-in validation</li>
+                  <li>Easy integration with UI libraries</li>
+                  <li>TypeScript support</li>
+                </ul>
+                <p>📝 <strong>Quick Start:</strong></p>
+                <code>const &#123; register, handleSubmit &#125; = useForm();<br/>&lt;input &#123;...register('email')&#125; /&gt;</code>
+                <p>📚 Visit <a href="https://react-hook-form.com" target="_blank">react-hook-form.com</a> for documentation</p>
+              </div>
+            </div>
+          </div>
+        </section>` : ''}
+
         <section className="demo-section">
           <h2>HTTP Client Demo</h2>
           <div className="demo-examples">
@@ -501,9 +584,9 @@ const AppContent = () => {
 
 const App = () => {
   return (
-    ${a.auth === 'okta' 
-      ? (a.stateManagement === 'redux' ? '<Provider store={store}><AppContent /></Provider>' : '<AppContent />')
-      : (a.stateManagement === 'redux' ? '<Provider store={store}><BrowserRouter><AppContent /></BrowserRouter></Provider>' : '<BrowserRouter><AppContent /></BrowserRouter>')
+    ${a.stateManagement === 'redux' 
+      ? '<Provider store={store}><AppContent /></Provider>' 
+      : '<AppContent />'
     }
   );
 };
@@ -2308,7 +2391,7 @@ export const loginRequest: PopupRequest = {
 
   getMsalLoginButton: () => `import React from 'react';
 import { useMsal } from '@azure/msal-react';
-import { loginRequest } from '../config/msalConfig';
+import { loginRequest } from '../../config/msalConfig';
 
 export const MsalLoginButton: React.FC = () => {
   const { instance, accounts } = useMsal();
@@ -2955,6 +3038,2020 @@ system: {
 // For Okta
 oktaAuth.options.devMode = true;
 \`\`\`
+`,
+
+  getFormikContactForm: () => `import React from 'react';
+import { Formik, Form, Field, ErrorMessage } from 'formik';
+import * as Yup from 'yup';
+
+interface ContactFormValues {
+  name: string;
+  email: string;
+  subject: string;
+  message: string;
+}
+
+const ContactFormSchema = Yup.object().shape({
+  name: Yup.string()
+    .min(2, 'Name must be at least 2 characters')
+    .max(50, 'Name must be less than 50 characters')
+    .required('Name is required'),
+  email: Yup.string()
+    .email('Invalid email address')
+    .required('Email is required'),
+  subject: Yup.string()
+    .min(5, 'Subject must be at least 5 characters')
+    .max(100, 'Subject must be less than 100 characters')
+    .required('Subject is required'),
+  message: Yup.string()
+    .min(10, 'Message must be at least 10 characters')
+    .max(500, 'Message must be less than 500 characters')
+    .required('Message is required'),
+});
+
+export const ContactForm: React.FC = () => {
+  const initialValues: ContactFormValues = {
+    name: '',
+    email: '',
+    subject: '',
+    message: '',
+  };
+
+  const handleSubmit = (
+    values: ContactFormValues,
+    { setSubmitting, resetForm }: any
+  ) => {
+    // Simulate API call
+    setTimeout(() => {
+      console.log('Form submitted:', values);
+      alert('Form submitted successfully!');
+      resetForm();
+      setSubmitting(false);
+    }, 1000);
+  };
+
+  return (
+    <div className="form-container">
+      <h2>Contact Us</h2>
+      <Formik
+        initialValues={initialValues}
+        validationSchema={ContactFormSchema}
+        onSubmit={handleSubmit}
+      >
+        {({ isSubmitting, errors, touched }) => (
+          <Form className="contact-form">
+            <div className="form-group">
+              <label htmlFor="name">Name *</label>
+              <Field
+                type="text"
+                id="name"
+                name="name"
+                className={\`form-control \${
+                  errors.name && touched.name ? 'error' : ''
+                }\`}
+                placeholder="Enter your name"
+              />
+              <ErrorMessage
+                name="name"
+                component="div"
+                className="error-message"
+              />
+            </div>
+
+            <div className="form-group">
+              <label htmlFor="email">Email *</label>
+              <Field
+                type="email"
+                id="email"
+                name="email"
+                className={\`form-control \${
+                  errors.email && touched.email ? 'error' : ''
+                }\`}
+                placeholder="Enter your email"
+              />
+              <ErrorMessage
+                name="email"
+                component="div"
+                className="error-message"
+              />
+            </div>
+
+            <div className="form-group">
+              <label htmlFor="subject">Subject *</label>
+              <Field
+                type="text"
+                id="subject"
+                name="subject"
+                className={\`form-control \${
+                  errors.subject && touched.subject ? 'error' : ''
+                }\`}
+                placeholder="Enter subject"
+              />
+              <ErrorMessage
+                name="subject"
+                component="div"
+                className="error-message"
+              />
+            </div>
+
+            <div className="form-group">
+              <label htmlFor="message">Message *</label>
+              <Field
+                as="textarea"
+                id="message"
+                name="message"
+                rows={5}
+                className={\`form-control \${
+                  errors.message && touched.message ? 'error' : ''
+                }\`}
+                placeholder="Enter your message"
+              />
+              <ErrorMessage
+                name="message"
+                component="div"
+                className="error-message"
+              />
+            </div>
+
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className="btn-submit"
+            >
+              {isSubmitting ? 'Submitting...' : 'Submit'}
+            </button>
+          </Form>
+        )}
+      </Formik>
+    </div>
+  );
+};
+
+export default ContactForm;
+`,
+
+  getFormikLoginForm: () => `import React from 'react';
+import { Formik, Form, Field, ErrorMessage } from 'formik';
+import * as Yup from 'yup';
+
+interface LoginFormValues {
+  email: string;
+  password: string;
+  rememberMe: boolean;
+}
+
+const LoginSchema = Yup.object().shape({
+  email: Yup.string()
+    .email('Invalid email address')
+    .required('Email is required'),
+  password: Yup.string()
+    .min(8, 'Password must be at least 8 characters')
+    .required('Password is required'),
+});
+
+export const LoginForm: React.FC = () => {
+  const initialValues: LoginFormValues = {
+    email: '',
+    password: '',
+    rememberMe: false,
+  };
+
+  const handleSubmit = (
+    values: LoginFormValues,
+    { setSubmitting }: any
+  ) => {
+    // Simulate API call
+    setTimeout(() => {
+      console.log('Login submitted:', values);
+      alert('Login successful!');
+      setSubmitting(false);
+    }, 1000);
+  };
+
+  return (
+    <div className="form-container">
+      <h2>Login</h2>
+      <Formik
+        initialValues={initialValues}
+        validationSchema={LoginSchema}
+        onSubmit={handleSubmit}
+      >
+        {({ isSubmitting, errors, touched }) => (
+          <Form className="login-form">
+            <div className="form-group">
+              <label htmlFor="email">Email *</label>
+              <Field
+                type="email"
+                id="email"
+                name="email"
+                className={\`form-control \${
+                  errors.email && touched.email ? 'error' : ''
+                }\`}
+                placeholder="Enter your email"
+              />
+              <ErrorMessage
+                name="email"
+                component="div"
+                className="error-message"
+              />
+            </div>
+
+            <div className="form-group">
+              <label htmlFor="password">Password *</label>
+              <Field
+                type="password"
+                id="password"
+                name="password"
+                className={\`form-control \${
+                  errors.password && touched.password ? 'error' : ''
+                }\`}
+                placeholder="Enter your password"
+              />
+              <ErrorMessage
+                name="password"
+                component="div"
+                className="error-message"
+              />
+            </div>
+
+            <div className="form-group checkbox-group">
+              <label>
+                <Field type="checkbox" name="rememberMe" />
+                <span>Remember me</span>
+              </label>
+            </div>
+
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className="btn-submit"
+            >
+              {isSubmitting ? 'Logging in...' : 'Login'}
+            </button>
+          </Form>
+        )}
+      </Formik>
+    </div>
+  );
+};
+
+export default LoginForm;
+`,
+
+  getFormStyles: (style: string) => {
+    const isSCSS = style === 'scss';
+    const isLESS = style === 'less';
+    
+    if (isSCSS) {
+      return `// Formik Form Styles - SCSS
+// Color palette
+$primary-color: #667eea;
+$primary-hover: #5568d3;
+$primary-light: rgba(102, 126, 234, 0.1);
+$success-color: #48bb78;
+$error-color: #f56565;
+$error-light: rgba(245, 101, 101, 0.1);
+$text-dark: #2d3748;
+$text-light: #718096;
+$border-color: #e2e8f0;
+$bg-white: #ffffff;
+$shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.12);
+$shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
+$shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
+
+.form-container {
+  max-width: 600px;
+  margin: 2rem auto;
+  padding: 2.5rem;
+  background: $bg-white;
+  border-radius: 12px;
+  box-shadow: $shadow-lg;
+  border: 1px solid $border-color;
+  
+  h2 {
+    margin-bottom: 2rem;
+    color: $text-dark;
+    text-align: center;
+    font-size: 1.875rem;
+    font-weight: 700;
+    background: linear-gradient(135deg, $primary-color 0%, $primary-hover 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+}
+
+.contact-form,
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.75rem;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.625rem;
+  
+  label {
+    font-weight: 600;
+    color: $text-dark;
+    font-size: 0.9375rem;
+    letter-spacing: 0.02em;
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+    
+    &::before {
+      content: '';
+      display: inline-block;
+      width: 4px;
+      height: 16px;
+      background: linear-gradient(135deg, $primary-color 0%, $primary-hover 100%);
+      border-radius: 2px;
+    }
+  }
+}
+
+.form-control {
+  padding: 0.875rem 1rem;
+  border: 2px solid $border-color;
+  border-radius: 8px;
+  font-size: 1rem;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  font-family: inherit;
+  background-color: #fafafa;
+  
+  &:focus {
+    outline: none;
+    border-color: $primary-color;
+    box-shadow: 0 0 0 4px $primary-light;
+    background-color: $bg-white;
+    transform: translateY(-1px);
+  }
+  
+  &.error {
+    border-color: $error-color;
+    background-color: $error-light;
+    
+    &:focus {
+      box-shadow: 0 0 0 4px rgba(245, 101, 101, 0.2);
+    }
+  }
+  
+  &::placeholder {
+    color: #a0aec0;
+    opacity: 0.7;
+  }
+}
+
+textarea.form-control {
+  resize: vertical;
+  min-height: 120px;
+  line-height: 1.6;
+}
+
+.error-message {
+  color: $error-color;
+  font-size: 0.875rem;
+  margin-top: 0.25rem;
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  animation: slideIn 0.3s ease;
+  
+  &::before {
+    content: '⚠';
+    font-size: 1rem;
+  }
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.checkbox-group {
+  flex-direction: row;
+  align-items: center;
+  
+  label {
+    display: flex;
+    align-items: center;
+    gap: 0.625rem;
+    font-weight: normal;
+    cursor: pointer;
+    padding: 0.5rem;
+    border-radius: 6px;
+    transition: background-color 0.2s ease;
+    
+    &:hover {
+      background-color: #f7fafc;
+    }
+    
+    &::before {
+      display: none;
+    }
+  }
+  
+  input[type="checkbox"] {
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
+    border: 2px solid $border-color;
+    border-radius: 4px;
+    accent-color: $primary-color;
+  }
+}
+
+.btn-submit {
+  padding: 0.875rem 2rem;
+  background: linear-gradient(135deg, $primary-color 0%, $primary-hover 100%);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: $shadow-md;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  
+  &:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 16px rgba(102, 126, 234, 0.3);
+  }
+  
+  &:active:not(:disabled) {
+    transform: translateY(0);
+  }
+  
+  &:disabled {
+    background: #cbd5e0;
+    cursor: not-allowed;
+    opacity: 0.6;
+    box-shadow: none;
+  }
+}
+
+.success-message {
+  padding: 1rem;
+  background-color: rgba(72, 187, 120, 0.1);
+  border: 2px solid $success-color;
+  border-radius: 8px;
+  color: #2f855a;
+  font-weight: 600;
+  text-align: center;
+  animation: slideIn 0.3s ease;
+}
+
+@media (max-width: 768px) {
+  .form-container {
+    padding: 1.5rem;
+    margin: 1rem;
+    
+    h2 {
+      font-size: 1.5rem;
+    }
+  }
+  
+  .form-control {
+    font-size: 0.9375rem;
+  }
+  
+  .btn-submit {
+    width: 100%;
+  }
+}
+`;
+    } else if (isLESS) {
+      return `// Formik Form Styles - LESS
+@primary-color: #667eea;
+@primary-hover: #5568d3;
+@primary-light: rgba(102, 126, 234, 0.1);
+@success-color: #48bb78;
+@error-color: #f56565;
+@error-light: rgba(245, 101, 101, 0.1);
+@text-dark: #2d3748;
+@text-light: #718096;
+@border-color: #e2e8f0;
+@bg-white: #ffffff;
+@shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.12);
+@shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
+@shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
+
+.form-container {
+  max-width: 600px;
+  margin: 2rem auto;
+  padding: 2.5rem;
+  background: @bg-white;
+  border-radius: 12px;
+  box-shadow: @shadow-lg;
+  border: 1px solid @border-color;
+  
+  h2 {
+    margin-bottom: 2rem;
+    color: @text-dark;
+    text-align: center;
+    font-size: 1.875rem;
+    font-weight: 700;
+    background: linear-gradient(135deg, @primary-color 0%, @primary-hover 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+}
+
+.contact-form,
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.75rem;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.625rem;
+  
+  label {
+    font-weight: 600;
+    color: @text-dark;
+    font-size: 0.9375rem;
+    letter-spacing: 0.02em;
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+    
+    &::before {
+      content: '';
+      display: inline-block;
+      width: 4px;
+      height: 16px;
+      background: linear-gradient(135deg, @primary-color 0%, @primary-hover 100%);
+      border-radius: 2px;
+    }
+  }
+}
+
+.form-control {
+  padding: 0.875rem 1rem;
+  border: 2px solid @border-color;
+  border-radius: 8px;
+  font-size: 1rem;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  font-family: inherit;
+  background-color: #fafafa;
+  
+  &:focus {
+    outline: none;
+    border-color: @primary-color;
+    box-shadow: 0 0 0 4px @primary-light;
+    background-color: @bg-white;
+    transform: translateY(-1px);
+  }
+  
+  &.error {
+    border-color: @error-color;
+    background-color: @error-light;
+    
+    &:focus {
+      box-shadow: 0 0 0 4px rgba(245, 101, 101, 0.2);
+    }
+  }
+  
+  &::placeholder {
+    color: #a0aec0;
+    opacity: 0.7;
+  }
+}
+
+textarea.form-control {
+  resize: vertical;
+  min-height: 120px;
+  line-height: 1.6;
+}
+
+.error-message {
+  color: @error-color;
+  font-size: 0.875rem;
+  margin-top: 0.25rem;
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  animation: slideIn 0.3s ease;
+  
+  &::before {
+    content: '⚠';
+    font-size: 1rem;
+  }
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.checkbox-group {
+  flex-direction: row;
+  align-items: center;
+  
+  label {
+    display: flex;
+    align-items: center;
+    gap: 0.625rem;
+    font-weight: normal;
+    cursor: pointer;
+    padding: 0.5rem;
+    border-radius: 6px;
+    transition: background-color 0.2s ease;
+    
+    &:hover {
+      background-color: #f7fafc;
+    }
+    
+    &::before {
+      display: none;
+    }
+  }
+  
+  input[type="checkbox"] {
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
+    border: 2px solid @border-color;
+    border-radius: 4px;
+    accent-color: @primary-color;
+  }
+}
+
+.btn-submit {
+  padding: 0.875rem 2rem;
+  background: linear-gradient(135deg, @primary-color 0%, @primary-hover 100%);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: @shadow-md;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  
+  &:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 16px rgba(102, 126, 234, 0.3);
+  }
+  
+  &:active:not(:disabled) {
+    transform: translateY(0);
+  }
+  
+  &:disabled {
+    background: #cbd5e0;
+    cursor: not-allowed;
+    opacity: 0.6;
+    box-shadow: none;
+  }
+}
+
+.success-message {
+  padding: 1rem;
+  background-color: rgba(72, 187, 120, 0.1);
+  border: 2px solid @success-color;
+  border-radius: 8px;
+  color: #2f855a;
+  font-weight: 600;
+  text-align: center;
+  animation: slideIn 0.3s ease;
+}
+
+@media (max-width: 768px) {
+  .form-container {
+    padding: 1.5rem;
+    margin: 1rem;
+    
+    h2 {
+      font-size: 1.5rem;
+    }
+  }
+  
+  .form-control {
+    font-size: 0.9375rem;
+  }
+  
+  .btn-submit {
+    width: 100%;
+  }
+}
+`;
+    } else {
+      // Default CSS with modern design
+      return `/* Formik Form Styles - Modern CSS */
+.form-container {
+  max-width: 600px;
+  margin: 2rem auto;
+  padding: 2.5rem;
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
+  border: 1px solid #e2e8f0;
+}
+
+.form-container h2 {
+  margin-bottom: 2rem;
+  color: #2d3748;
+  text-align: center;
+  font-size: 1.875rem;
+  font-weight: 700;
+  background: linear-gradient(135deg, #667eea 0%, #5568d3 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.contact-form,
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.75rem;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.625rem;
+}
+
+.form-group label {
+  font-weight: 600;
+  color: #2d3748;
+  font-size: 0.9375rem;
+  letter-spacing: 0.02em;
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+}
+
+.form-group label::before {
+  content: '';
+  display: inline-block;
+  width: 4px;
+  height: 16px;
+  background: linear-gradient(135deg, #667eea 0%, #5568d3 100%);
+  border-radius: 2px;
+}
+
+.form-control {
+  padding: 0.875rem 1rem;
+  border: 2px solid #e2e8f0;
+  border-radius: 8px;
+  font-size: 1rem;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  font-family: inherit;
+  background-color: #fafafa;
+}
+
+.form-control:focus {
+  outline: none;
+  border-color: #667eea;
+  box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+  background-color: #ffffff;
+  transform: translateY(-1px);
+}
+
+.form-control.error {
+  border-color: #f56565;
+  background-color: rgba(245, 101, 101, 0.1);
+}
+
+.form-control.error:focus {
+  box-shadow: 0 0 0 4px rgba(245, 101, 101, 0.2);
+}
+
+.form-control::placeholder {
+  color: #a0aec0;
+  opacity: 0.7;
+}
+
+textarea.form-control {
+  resize: vertical;
+  min-height: 120px;
+  line-height: 1.6;
+}
+
+.error-message {
+  color: #f56565;
+  font-size: 0.875rem;
+  margin-top: 0.25rem;
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  animation: slideIn 0.3s ease;
+}
+
+.error-message::before {
+  content: '⚠';
+  font-size: 1rem;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.checkbox-group {
+  flex-direction: row;
+  align-items: center;
+}
+
+.checkbox-group label {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  font-weight: normal;
+  cursor: pointer;
+  padding: 0.5rem;
+  border-radius: 6px;
+  transition: background-color 0.2s ease;
+}
+
+.checkbox-group label:hover {
+  background-color: #f7fafc;
+}
+
+.checkbox-group label::before {
+  display: none;
+}
+
+.checkbox-group input[type="checkbox"] {
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+  border: 2px solid #e2e8f0;
+  border-radius: 4px;
+  accent-color: #667eea;
+}
+
+.btn-submit {
+  padding: 0.875rem 2rem;
+  background: linear-gradient(135deg, #667eea 0%, #5568d3 100%);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.btn-submit:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 16px rgba(102, 126, 234, 0.3);
+}
+
+.btn-submit:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.btn-submit:disabled {
+  background: #cbd5e0;
+  cursor: not-allowed;
+  opacity: 0.6;
+  box-shadow: none;
+}
+
+.success-message {
+  padding: 1rem;
+  background-color: rgba(72, 187, 120, 0.1);
+  border: 2px solid #48bb78;
+  border-radius: 8px;
+  color: #2f855a;
+  font-weight: 600;
+  text-align: center;
+  animation: slideIn 0.3s ease;
+}
+
+@media (max-width: 768px) {
+  .form-container {
+    padding: 1.5rem;
+    margin: 1rem;
+  }
+  
+  .form-container h2 {
+    font-size: 1.5rem;
+  }
+  
+  .form-control {
+    font-size: 0.9375rem;
+  }
+  
+  .btn-submit {
+    width: 100%;
+  }
+}
+`;
+    }
+  },
+
+  getFormikReadme: () => `# Formik Integration Guide
+
+This project includes Formik for building and managing forms with validation.
+
+## 📦 Installed Packages
+
+- **formik** - Form management library
+- **yup** - Schema validation library
+
+## 🚀 Quick Start
+
+### Basic Form Example
+
+\`\`\`tsx
+import { Formik, Form, Field, ErrorMessage } from 'formik';
+import * as Yup from 'yup';
+
+const MyForm = () => {
+  const validationSchema = Yup.object().shape({
+    email: Yup.string().email('Invalid email').required('Required'),
+    name: Yup.string().min(2, 'Too short').required('Required'),
+  });
+
+  return (
+    <Formik
+      initialValues={{ email: '', name: '' }}
+      validationSchema={validationSchema}
+      onSubmit={(values) => {
+        console.log(values);
+      }}
+    >
+      {({ isSubmitting }) => (
+        <Form>
+          <Field name="email" type="email" />
+          <ErrorMessage name="email" component="div" />
+          
+          <Field name="name" type="text" />
+          <ErrorMessage name="name" component="div" />
+          
+          <button type="submit" disabled={isSubmitting}>
+            Submit
+          </button>
+        </Form>
+      )}
+    </Formik>
+  );
+};
+\`\`\`
+
+## 📝 Example Forms Included
+
+### 1. Contact Form
+Location: \`src/components/ContactForm.tsx\`
+
+Features:
+- Name, email, subject, and message fields
+- Full validation with Yup
+- Success/error handling
+- Styled with CSS
+
+Usage:
+\`\`\`tsx
+import { ContactForm } from './components/ContactForm';
+
+function App() {
+  return <ContactForm />;
+}
+\`\`\`
+
+### 2. Login Form
+Location: \`src/components/LoginForm.tsx\`
+
+Features:
+- Email and password fields
+- Remember me checkbox
+- Form validation
+- Loading state
+
+Usage:
+\`\`\`tsx
+import { LoginForm } from './components/LoginForm';
+
+function App() {
+  return <LoginForm />;
+}
+\`\`\`
+
+## 🎨 Styling
+
+Form styles are included in \`src/styles/forms.[css|scss|less]\` (based on your chosen style). Import in your component:
+
+\`\`\`tsx
+// For CSS
+import '../styles/forms.css';
+
+// For SCSS
+import '../styles/forms.scss';
+
+// For LESS
+import '../styles/forms.less';
+\`\`\`
+
+Or include globally in \`src/main.tsx\`:
+
+\`\`\`tsx
+import './styles/forms.css'; // or .scss, .less
+\`\`\`
+
+The styles include:
+- Modern gradient design with purple theme
+- Smooth animations and transitions
+- Focus states with shadow effects
+- Error state styling with warning icons
+- Responsive design for mobile devices
+- Accessible form controls
+
+## 🔧 Advanced Usage
+
+### Custom Validation
+
+\`\`\`tsx
+const schema = Yup.object().shape({
+  password: Yup.string()
+    .min(8, 'Must be at least 8 characters')
+    .matches(/[A-Z]/, 'Must contain uppercase letter')
+    .matches(/[0-9]/, 'Must contain number')
+    .required('Required'),
+  confirmPassword: Yup.string()
+    .oneOf([Yup.ref('password')], 'Passwords must match')
+    .required('Required'),
+});
+\`\`\`
+
+### Async Validation
+
+\`\`\`tsx
+const checkEmailExists = async (email: string) => {
+  const response = await fetch(\`/api/check-email?email=\${email}\`);
+  return response.json();
+};
+
+const schema = Yup.object().shape({
+  email: Yup.string()
+    .email('Invalid email')
+    .required('Required')
+    .test('email-exists', 'Email already exists', async (value) => {
+      if (!value) return true;
+      const exists = await checkEmailExists(value);
+      return !exists;
+    }),
+});
+\`\`\`
+
+### Field Arrays (Dynamic Forms)
+
+\`\`\`tsx
+import { FieldArray } from 'formik';
+
+<Formik
+  initialValues={{ friends: [''] }}
+  onSubmit={(values) => console.log(values)}
+>
+  {({ values }) => (
+    <Form>
+      <FieldArray name="friends">
+        {({ push, remove }) => (
+          <div>
+            {values.friends.map((friend, index) => (
+              <div key={index}>
+                <Field name={\`friends.\${index}\`} />
+                <button type="button" onClick={() => remove(index)}>
+                  Remove
+                </button>
+              </div>
+            ))}
+            <button type="button" onClick={() => push('')}>
+              Add Friend
+            </button>
+          </div>
+        )}
+      </FieldArray>
+      <button type="submit">Submit</button>
+    </Form>
+  )}
+</Formik>
+\`\`\`
+
+### Custom Input Components
+
+\`\`\`tsx
+import { useField } from 'formik';
+
+const CustomInput = ({ label, ...props }) => {
+  const [field, meta] = useField(props);
+  
+  return (
+    <div>
+      <label htmlFor={props.id || props.name}>{label}</label>
+      <input {...field} {...props} />
+      {meta.touched && meta.error ? (
+        <div className="error">{meta.error}</div>
+      ) : null}
+    </div>
+  );
+};
+
+// Usage
+<Formik initialValues={{ email: '' }} onSubmit={handleSubmit}>
+  <Form>
+    <CustomInput
+      label="Email"
+      name="email"
+      type="email"
+    />
+  </Form>
+</Formik>
+\`\`\`
+
+## 📚 Common Patterns
+
+### Handling File Uploads
+
+\`\`\`tsx
+<Formik
+  initialValues={{ file: null }}
+  onSubmit={(values) => {
+    const formData = new FormData();
+    formData.append('file', values.file);
+    // Send formData to API
+  }}
+>
+  {({ setFieldValue }) => (
+    <Form>
+      <input
+        type="file"
+        name="file"
+        onChange={(event) => {
+          setFieldValue('file', event.currentTarget.files[0]);
+        }}
+      />
+      <button type="submit">Upload</button>
+    </Form>
+  )}
+</Formik>
+\`\`\`
+
+### Dependent Fields
+
+\`\`\`tsx
+<Formik
+  initialValues={{ country: '', state: '' }}
+  onSubmit={handleSubmit}
+>
+  {({ values, setFieldValue }) => (
+    <Form>
+      <Field
+        as="select"
+        name="country"
+        onChange={(e) => {
+          setFieldValue('country', e.target.value);
+          setFieldValue('state', ''); // Reset state when country changes
+        }}
+      >
+        <option value="">Select Country</option>
+        <option value="us">United States</option>
+        <option value="ca">Canada</option>
+      </Field>
+      
+      {values.country && (
+        <Field as="select" name="state">
+          <option value="">Select State</option>
+          {/* Render states based on selected country */}
+        </Field>
+      )}
+    </Form>
+  )}
+</Formik>
+\`\`\`
+
+## 🐛 Troubleshooting
+
+### Form Not Submitting
+
+- Check if validation is passing
+- Ensure \`onSubmit\` is properly defined
+- Check browser console for errors
+
+### Validation Not Working
+
+- Ensure Yup schema is properly defined
+- Check field names match between \`Field\` and validation schema
+- Verify \`validationSchema\` prop is passed to Formik
+
+### Values Not Updating
+
+- Ensure field \`name\` prop matches \`initialValues\` key
+- Check if you're using controlled vs uncontrolled inputs correctly
+- Use \`setFieldValue\` for programmatic updates
+
+## 🔗 Resources
+
+- [Formik Documentation](https://formik.org/docs/overview)
+- [Yup Validation](https://github.com/jquense/yup)
+- [Formik Examples](https://formik.org/docs/examples/basic)
+- [API Reference](https://formik.org/docs/api/formik)
+
+## 💡 Best Practices
+
+1. ✅ Always use validation schemas for consistent validation
+2. ✅ Keep forms modular - create reusable field components
+3. ✅ Handle loading and error states properly
+4. ✅ Use TypeScript for type-safe forms
+5. ✅ Implement proper error handling and user feedback
+6. ✅ Test forms thoroughly, including edge cases
+7. ✅ Consider accessibility (labels, ARIA attributes, keyboard navigation)
+
+## 🎯 Tips
+
+- Use \`validateOnChange={false}\` to validate only on blur for better UX
+- Implement debouncing for async validation to reduce API calls
+- Use \`resetForm()\` to clear form after successful submission
+- Consider using \`enableReinitialize\` for forms that depend on external data
+`,
+
+  // React Hook Form Templates
+  getReactHookFormContactForm: () => `import React, { useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { yupResolver } from '@hookform/resolvers/yup';
+import * as Yup from 'yup';
+
+interface ContactFormValues {
+  name: string;
+  email: string;
+  subject: string;
+  message: string;
+}
+
+const contactFormSchema = Yup.object().shape({
+  name: Yup.string()
+    .min(2, 'Name must be at least 2 characters')
+    .max(50, 'Name must be less than 50 characters')
+    .required('Name is required'),
+  email: Yup.string()
+    .email('Invalid email address')
+    .required('Email is required'),
+  subject: Yup.string()
+    .min(5, 'Subject must be at least 5 characters')
+    .max(100, 'Subject must be less than 100 characters')
+    .required('Subject is required'),
+  message: Yup.string()
+    .min(10, 'Message must be at least 10 characters')
+    .max(500, 'Message must be less than 500 characters')
+    .required('Message is required'),
+});
+
+export const ContactForm: React.FC = () => {
+  const [isSubmitted, setIsSubmitted] = useState(false);
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+    reset,
+  } = useForm<ContactFormValues>({
+    resolver: yupResolver(contactFormSchema),
+    mode: 'onBlur',
+  });
+
+  const onSubmit = async (data: ContactFormValues) => {
+    try {
+      // Simulate API call
+      await new Promise((resolve) => setTimeout(resolve, 1500));
+      
+      console.log('Form submitted:', data);
+      setIsSubmitted(true);
+      reset();
+      
+      // Hide success message after 5 seconds
+      setTimeout(() => setIsSubmitted(false), 5000);
+    } catch (error) {
+      console.error('Form submission error:', error);
+      alert('Failed to send message. Please try again.');
+    }
+  };
+
+  return (
+    <div className="form-container">
+      <h2>Contact Us</h2>
+      
+      {isSubmitted && (
+        <div className="success-message">
+          ✓ Message sent successfully! We'll get back to you soon.
+        </div>
+      )}
+
+      <form onSubmit={handleSubmit(onSubmit)} className="contact-form">
+        <div className="form-group">
+          <label htmlFor="name">Name *</label>
+          <input
+            id="name"
+            type="text"
+            className={\`form-control \${errors.name ? 'error' : ''}\`}
+            placeholder="Enter your name"
+            {...register('name')}
+          />
+          {errors.name && (
+            <span className="error-message">{errors.name.message}</span>
+          )}
+        </div>
+
+        <div className="form-group">
+          <label htmlFor="email">Email *</label>
+          <input
+            id="email"
+            type="email"
+            className={\`form-control \${errors.email ? 'error' : ''}\`}
+            placeholder="your.email@example.com"
+            {...register('email')}
+          />
+          {errors.email && (
+            <span className="error-message">{errors.email.message}</span>
+          )}
+        </div>
+
+        <div className="form-group">
+          <label htmlFor="subject">Subject *</label>
+          <input
+            id="subject"
+            type="text"
+            className={\`form-control \${errors.subject ? 'error' : ''}\`}
+            placeholder="What is this about?"
+            {...register('subject')}
+          />
+          {errors.subject && (
+            <span className="error-message">{errors.subject.message}</span>
+          )}
+        </div>
+
+        <div className="form-group">
+          <label htmlFor="message">Message *</label>
+          <textarea
+            id="message"
+            className={\`form-control \${errors.message ? 'error' : ''}\`}
+            placeholder="Tell us more..."
+            rows={5}
+            {...register('message')}
+          />
+          {errors.message && (
+            <span className="error-message">{errors.message.message}</span>
+          )}
+        </div>
+
+        <button
+          type="submit"
+          className="btn-submit"
+          disabled={isSubmitting}
+        >
+          {isSubmitting ? 'Sending...' : 'Send Message'}
+        </button>
+      </form>
+    </div>
+  );
+};
+
+export default ContactForm;
+`,
+
+  getReactHookFormLoginForm: () => `import React, { useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { yupResolver } from '@hookform/resolvers/yup';
+import * as Yup from 'yup';
+
+interface LoginFormValues {
+  email: string;
+  password: string;
+  rememberMe: boolean;
+}
+
+const loginFormSchema = Yup.object().shape({
+  email: Yup.string()
+    .email('Invalid email address')
+    .required('Email is required'),
+  password: Yup.string()
+    .min(6, 'Password must be at least 6 characters')
+    .required('Password is required'),
+  rememberMe: Yup.boolean(),
+});
+
+export const LoginForm: React.FC = () => {
+  const [showPassword, setShowPassword] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false);
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+    reset,
+  } = useForm<LoginFormValues>({
+    resolver: yupResolver(loginFormSchema),
+    defaultValues: {
+      email: '',
+      password: '',
+      rememberMe: false,
+    },
+    mode: 'onBlur',
+  });
+
+  const onSubmit = async (data: LoginFormValues) => {
+    try {
+      // Simulate API call
+      await new Promise((resolve) => setTimeout(resolve, 1500));
+      
+      console.log('Login submitted:', { ...data, password: '***' });
+      setIsSuccess(true);
+      
+      // Reset success message after 5 seconds
+      setTimeout(() => {
+        setIsSuccess(false);
+        reset();
+      }, 5000);
+    } catch (error) {
+      console.error('Login error:', error);
+      alert('Login failed. Please try again.');
+    }
+  };
+
+  return (
+    <div className="form-container">
+      <h2>Login</h2>
+      
+      {isSuccess && (
+        <div className="success-message">
+          ✓ Login successful! Redirecting...
+        </div>
+      )}
+
+      <form onSubmit={handleSubmit(onSubmit)} className="login-form">
+        <div className="form-group">
+          <label htmlFor="email">Email *</label>
+          <input
+            id="email"
+            type="email"
+            className={\`form-control \${errors.email ? 'error' : ''}\`}
+            placeholder="your.email@example.com"
+            autoComplete="email"
+            {...register('email')}
+          />
+          {errors.email && (
+            <span className="error-message">{errors.email.message}</span>
+          )}
+        </div>
+
+        <div className="form-group">
+          <label htmlFor="password">Password *</label>
+          <div style={{ position: 'relative' }}>
+            <input
+              id="password"
+              type={showPassword ? 'text' : 'password'}
+              className={\`form-control \${errors.password ? 'error' : ''}\`}
+              placeholder="Enter your password"
+              autoComplete="current-password"
+              {...register('password')}
+            />
+            <button
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              style={{
+                position: 'absolute',
+                right: '10px',
+                top: '50%',
+                transform: 'translateY(-50%)',
+                background: 'none',
+                border: 'none',
+                cursor: 'pointer',
+                fontSize: '0.9rem',
+                color: '#667eea',
+              }}
+            >
+              {showPassword ? 'Hide' : 'Show'}
+            </button>
+          </div>
+          {errors.password && (
+            <span className="error-message">{errors.password.message}</span>
+          )}
+        </div>
+
+        <div className="form-group checkbox-group">
+          <label htmlFor="rememberMe">
+            <input
+              id="rememberMe"
+              type="checkbox"
+              {...register('rememberMe')}
+            />
+            Remember me
+          </label>
+        </div>
+
+        <button
+          type="submit"
+          className="btn-submit"
+          disabled={isSubmitting}
+        >
+          {isSubmitting ? 'Logging in...' : 'Login'}
+        </button>
+      </form>
+    </div>
+  );
+};
+
+export default LoginForm;
+`,
+
+  getReactHookFormReadme: () => `# React Hook Form Integration Guide
+
+This project includes React Hook Form for building performant, flexible forms with validation.
+
+## 📦 Installed Packages
+
+- **react-hook-form** - Performant form management library
+- **@hookform/resolvers** - Validation schema resolvers
+- **yup** - Schema validation library
+
+## 🚀 Quick Start
+
+### Basic Form Example
+
+\`\`\`tsx
+import { useForm } from 'react-hook-form';
+
+interface FormValues {
+  email: string;
+  name: string;
+}
+
+const MyForm = () => {
+  const { register, handleSubmit, formState: { errors } } = useForm<FormValues>();
+
+  const onSubmit = (data: FormValues) => {
+    console.log(data);
+  };
+
+  return (
+    <form onSubmit={handleSubmit(onSubmit)}>
+      <input {...register('email', { required: 'Email is required' })} />
+      {errors.email && <span>{errors.email.message}</span>}
+      
+      <input {...register('name', { required: 'Name is required' })} />
+      {errors.name && <span>{errors.name.message}</span>}
+      
+      <button type="submit">Submit</button>
+    </form>
+  );
+};
+\`\`\`
+
+## 📝 Example Forms Included
+
+### 1. Contact Form
+Location: \`src/components/ContactForm.tsx\`
+
+Features:
+- Name, email, subject, and message fields
+- Yup validation with @hookform/resolvers
+- Success/error handling
+- Modern styled design
+
+Usage:
+\`\`\`tsx
+import { ContactForm } from './components/ContactForm';
+
+function App() {
+  return <ContactForm />;
+}
+\`\`\`
+
+### 2. Login Form
+Location: \`src/components/LoginForm.tsx\`
+
+Features:
+- Email and password fields
+- "Remember me" checkbox
+- Show/hide password toggle
+- Yup validation
+- Loading states
+
+Usage:
+\`\`\`tsx
+import { LoginForm } from './components/LoginForm';
+
+function App() {
+  return <LoginForm />;
+}
+\`\`\`
+
+## 🎨 Styling
+
+Form styles are included in \`src/styles/forms.[css|scss|less]\` (based on your chosen style). Import in your component:
+
+\`\`\`tsx
+// For CSS
+import '../styles/forms.css';
+
+// For SCSS
+import '../styles/forms.scss';
+
+// For LESS
+import '../styles/forms.less';
+\`\`\`
+
+Or include globally in \`src/main.tsx\`:
+
+\`\`\`tsx
+import './styles/forms.css'; // or .scss, .less
+\`\`\`
+
+The styles include:
+- Modern gradient design with purple theme
+- Smooth animations and transitions
+- Focus states with shadow effects
+- Error state styling with warning icons
+- Responsive design for mobile devices
+- Accessible form controls
+
+## 🔧 Advanced Usage
+
+### With Yup Validation
+
+\`\`\`tsx
+import { useForm } from 'react-hook-form';
+import { yupResolver } from '@hookform/resolvers/yup';
+import * as Yup from 'yup';
+
+const schema = Yup.object().shape({
+  email: Yup.string().email('Invalid email').required('Required'),
+  password: Yup.string()
+    .min(8, 'Must be at least 8 characters')
+    .matches(/[A-Z]/, 'Must contain uppercase')
+    .matches(/[0-9]/, 'Must contain number')
+    .required('Required'),
+});
+
+const MyForm = () => {
+  const { register, handleSubmit, formState: { errors } } = useForm({
+    resolver: yupResolver(schema),
+  });
+
+  return (
+    <form onSubmit={handleSubmit(onSubmit)}>
+      <input {...register('email')} />
+      {errors.email && <span>{errors.email.message}</span>}
+      
+      <input type="password" {...register('password')} />
+      {errors.password && <span>{errors.password.message}</span>}
+      
+      <button type="submit">Submit</button>
+    </form>
+  );
+};
+\`\`\`
+
+### Async Validation
+
+\`\`\`tsx
+const { register } = useForm();
+
+<input
+  {...register('username', {
+    validate: async (value) => {
+      const response = await fetch(\`/api/check-username?username=\${value}\`);
+      const data = await response.json();
+      return data.available || 'Username already taken';
+    }
+  })}
+/>
+\`\`\`
+
+### Watch Field Values
+
+\`\`\`tsx
+const { register, watch } = useForm();
+const watchedEmail = watch('email');
+
+<div>Email: {watchedEmail}</div>
+\`\`\`
+
+### Conditional Fields
+
+\`\`\`tsx
+const { register, watch } = useForm();
+const watchShowAddress = watch('showAddress');
+
+<input type="checkbox" {...register('showAddress')} />
+
+{watchShowAddress && (
+  <input {...register('address')} placeholder="Address" />
+)}
+\`\`\`
+
+### Reset Form
+
+\`\`\`tsx
+const { register, handleSubmit, reset } = useForm();
+
+const onSubmit = (data) => {
+  console.log(data);
+  reset(); // Reset form to initial values
+};
+\`\`\`
+
+### Set Field Values Programmatically
+
+\`\`\`tsx
+const { register, setValue } = useForm();
+
+<button onClick={() => setValue('email', 'test@example.com')}>
+  Fill Email
+</button>
+\`\`\`
+
+## 📱 Form Arrays (Dynamic Fields)
+
+\`\`\`tsx
+import { useForm, useFieldArray } from 'react-hook-form';
+
+const MyForm = () => {
+  const { register, control, handleSubmit } = useForm({
+    defaultValues: {
+      items: [{ name: '' }]
+    }
+  });
+
+  const { fields, append, remove } = useFieldArray({
+    control,
+    name: 'items'
+  });
+
+  return (
+    <form onSubmit={handleSubmit(onSubmit)}>
+      {fields.map((field, index) => (
+        <div key={field.id}>
+          <input {...register(\`items.\${index}.name\`)} />
+          <button type="button" onClick={() => remove(index)}>
+            Remove
+          </button>
+        </div>
+      ))}
+      <button type="button" onClick={() => append({ name: '' })}>
+        Add Item
+      </button>
+      <button type="submit">Submit</button>
+    </form>
+  );
+};
+\`\`\`
+
+## 🎯 Mode Options
+
+Control when validation occurs:
+
+\`\`\`tsx
+useForm({
+  mode: 'onBlur',      // Validate on blur (recommended)
+  mode: 'onChange',    // Validate on every change
+  mode: 'onSubmit',    // Validate only on submit (default)
+  mode: 'onTouched',   // Validate on first blur, then on every change
+  mode: 'all'          // Validate on both blur and change
+});
+\`\`\`
+
+## 🔄 Integration with APIs
+
+### POST Request Example
+
+\`\`\`tsx
+const onSubmit = async (data: FormValues) => {
+  try {
+    const response = await fetch('/api/submit', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data)
+    });
+    
+    if (!response.ok) throw new Error('Submission failed');
+    
+    const result = await response.json();
+    console.log('Success:', result);
+    reset();
+  } catch (error) {
+    console.error('Error:', error);
+  }
+};
+\`\`\`
+
+### With Axios
+
+\`\`\`tsx
+import axios from 'axios';
+
+const onSubmit = async (data: FormValues) => {
+  try {
+    const response = await axios.post('/api/submit', data);
+    console.log('Success:', response.data);
+    reset();
+  } catch (error) {
+    console.error('Error:', error);
+  }
+};
+\`\`\`
+
+## ✅ Testing
+
+### With React Testing Library
+
+\`\`\`tsx
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { ContactForm } from './ContactForm';
+
+describe('ContactForm', () => {
+  it('submits form with valid data', async () => {
+    render(<ContactForm />);
+    
+    fireEvent.change(screen.getByLabelText(/name/i), {
+      target: { value: 'John Doe' }
+    });
+    fireEvent.change(screen.getByLabelText(/email/i), {
+      target: { value: 'john@example.com' }
+    });
+    
+    fireEvent.click(screen.getByRole('button', { name: /submit/i }));
+    
+    await waitFor(() => {
+      expect(screen.getByText(/success/i)).toBeInTheDocument();
+    });
+  });
+
+  it('shows validation errors', async () => {
+    render(<ContactForm />);
+    
+    fireEvent.click(screen.getByRole('button', { name: /submit/i }));
+    
+    await waitFor(() => {
+      expect(screen.getByText(/name is required/i)).toBeInTheDocument();
+    });
+  });
+});
+\`\`\`
+
+## 🎨 Custom Styling
+
+Override default styles:
+
+\`\`\`css
+.form-control {
+  background-color: #your-color;
+  border-color: #your-border;
+}
+
+.btn-submit {
+  background: linear-gradient(135deg, #your-start, #your-end);
+}
+\`\`\`
+
+## 🐛 Troubleshooting
+
+### Form Not Submitting
+
+**Problem:** Form doesn't submit when button is clicked
+
+**Solution:** Ensure button has \`type="submit"\` and form has \`onSubmit={handleSubmit(onSubmit)}\`
+
+### Validation Not Working
+
+**Problem:** Validation rules not triggering
+
+**Solution:** Check that you're using the correct mode and validation rules are properly defined
+
+### TypeScript Errors
+
+**Problem:** Type errors with form values
+
+**Solution:** Define proper interfaces:
+
+\`\`\`tsx
+interface FormValues {
+  email: string;
+  password: string;
+}
+
+const { register } = useForm<FormValues>();
+\`\`\`
+
+### Controlled Components
+
+**Problem:** Need controlled inputs
+
+**Solution:** Use \`Controller\` component:
+
+\`\`\`tsx
+import { Controller, useForm } from 'react-hook-form';
+
+<Controller
+  name="myField"
+  control={control}
+  render={({ field }) => <input {...field} />}
+/>
+\`\`\`
+
+## 📚 Resources
+
+- **Official Documentation**: https://react-hook-form.com/
+- **API Reference**: https://react-hook-form.com/api
+- **Examples**: https://react-hook-form.com/form-builder
+- **DevTools**: https://react-hook-form.com/dev-tools
+
+## ⚡ Performance Tips
+
+1. ✅ Use \`mode: 'onBlur'\` for better performance
+2. ✅ Avoid using \`watch()\` excessively
+3. ✅ Use \`useFieldArray\` for dynamic fields
+4. ✅ Leverage uncontrolled components (default)
+5. ✅ Use \`shouldUnregister: false\` for conditional fields
+
+## 🎯 Best Practices
+
+1. ✅ Always define TypeScript interfaces for form values
+2. ✅ Use Yup or Zod for complex validation
+3. ✅ Handle loading and error states properly
+4. ✅ Provide clear error messages
+5. ✅ Test forms thoroughly
+6. ✅ Consider accessibility (labels, ARIA attributes)
+7. ✅ Use \`reset()\` after successful submission
+
+## 🎓 Migration from Formik
+
+### Formik
+\`\`\`tsx
+<Formik
+  initialValues={{ email: '' }}
+  onSubmit={handleSubmit}
+  validationSchema={schema}
+>
+  {({ errors, touched }) => (
+    <Form>
+      <Field name="email" />
+      <ErrorMessage name="email" />
+    </Form>
+  )}
+</Formik>
+\`\`\`
+
+### React Hook Form
+\`\`\`tsx
+const { register, handleSubmit, formState: { errors } } = useForm({
+  defaultValues: { email: '' },
+  resolver: yupResolver(schema)
+});
+
+<form onSubmit={handleSubmit(onSubmit)}>
+  <input {...register('email')} />
+  {errors.email && <span>{errors.email.message}</span>}
+</form>
+\`\`\`
+
+## 🎉 Why React Hook Form?
+
+- ⚡ **Performance**: Minimal re-renders
+- 📦 **Bundle Size**: ~9KB (vs Formik ~15KB)
+- 🎯 **DX**: Simple API, less boilerplate
+- 🔧 **Flexible**: Works with any UI library
+- ✅ **Validation**: Built-in + external schema support
+- 📱 **React Native**: Full support
+
+---
+
+**Happy Coding!** 🚀
 `
 };
 
@@ -3151,6 +5248,11 @@ const getDependenciesByFeature = (a: any) => {
       material: ["@mui/material@latest", "@emotion/react@latest", "@emotion/styled@latest"],
       bootstrap: ["bootstrap@latest", "react-bootstrap@latest"],
       bootstrapDev: ["@types/bootstrap@latest"]
+    },
+    formBuilder: {
+      formik: ["formik@latest", "yup@latest"],
+      formikDev: ["@types/yup@latest"],
+      "react-hook-form": ["react-hook-form@latest", "@hookform/resolvers@latest", "yup@latest"]
     }
   };
 
@@ -3182,6 +5284,12 @@ const getDependenciesByFeature = (a: any) => {
   } else if (a.framework === "bootstrap") {
     basePkgs.push(...featurePackages.framework.bootstrap);
     baseDevPkgs.push(...featurePackages.framework.bootstrapDev);
+  }
+  if (a.formBuilder === 'formik') {
+    basePkgs.push(...featurePackages.formBuilder.formik);
+    baseDevPkgs.push(...featurePackages.formBuilder.formikDev);
+  } else if (a.formBuilder === 'react-hook-form') {
+    basePkgs.push(...featurePackages.formBuilder["react-hook-form"]);
   }
 
   return { production: basePkgs, development: baseDevPkgs };
@@ -3399,6 +5507,157 @@ const setupCIConfig = (workspacePath: string, a: any) => {
   } catch (error) {
     console.error("❌ Failed to setup CI/CD configuration:", error.message);
     console.warn("You can add CI/CD configuration manually later");
+  }
+};
+
+const setupFormBuilder = (workspacePath: string, a: any) => {
+  if (!a.formBuilder || a.formBuilder === 'none') {
+    return;
+  }
+
+  try {
+    console.log(`\n📝 Setting up ${a.formBuilder === 'formik' ? 'Formik' : 'React Hook Form'} form builder...`);
+
+    // Detect app structure
+    const standaloneAppPath = path.join(workspacePath, "src");
+    const multiAppPath = path.join(workspacePath, "apps", a.name);
+    
+    let appPath: string;
+    let srcPath: string;
+    
+    if (fs.existsSync(standaloneAppPath)) {
+      appPath = workspacePath;
+      srcPath = standaloneAppPath;
+    } else if (fs.existsSync(multiAppPath)) {
+      appPath = multiAppPath;
+      srcPath = path.join(multiAppPath, "src");
+    } else {
+      appPath = workspacePath;
+      srcPath = path.join(workspacePath, "src");
+    }
+
+    // Install form builder dependencies
+    if (a.formBuilder === 'formik') {
+      console.log("📦 Installing Formik and Yup...");
+      installPackagesWithRetry(
+        ["formik", "yup"],
+        false,
+        workspacePath,
+        "Formik form builder packages"
+      );
+
+      // Install TypeScript types
+      installPackagesWithRetry(
+        ["@types/yup"],
+        true,
+        workspacePath,
+        "Formik TypeScript types"
+      );
+
+      // Create components directory
+      const componentsPath = path.join(srcPath, "components");
+      if (!fs.existsSync(componentsPath)) {
+        fs.mkdirSync(componentsPath, { recursive: true });
+      }
+
+      // Create Contact Form component
+      const contactFormPath = path.join(componentsPath, "ContactForm.tsx");
+      const contactFormContent = TEMPLATES.getFormikContactForm();
+      createFileWithErrorHandling(contactFormPath, contactFormContent, "Contact Form component");
+
+      // Create Login Form component
+      const loginFormPath = path.join(componentsPath, "LoginForm.tsx");
+      const loginFormContent = TEMPLATES.getFormikLoginForm();
+      createFileWithErrorHandling(loginFormPath, loginFormContent, "Login Form component");
+
+      // Create styles directory and form styles
+      const stylesPath = path.join(srcPath, "styles");
+      if (!fs.existsSync(stylesPath)) {
+        fs.mkdirSync(stylesPath, { recursive: true });
+      }
+
+      // Determine file extension based on style
+      const styleExt = a.style === 'scss' ? 'scss' : a.style === 'less' ? 'less' : 'css';
+      const formStylesPath = path.join(stylesPath, `forms.${styleExt}`);
+      const formStylesContent = TEMPLATES.getFormStyles(a.style);
+      createFileWithErrorHandling(formStylesPath, formStylesContent, "Form styles");
+
+      // Create Formik README
+      const formikReadmePath = path.join(workspacePath, "FORMIK_GUIDE.md");
+      const formikReadmeContent = TEMPLATES.getFormikReadme();
+      createFileWithErrorHandling(formikReadmePath, formikReadmeContent, "Formik documentation");
+
+      console.log("✅ Formik form builder setup completed successfully!");
+      console.log("   📝 ContactForm: src/components/ContactForm.tsx");
+      console.log("   📝 LoginForm: src/components/LoginForm.tsx");
+      console.log(`   📝 Form Styles: src/styles/forms.${styleExt}`);
+      console.log("   📝 Documentation: FORMIK_GUIDE.md");
+      console.log("\n   Import in your components:");
+      console.log("   import { ContactForm } from './components/ContactForm';");
+      console.log(`   import '../styles/forms.${styleExt}';`);
+    } else if (a.formBuilder === 'react-hook-form') {
+      console.log("📦 Installing React Hook Form packages...");
+      
+      // Install React Hook Form and dependencies
+      installPackagesWithRetry(
+        ["react-hook-form", "@hookform/resolvers", "yup"],
+        false,
+        workspacePath,
+        "React Hook Form packages"
+      );
+
+      // Install TypeScript types
+      installPackagesWithRetry(
+        ["@types/yup"],
+        true,
+        workspacePath,
+        "React Hook Form TypeScript types"
+      );
+
+      // Create components directory
+      const componentsPath = path.join(srcPath, "components");
+      if (!fs.existsSync(componentsPath)) {
+        fs.mkdirSync(componentsPath, { recursive: true });
+      }
+
+      // Create Contact Form component
+      const contactFormPath = path.join(componentsPath, "ContactForm.tsx");
+      const contactFormContent = TEMPLATES.getReactHookFormContactForm();
+      createFileWithErrorHandling(contactFormPath, contactFormContent, "Contact Form component (React Hook Form)");
+
+      // Create Login Form component
+      const loginFormPath = path.join(componentsPath, "LoginForm.tsx");
+      const loginFormContent = TEMPLATES.getReactHookFormLoginForm();
+      createFileWithErrorHandling(loginFormPath, loginFormContent, "Login Form component (React Hook Form)");
+
+      // Create styles directory and form styles (reuse the same styles as Formik)
+      const stylesPath = path.join(srcPath, "styles");
+      if (!fs.existsSync(stylesPath)) {
+        fs.mkdirSync(stylesPath, { recursive: true });
+      }
+
+      const styleExt = a.style === 'scss' ? 'scss' : a.style === 'less' ? 'less' : 'css';
+      const formStylesPath = path.join(stylesPath, `forms.${styleExt}`);
+      const formStylesContent = TEMPLATES.getFormStyles(a.style);
+      createFileWithErrorHandling(formStylesPath, formStylesContent, "Form styles");
+
+      // Create React Hook Form README
+      const rhfReadmePath = path.join(workspacePath, "REACT_HOOK_FORM_GUIDE.md");
+      const rhfReadmeContent = TEMPLATES.getReactHookFormReadme();
+      createFileWithErrorHandling(rhfReadmePath, rhfReadmeContent, "React Hook Form documentation");
+
+      console.log("✅ React Hook Form setup completed successfully!");
+      console.log("   📝 ContactForm: src/components/ContactForm.tsx");
+      console.log("   📝 LoginForm: src/components/LoginForm.tsx");
+      console.log(`   📝 Form Styles: src/styles/forms.${styleExt}`);
+      console.log("   📝 Documentation: REACT_HOOK_FORM_GUIDE.md");
+      console.log("\n   Import in your components:");
+      console.log("   import { ContactForm } from './components/ContactForm';");
+      console.log(`   import '../styles/forms.${styleExt}';`);
+    }
+  } catch (error) {
+    console.error("❌ Failed to setup form builder:", error.message);
+    console.warn("You can add form builder manually later");
   }
 };
 
@@ -3686,6 +5945,9 @@ export function reactAppGenerator() {
       // Setup CI/CD configuration if enabled
       setupCIConfig(workspacePath, a);
 
+      // Setup form builder if enabled
+      setupFormBuilder(workspacePath, a);
+
       console.log("\n✅ React application created successfully!\n");
       console.log("━".repeat(50));
       console.log(`📁 Workspace: ${a.workspace}`);
@@ -3701,6 +5963,7 @@ export function reactAppGenerator() {
       console.log(`🐶 Husky: ${a.husky ? "Yes" : "No"}`);
       console.log(`🐳 Docker: ${a.docker ? "Yes" : "No"}`);
       console.log(`🔄 CI/CD: ${a.ci ? "Yes (GitHub Actions & GitLab CI)" : "No"}`);
+      console.log(`📝 Form Builder: ${a.formBuilder === 'formik' ? 'Formik' : a.formBuilder === 'react-hook-form' ? 'React Hook Form' : 'None'}`);
       console.log("━".repeat(50));
       console.log("\nTo get started:\n");
       console.log(`  cd ${a.workspace}`);
@@ -3978,6 +6241,13 @@ function getArgs() {
         default: false,
       },
       {
+        name: "formBuilder",
+        message: "Add form builder?",
+        type: "list",
+        choices: ["none", "formik", "react-hook-form"],
+        default: "none",
+      },
+      {
         name: "seo",
         message: "Would you like to enable SEO features? (Meta tags, Open Graph, GA4/GTM, Sitemap)",
         type: "confirm",
@@ -4242,13 +6512,16 @@ function setupAuthentication(workspacePath: string, a: any) {
 
     let appPath: string;
     let srcPath: string;
+    let appSrcPath: string;
 
     if (fs.existsSync(standaloneAppPath)) {
       appPath = workspacePath;
       srcPath = standaloneAppPath;
+      appSrcPath = path.join(srcPath, "app");
     } else if (fs.existsSync(multiAppPath)) {
       appPath = multiAppPath;
       srcPath = path.join(appPath, "src");
+      appSrcPath = path.join(srcPath, "app");
     } else {
       console.warn("⚠️  Could not detect app structure for auth setup");
       return;
@@ -4258,8 +6531,8 @@ function setupAuthentication(workspacePath: string, a: any) {
     const configPath = path.join(srcPath, "config");
     fs.mkdirSync(configPath, { recursive: true });
 
-    // Create components directory
-    const componentsPath = path.join(srcPath, "components");
+    // Create components directory inside app folder (src/app/components)
+    const componentsPath = path.join(appSrcPath, "components");
     fs.mkdirSync(componentsPath, { recursive: true });
 
     if (a.auth === 'msal') {
@@ -4276,10 +6549,15 @@ function setupAuthentication(workspacePath: string, a: any) {
       // Update main.tsx to wrap with MsalProvider
       const mainTsxPath = path.join(srcPath, "main.tsx");
       if (fs.existsSync(mainTsxPath)) {
+        const routerImport = a.routing ? "import { BrowserRouter as Router } from 'react-router-dom';" : "";
+        const routerOpen = a.routing ? "<Router>" : "";
+        const routerClose = a.routing ? "</Router>" : "";
+        
         const updatedMain = `import { StrictMode } from 'react';
 import * as ReactDOM from 'react-dom/client';
 import { MsalProvider } from '@azure/msal-react';
 import { PublicClientApplication } from '@azure/msal-browser';
+${routerImport}
 import { msalConfig } from './config/msalConfig';
 import App from './app/app';
 
@@ -4291,9 +6569,11 @@ const root = ReactDOM.createRoot(
 
 root.render(
   <StrictMode>
-    <MsalProvider instance={msalInstance}>
-      <App />
-    </MsalProvider>
+    ${routerOpen}
+      <MsalProvider instance={msalInstance}>
+        <App />
+      </MsalProvider>
+    ${routerClose}
   </StrictMode>
 );`;
         fs.writeFileSync(mainTsxPath, updatedMain);
@@ -4318,11 +6598,15 @@ root.render(
       // Update main.tsx to wrap with Okta Security
       const mainTsxPath = path.join(srcPath, "main.tsx");
       if (fs.existsSync(mainTsxPath)) {
+        const routerImport = a.routing ? "import { BrowserRouter as Router } from 'react-router-dom';" : "";
+        const routerOpen = a.routing ? "<Router>" : "";
+        const routerClose = a.routing ? "</Router>" : "";
+        
         const updatedMain = `import { StrictMode } from 'react';
 import * as ReactDOM from 'react-dom/client';
 import { OktaAuth } from '@okta/okta-auth-js';
 import { Security } from '@okta/okta-react';
-import { BrowserRouter as Router } from 'react-router-dom';
+${routerImport}
 import oktaConfig from './config/oktaConfig';
 import App from './app/app';
 
@@ -4338,11 +6622,11 @@ const root = ReactDOM.createRoot(
 
 root.render(
   <StrictMode>
-    <Router>
+    ${routerOpen}
       <Security oktaAuth={oktaAuth} restoreOriginalUri={restoreOriginalUri}>
         <App />
       </Security>
-    </Router>
+    ${routerClose}
   </StrictMode>
 );`;
         fs.writeFileSync(mainTsxPath, updatedMain);
@@ -4579,6 +6863,9 @@ function applyPTGCustomizations(workspacePath: string, a: any) {
 
     // Setup CI/CD configuration if enabled
     setupCIConfig(workspacePath, a);
+
+    // Setup form builder if enabled
+    setupFormBuilder(workspacePath, a);
 
     // Setup authentication if MSAL or Okta selected
     setupAuthentication(workspacePath, a);

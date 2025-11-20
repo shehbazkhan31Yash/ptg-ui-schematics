@@ -255,6 +255,26 @@
       "description": "Add CI/CD configuration (GitHub Actions & GitLab CI)",
       "default": false,
       "x-prompt": "Would you like to add CI/CD configuration (GitHub Actions & GitLab CI)?"
+    },
+    "formBuilder": {
+      "type": "string",
+      "description": "Form builder implementation",
+      "enum": ["none", "reactive"],
+      "default": "none",
+      "x-prompt": {
+        "message": "Which form builder would you like to use?",
+        "type": "list",
+        "items": [
+          {
+            "value": "none",
+            "label": "None - Skip form builder setup"
+          },
+          {
+            "value": "reactive",
+            "label": "Reactive Forms - Angular Reactive Forms with validation"
+          }
+        ]
+      }
     }
   },
   "required": ["name"]

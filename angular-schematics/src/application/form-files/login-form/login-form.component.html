@@ -1,0 +1,73 @@
+<div class="form-container">
+  <div class="form-wrapper">
+    <h2 class="form-title">Welcome Back</h2>
+    <p class="form-subtitle">Sign in to your account</p>
+
+    <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="login-form">
+      <div class="form-group">
+        <label for="email" class="form-label">Email *</label>
+        <input
+          id="email"
+          type="email"
+          formControlName="email"
+          class="form-input"
+          [class.error]="submitted && f['email'].errors"
+          placeholder="Enter your email"
+        />
+        <div *ngIf="submitted && f['email'].errors" class="error-message">
+          <span *ngIf="f['email'].errors['required']">Email is required</span>
+          <span *ngIf="f['email'].errors['email']">Invalid email format</span>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="password" class="form-label">Password *</label>
+        <div class="password-input-wrapper">
+          <input
+            id="password"
+            [type]="showPassword ? 'text' : 'password'"
+            formControlName="password"
+            class="form-input"
+            [class.error]="submitted && f['password'].errors"
+            placeholder="Enter your password"
+          />
+          <button
+            type="button"
+            class="password-toggle"
+            (click)="togglePasswordVisibility()"
+            aria-label="Toggle password visibility"
+          >
+            {{ showPassword ? '👁️' : '👁️‍🗨️' }}
+          </button>
+        </div>
+        <div *ngIf="submitted && f['password'].errors" class="error-message">
+          <span *ngIf="f['password'].errors['required']">Password is required</span>
+          <span *ngIf="f['password'].errors['minlength']">Password must be at least 6 characters</span>
+        </div>
+      </div>
+
+      <div class="form-group checkbox-group">
+        <label class="checkbox-label">
+          <input
+            type="checkbox"
+            formControlName="rememberMe"
+            class="form-checkbox"
+          />
+          <span>Remember me</span>
+        </label>
+      </div>
+
+      <button
+        type="submit"
+        class="submit-button"
+        [disabled]="isSubmitting"
+      >
+        {{ isSubmitting ? 'Signing in...' : 'Sign In' }}
+      </button>
+    </form>
+
+    <div class="form-footer">
+      <a href="#" class="forgot-password">Forgot password?</a>
+    </div>
+  </div>
+</div>

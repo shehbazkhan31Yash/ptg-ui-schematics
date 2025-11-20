@@ -70,6 +70,9 @@
       <% if (seoType && seoType !== 'none') { %>
       <li>✅ SEO Optimization with Google Analytics (<%= seoType.toUpperCase() %>)</li>
       <% } %>
+      <% if (formBuilder && formBuilder !== 'none') { %>
+      <li>✅ Reactive Forms (Contact & Login Forms)</li>
+      <% } %>
     </ul>
   </div>
 

@@ -160,6 +160,29 @@
         "message": "Would you like to add CI/CD configuration (GitHub Actions & GitLab CI)?",
         "type": "confirmation"
       }
+    },
+    "formBuilder": {
+      "type": "string",
+      "default": "none",
+      "description": "Form builder library for the application",
+      "x-prompt": {
+        "message": "Add form builder?",
+        "type": "list",
+        "items": [
+          {
+            "label": "None - No form builder",
+            "value": "none"
+          },
+          {
+            "label": "Formik - Popular form library with validation",
+            "value": "formik"
+          },
+          {
+            "label": "React Hook Form - Performant, flexible forms",
+            "value": "react-hook-form"
+          }
+        ]
+      }
     }
   },
   "required": [
@@ -171,6 +194,7 @@
     "i18n",
     "husky",
     "docker",
-    "ci"
+    "ci",
+    "formBuilder"
   ]
 }

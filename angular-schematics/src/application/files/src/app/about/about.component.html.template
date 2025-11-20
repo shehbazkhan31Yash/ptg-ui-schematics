@@ -97,6 +97,18 @@
       </div>
       <% } %>
       
+      <% if (formBuilder && formBuilder !== 'none') { %>
+      <div class="tech-category">
+        <h3>Forms</h3>
+        <ul>
+          <li><strong>Library:</strong> Angular Reactive Forms</li>
+          <li><strong>Validation:</strong> Built-in validators (required, email, minLength)</li>
+          <li><strong>Components:</strong> ContactForm & LoginForm</li>
+          <li><strong>Styling:</strong> Modern purple gradient design</li>
+        </ul>
+      </div>
+      <% } %>
+      
       <div class="tech-category">
         <h3>Development Tools</h3>
         <ul>
