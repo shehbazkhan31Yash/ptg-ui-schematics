@@ -275,6 +275,12 @@
           }
         ]
       }
+    },
+    "crud": {
+      "type": "boolean",
+      "description": "Add CRUD operations with HttpClient and interceptors",
+      "default": false,
+      "x-prompt": "Would you like to add CRUD operations with HttpClient?"
     }
   },
   "required": ["name"]

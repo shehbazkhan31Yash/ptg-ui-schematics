@@ -1,0 +1,145 @@
+import { Injectable } from '@angular/core';
+import { HttpClient, HttpHeaders, HttpParams, HttpErrorResponse } from '@angular/common/http';
+import { Observable, throwError } from 'rxjs';
+import { catchError, tap } from 'rxjs/operators';
+import { environment } from '../../../environments/environment';
+
+/**
+ * API Client Service
+ * Centralized HTTP client service with interceptors, error handling, and logging
+ */
+@Injectable({
+  providedIn: 'root'
+})
+export class ApiClientService {
+  private readonly baseUrl: string = environment.apiUrl;
+
+  constructor(private http: HttpClient) {}
+
+  /**
+   * GET request
+   * @param endpoint - API endpoint
+   * @param params - Query parameters
+   * @returns Observable of response
+   */
+  get<T>(endpoint: string, params?: HttpParams | { [param: string]: string | string[] }): Observable<T> {
+    const url = `${this.baseUrl}${endpoint}`;
+    console.log('📤 API GET Request:', { url, params });
+
+    return this.http.get<T>(url, { params }).pipe(
+      tap(response => console.log('📥 API GET Response:', { url, data: response })),
+      catchError(error => this.handleError(error, url))
+    );
+  }
+
+  /**
+   * POST request
+   * @param endpoint - API endpoint
+   * @param body - Request body
+   * @returns Observable of response
+   */
+  post<T>(endpoint: string, body: any): Observable<T> {
+    const url = `${this.baseUrl}${endpoint}`;
+    console.log('📤 API POST Request:', { url, body });
+
+    return this.http.post<T>(url, body).pipe(
+      tap(response => console.log('📥 API POST Response:', { url, data: response })),
+      catchError(error => this.handleError(error, url))
+    );
+  }
+
+  /**
+   * PUT request
+   * @param endpoint - API endpoint
+   * @param body - Request body
+   * @returns Observable of response
+   */
+  put<T>(endpoint: string, body: any): Observable<T> {
+    const url = `${this.baseUrl}${endpoint}`;
+    console.log('📤 API PUT Request:', { url, body });
+
+    return this.http.put<T>(url, body).pipe(
+      tap(response => console.log('📥 API PUT Response:', { url, data: response })),
+      catchError(error => this.handleError(error, url))
+    );
+  }
+
+  /**
+   * PATCH request
+   * @param endpoint - API endpoint
+   * @param body - Request body
+   * @returns Observable of response
+   */
+  patch<T>(endpoint: string, body: any): Observable<T> {
+    const url = `${this.baseUrl}${endpoint}`;
+    console.log('📤 API PATCH Request:', { url, body });
+
+    return this.http.patch<T>(url, body).pipe(
+      tap(response => console.log('📥 API PATCH Response:', { url, data: response })),
+      catchError(error => this.handleError(error, url))
+    );
+  }
+
+  /**
+   * DELETE request
+   * @param endpoint - API endpoint
+   * @returns Observable of response
+   */
+  delete<T>(endpoint: string): Observable<T> {
+    const url = `${this.baseUrl}${endpoint}`;
+    console.log('📤 API DELETE Request:', { url });
+
+    return this.http.delete<T>(url).pipe(
+      tap(response => console.log('📥 API DELETE Response:', { url, data: response })),
+      catchError(error => this.handleError(error, url))
+    );
+  }
+
+  /**
+   * Global error handler
+   * @param error - HTTP error response
+   * @param url - Request URL
+   * @returns Observable error
+   */
+  private handleError(error: HttpErrorResponse, url: string): Observable<never> {
+    let errorMessage = 'An unknown error occurred';
+
+    if (error.error instanceof ErrorEvent) {
+      // Client-side or network error
+      errorMessage = `Network Error: ${error.error.message}`;
+      console.error('❌ Client-side Error:', errorMessage);
+    } else {
+      // Backend error
+      errorMessage = `Server Error: ${error.status} - ${error.message}`;
+      console.error('❌ API Error:', {
+        status: error.status,
+        statusText: error.statusText,
+        message: error.message,
+        url: url,
+        error: error.error
+      });
+
+      // Handle specific error codes
+      switch (error.status) {
+        case 401:
+          console.error('Unauthorized - Please log in');
+          // Optionally redirect to login
+          // this.router.navigate(['/login']);
+          break;
+        case 403:
+          console.error('Forbidden - Access denied');
+          break;
+        case 404:
+          console.error('Not Found - Resource does not exist');
+          break;
+        case 500:
+          console.error('Internal Server Error');
+          break;
+        default:
+          console.error('HTTP Error:', error.status);
+      }
+    }
+
+    return throwError(() => new Error(errorMessage));
+  }
+}

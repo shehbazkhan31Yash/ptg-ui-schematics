@@ -1,0 +1,164 @@
+import { Injectable } from '@angular/core';
+import { Observable } from 'rxjs';
+import { ApiClientService } from './api-client.service';
+
+/**
+ * Generic CRUD Service
+ * Provides reusable Create, Read, Update, Delete operations for any entity
+ * @template T - The entity type
+ */
+export abstract class CrudService<T> {
+  protected endpoint: string;
+
+  constructor(
+    protected apiClient: ApiClientService,
+    endpoint: string
+  ) {
+    this.endpoint = endpoint;
+  }
+
+  /**
+   * CREATE: Add a new item
+   * @param item - Partial item to create
+   * @returns Observable of created item
+   */
+  create(item: Partial<T>): Observable<T> {
+    return this.apiClient.post<T>(this.endpoint, item);
+  }
+
+  /**
+   * READ: Get all items
+   * @param params - Optional query parameters
+   * @returns Observable of items array
+   */
+  getAll(params?: { [param: string]: string | string[] }): Observable<T[]> {
+    return this.apiClient.get<T[]>(this.endpoint, params);
+  }
+
+  /**
+   * READ: Get a single item by ID
+   * @param id - Item ID
+   * @returns Observable of single item
+   */
+  getById(id: number | string): Observable<T> {
+    return this.apiClient.get<T>(`${this.endpoint}/${id}`);
+  }
+
+  /**
+   * UPDATE: Update an existing item (full update)
+   * @param id - Item ID
+   * @param item - Partial item with updates
+   * @returns Observable of updated item
+   */
+  update(id: number | string, item: Partial<T>): Observable<T> {
+    return this.apiClient.put<T>(`${this.endpoint}/${id}`, item);
+  }
+
+  /**
+   * PATCH: Partially update an item
+   * @param id - Item ID
+   * @param item - Partial item with updates
+   * @returns Observable of updated item
+   */
+  patch(id: number | string, item: Partial<T>): Observable<T> {
+    return this.apiClient.patch<T>(`${this.endpoint}/${id}`, item);
+  }
+
+  /**
+   * DELETE: Remove an item
+   * @param id - Item ID
+   * @returns Observable of void
+   */
+  delete(id: number | string): Observable<void> {
+    return this.apiClient.delete<void>(`${this.endpoint}/${id}`);
+  }
+}
+
+/**
+ * User Interface
+ */
+export interface User {
+  id: number;
+  name: string;
+  email: string;
+  phone?: string;
+  website?: string;
+  username?: string;
+}
+
+/**
+ * Post Interface
+ */
+export interface Post {
+  id: number;
+  userId: number;
+  title: string;
+  body: string;
+}
+
+/**
+ * User Service
+ * Pre-configured service for User entity
+ */
+@Injectable({
+  providedIn: 'root'
+})
+export class UserService extends CrudService<User> {
+  constructor(apiClient: ApiClientService) {
+    super(apiClient, '/users');
+  }
+
+  /**
+   * Custom method example: Get users by role
+   * @param role - User role
+   * @returns Observable of users array
+   */
+  getUsersByRole(role: string): Observable<User[]> {
+    return this.apiClient.get<User[]>(`${this.endpoint}/role/${role}`);
+  }
+}
+
+/**
+ * Post Service
+ * Pre-configured service for Post entity
+ */
+@Injectable({
+  providedIn: 'root'
+})
+export class PostService extends CrudService<Post> {
+  constructor(apiClient: ApiClientService) {
+    super(apiClient, '/posts');
+  }
+
+  /**
+   * Custom method example: Get posts by user
+   * @param userId - User ID
+   * @returns Observable of posts array
+   */
+  getPostsByUser(userId: number): Observable<Post[]> {
+    return this.apiClient.get<Post[]>(`${this.endpoint}?userId=${userId}`);
+  }
+}
+
+/**
+ * Example usage:
+ * 
+ * constructor(private userService: UserService) {}
+ * 
+ * // Get all users
+ * this.userService.getAll().subscribe(users => console.log(users));
+ * 
+ * // Get single user
+ * this.userService.getById(1).subscribe(user => console.log(user));
+ * 
+ * // Create new user
+ * this.userService.create({ name: 'John', email: 'john@example.com' })
+ *   .subscribe(user => console.log('Created:', user));
+ * 
+ * // Update user
+ * this.userService.update(1, { name: 'John Updated' })
+ *   .subscribe(user => console.log('Updated:', user));
+ * 
+ * // Delete user
+ * this.userService.delete(1).subscribe(() => console.log('Deleted'));
+ */
