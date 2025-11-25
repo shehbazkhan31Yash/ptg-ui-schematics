@@ -27,6 +27,9 @@ import {
   emotionStyledVersion,
   bootstrapVersion,
   reactBootstrapVersion,
+  axeCoreVersion,
+  reactAxeVersion,
+  eslintPluginJsxA11yVersion,
 } from "../utils/version";
 import { workspaces } from '@angular-devkit/core';
 import { 
@@ -98,6 +101,7 @@ export default function (options: any): Rule {
       setLinterToPackageJson(originalOptionsObject),
       setPrettierToPackageJson(originalOptionsObject),
       setHuskyToPackageJson(originalOptionsObject),
+      setAccessibilityToPackageJson(originalOptionsObject),
       (originalOptionsObject.stateManagement === 'redux')
         ? addDashboardToProject(originalOptionsObject, isRootApp)
         : noop,
@@ -224,6 +228,20 @@ export default function (options: any): Rule {
               isRootApp,
             }),
             move(`apps/${options.name}/`),
+          ]),
+          MergeStrategy.Overwrite
+        )
+        : noop,
+      originalOptionsObject.accessibility
+        ? mergeWith(
+          apply(url("./accessibility/"), [
+            applyTemplates({
+              utils: strings,
+              ...originalOptionsObject,
+              appName: originalOptionsObject.name,
+              isRootApp,
+            }),
+            move(`apps/${options.name}/src/app/accessibility/`),
           ]),
           MergeStrategy.Overwrite
         )
@@ -358,7 +376,7 @@ export function setLinterToPackageJson(options: any): Rule {
   
   return chain([
     (tree: Tree) => {
-      const dependencies = getEslintDependencies(options.linter);
+      const dependencies = getEslintDependencies(options.linter, options.accessibility);
       Object.entries(dependencies).forEach(([pkg, version]) => {
         tree = addPackageToPackageJson(tree, pkg, version);
       });
@@ -399,6 +417,21 @@ export function setHuskyToPackageJson(options: any): Rule {
   ]);
 }
 
+export function setAccessibilityToPackageJson(options: any): Rule {
+  if (!options.accessibility) {
+    return noop;
+  }
+  
+  return chain([
+    (tree: Tree) => {
+      tree = addPackageToPackageJson(tree, "axe-core", axeCoreVersion);
+      tree = addPackageToPackageJson(tree, "@axe-core/react", reactAxeVersion);
+      tree = addPackageToPackageJson(tree, "eslint-plugin-jsx-a11y", eslintPluginJsxA11yVersion);
+      return tree;
+    },
+  ]);
+}
+
 export function addEslintConfigToProject(options: any): Rule {
   if (!options.linter || options.linter === 'none') {
     return noop;
@@ -406,7 +439,7 @@ export function addEslintConfigToProject(options: any): Rule {
 
   return (tree: Tree) => {
     const eslintConfigPath = `apps/${options.name}/eslint.config.js`;
-    const eslintConfig = getEslintConfig(options.linter);
+    const eslintConfig = getEslintConfig(options.linter, options.accessibility);
     
     if (tree.exists(eslintConfigPath)) {
       tree.overwrite(eslintConfigPath, eslintConfig);

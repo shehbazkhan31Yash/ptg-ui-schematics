@@ -192,6 +192,15 @@
         "message": "Add CRUD operations?",
         "type": "confirmation"
       }
+    },
+    "accessibility": {
+      "type": "boolean",
+      "default": false,
+      "description": "Add accessibility tools (axe-core, eslint-plugin-jsx-a11y, accessible templates)",
+      "x-prompt": {
+        "message": "Enable accessibility tools? (axe-core, aria-lint, accessible templates)",
+        "type": "confirmation"
+      }
     }
   },
   "required": [
@@ -205,6 +214,7 @@
     "docker",
     "ci",
     "formBuilder",
-    "crud"
+    "crud",
+    "accessibility"
   ]
 }

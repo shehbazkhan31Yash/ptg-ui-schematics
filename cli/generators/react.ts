@@ -6435,6 +6435,12 @@ function getArgs() {
         type: "confirm",
         default: true,
       },
+      {
+        name: "accessibility",
+        message: "Enable accessibility tools? (axe-core, aria-lint, accessible templates)",
+        type: "confirm",
+        default: false,
+      },
     ])
     .then((a: any) => {
       return a;
@@ -6830,6 +6836,652 @@ root.render(
   }
 }
 
+function setupAccessibility(workspacePath: string, a: any) {
+  if (!a.accessibility) {
+    return; // No setup needed if accessibility not enabled
+  }
+
+  try {
+    console.log('\n♿ Setting up accessibility tools...');
+
+    // Detect app structure
+    const standaloneAppPath = path.join(workspacePath, "src");
+    const multiAppPath = path.join(workspacePath, "apps", a.name);
+
+    let appPath: string;
+    let srcPath: string;
+    let appSrcPath: string;
+
+    if (fs.existsSync(standaloneAppPath)) {
+      appPath = workspacePath;
+      srcPath = standaloneAppPath;
+      appSrcPath = path.join(srcPath, "app");
+    } else if (fs.existsSync(multiAppPath)) {
+      appPath = multiAppPath;
+      srcPath = path.join(appPath, "src");
+      appSrcPath = path.join(srcPath, "app");
+    } else {
+      console.warn("⚠️  Could not detect app structure for accessibility setup");
+      return;
+    }
+
+    // Create accessibility directory
+    const a11yPath = path.join(appSrcPath, "accessibility");
+    const a11yComponentsPath = path.join(a11yPath, "components");
+    const a11yUtilsPath = path.join(a11yPath, "utils");
+    
+    fs.mkdirSync(a11yComponentsPath, { recursive: true });
+    fs.mkdirSync(a11yUtilsPath, { recursive: true });
+
+    // Create accessibility components
+    const a11yComponentsContent = `import React, { useEffect, useRef, ReactNode } from 'react';
+import { createPortal } from 'react-dom';
+
+/**
+ * SkipLink Component
+ * Provides keyboard users ability to skip navigation and jump to main content
+ */
+interface SkipLinkProps {
+  targetId: string;
+  children?: ReactNode;
+}
+
+export const SkipLink: React.FC<SkipLinkProps> = ({ targetId, children = 'Skip to main content' }) => {
+  const handleSkip = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    e.preventDefault();
+    const target = document.getElementById(targetId);
+    if (target) {
+      target.focus();
+      target.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
+
+  return (
+    <a
+      href={\`#\${targetId}\`}
+      onClick={handleSkip}
+      style={{
+        position: 'absolute',
+        left: '-9999px',
+        zIndex: 999,
+        padding: '1em',
+        backgroundColor: '#000',
+        color: '#fff',
+        textDecoration: 'none',
+        outline: 'none',
+      }}
+      onFocus={(e) => {
+        e.currentTarget.style.left = '0';
+      }}
+      onBlur={(e) => {
+        e.currentTarget.style.left = '-9999px';
+      }}
+    >
+      {children}
+    </a>
+  );
+};
+
+/**
+ * LiveRegion Component
+ * Announces dynamic content changes to screen readers
+ */
+interface LiveRegionProps {
+  children: ReactNode;
+  ariaLive?: 'polite' | 'assertive' | 'off';
+  ariaAtomic?: boolean;
+  ariaRelevant?: 'additions' | 'removals' | 'text' | 'all';
+  id?: string;
+  className?: string;
+}
+
+export const LiveRegion: React.FC<LiveRegionProps> = ({
+  children,
+  ariaLive = 'polite',
+  ariaAtomic = true,
+  ariaRelevant = 'additions text',
+  id,
+  className,
+}) => {
+  return (
+    <div
+      id={id}
+      className={className}
+      aria-live={ariaLive}
+      aria-atomic={ariaAtomic}
+      aria-relevant={ariaRelevant}
+      role="status"
+    >
+      {children}
+    </div>
+  );
+};
+
+/**
+ * VisuallyHidden Component
+ * Hides content visually but keeps it available for screen readers
+ */
+interface VisuallyHiddenProps {
+  children: ReactNode;
+  focusable?: boolean;
+}
+
+export const VisuallyHidden: React.FC<VisuallyHiddenProps> = ({ children, focusable = false }) => {
+  const style: React.CSSProperties = focusable
+    ? {
+        position: 'absolute',
+        width: '1px',
+        height: '1px',
+        padding: 0,
+        margin: '-1px',
+        overflow: 'hidden',
+        clip: 'rect(0, 0, 0, 0)',
+        whiteSpace: 'nowrap',
+        border: 0,
+      }
+    : {
+        position: 'absolute',
+        width: '1px',
+        height: '1px',
+        padding: 0,
+        margin: '-1px',
+        overflow: 'hidden',
+        clip: 'rect(0, 0, 0, 0)',
+        whiteSpace: 'nowrap',
+        border: 0,
+      };
+
+  return <span style={style}>{children}</span>;
+};
+
+/**
+ * FocusTrap Component
+ * Traps keyboard focus within a container (useful for modals/dialogs)
+ */
+interface FocusTrapProps {
+  children: ReactNode;
+  active?: boolean;
+  returnFocusOnDeactivate?: boolean;
+}
+
+export const FocusTrap: React.FC<FocusTrapProps> = ({
+  children,
+  active = true,
+  returnFocusOnDeactivate = true,
+}) => {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const previousActiveElement = useRef<HTMLElement | null>(null);
+
+  useEffect(() => {
+    if (!active) return;
+
+    previousActiveElement.current = document.activeElement as HTMLElement;
+
+    const container = containerRef.current;
+    if (!container) return;
+
+    const focusableElements = container.querySelectorAll<HTMLElement>(
+      'a[href], button:not([disabled]), textarea:not([disabled]), input:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])'
+    );
+
+    const firstElement = focusableElements[0];
+    const lastElement = focusableElements[focusableElements.length - 1];
+
+    const handleTabKey = (e: KeyboardEvent) => {
+      if (e.key !== 'Tab') return;
+
+      if (e.shiftKey) {
+        if (document.activeElement === firstElement) {
+          lastElement?.focus();
+          e.preventDefault();
+        }
+      } else {
+        if (document.activeElement === lastElement) {
+          firstElement?.focus();
+          e.preventDefault();
+        }
+      }
+    };
+
+    firstElement?.focus();
+    document.addEventListener('keydown', handleTabKey);
+
+    return () => {
+      document.removeEventListener('keydown', handleTabKey);
+      if (returnFocusOnDeactivate && previousActiveElement.current) {
+        previousActiveElement.current.focus();
+      }
+    };
+  }, [active, returnFocusOnDeactivate]);
+
+  return <div ref={containerRef}>{children}</div>;
+};
+
+/**
+ * A11yAnnouncer Component
+ * Global announcer for screen readers using portal
+ */
+interface A11yAnnouncerProps {
+  message: string;
+  priority?: 'polite' | 'assertive';
+  clearAfter?: number;
+}
+
+export const A11yAnnouncer: React.FC<A11yAnnouncerProps> = ({
+  message,
+  priority = 'polite',
+  clearAfter = 5000,
+}) => {
+  const [announcement, setAnnouncement] = React.useState(message);
+
+  useEffect(() => {
+    setAnnouncement(message);
+
+    if (clearAfter > 0) {
+      const timer = setTimeout(() => {
+        setAnnouncement('');
+      }, clearAfter);
+
+      return () => clearTimeout(timer);
+    }
+  }, [message, clearAfter]);
+
+  return createPortal(
+    <div
+      role="status"
+      aria-live={priority}
+      aria-atomic="true"
+      style={{
+        position: 'absolute',
+        left: '-10000px',
+        width: '1px',
+        height: '1px',
+        overflow: 'hidden',
+      }}
+    >
+      {announcement}
+    </div>,
+    document.body
+  );
+};
+`;
+    createFileWithErrorHandling(
+      path.join(a11yComponentsPath, 'A11yComponents.tsx'),
+      a11yComponentsContent,
+      'Accessibility components'
+    );
+
+    // Create accessibility utilities
+    const a11yUtilsContent = `/**
+ * Accessibility Utility Functions
+ */
+
+/**
+ * Announce message to screen readers
+ * @param message - The message to announce
+ * @param priority - How urgently the message should be announced
+ */
+export function announceToScreenReader(
+  message: string,
+  priority: 'polite' | 'assertive' = 'polite'
+): void {
+  const announcer = document.createElement('div');
+  announcer.setAttribute('role', 'status');
+  announcer.setAttribute('aria-live', priority);
+  announcer.setAttribute('aria-atomic', 'true');
+  announcer.style.position = 'absolute';
+  announcer.style.left = '-10000px';
+  announcer.style.width = '1px';
+  announcer.style.height = '1px';
+  announcer.style.overflow = 'hidden';
+
+  document.body.appendChild(announcer);
+  announcer.textContent = message;
+
+  setTimeout(() => {
+    document.body.removeChild(announcer);
+  }, 1000);
+}
+
+/**
+ * Trap focus within an element
+ * @param element - The element to trap focus within
+ */
+export function trapFocus(element: HTMLElement): () => void {
+  const focusableElements = element.querySelectorAll<HTMLElement>(
+    'a[href], button:not([disabled]), textarea:not([disabled]), input:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])'
+  );
+
+  const firstElement = focusableElements[0];
+  const lastElement = focusableElements[focusableElements.length - 1];
+
+  const handleTabKey = (e: KeyboardEvent) => {
+    if (e.key !== 'Tab') return;
+
+    if (e.shiftKey) {
+      if (document.activeElement === firstElement) {
+        lastElement?.focus();
+        e.preventDefault();
+      }
+    } else {
+      if (document.activeElement === lastElement) {
+        firstElement?.focus();
+        e.preventDefault();
+      }
+    }
+  };
+
+  element.addEventListener('keydown', handleTabKey);
+
+  return () => {
+    element.removeEventListener('keydown', handleTabKey);
+  };
+}
+
+/**
+ * Generate unique ID for accessibility labels
+ * @param prefix - Optional prefix for the ID
+ */
+export function generateA11yId(prefix: string = 'a11y'): string {
+  return \`\${prefix}-\${Math.random().toString(36).substr(2, 9)}\`;
+}
+
+/**
+ * Check if user prefers reduced motion
+ */
+export function prefersReducedMotion(): boolean {
+  return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+}
+
+/**
+ * Skip to main content helper
+ * @param mainContentId - ID of the main content element
+ */
+export function skipToMainContent(mainContentId: string): void {
+  const mainContent = document.getElementById(mainContentId);
+  if (mainContent) {
+    mainContent.focus();
+    mainContent.scrollIntoView({ behavior: 'smooth' });
+  }
+}
+`;
+    createFileWithErrorHandling(
+      path.join(a11yUtilsPath, 'a11y-utils.ts'),
+      a11yUtilsContent,
+      'Accessibility utilities'
+    );
+
+    // Create axe-core helper
+    const axeHelperContent = `/**
+ * Axe-core Integration for Automated Accessibility Testing
+ * 
+ * This module provides axe-core integration for automated a11y testing during development.
+ * It only loads and runs in development mode to avoid performance impact in production.
+ */
+
+import { useEffect } from 'react';
+
+/**
+ * Initialize axe-core for accessibility testing
+ * Only runs in development mode
+ * 
+ * @param React - React library
+ * @param ReactDOM - ReactDOM library
+ * @param timeout - Delay before running axe (ms)
+ * @param config - Axe configuration options
+ */
+export function initializeAxe(
+  React: any,
+  ReactDOM: any,
+  timeout: number = 1000,
+  config?: any
+): void {
+  if (process.env.NODE_ENV !== 'production' && typeof window !== 'undefined') {
+    import('@axe-core/react').then((axe) => {
+      axe.default(React, ReactDOM, timeout, config);
+      console.log('✅ axe-core initialized successfully');
+    }).catch((error) => {
+      console.warn('⚠️ Failed to initialize axe-core:', error);
+    });
+  }
+}
+
+/**
+ * React hook to run axe-core on a component
+ * 
+ * @example
+ * function MyComponent() {
+ *   useAxe();
+ *   return <div>...</div>;
+ * }
+ */
+export function useAxe(config?: any): void {
+  useEffect(() => {
+    if (process.env.NODE_ENV !== 'production' && typeof window !== 'undefined') {
+      import('axe-core').then((axe) => {
+        axe.default.run(config).then((results) => {
+          if (results.violations.length > 0) {
+            console.group('♿ Accessibility Violations');
+            results.violations.forEach((violation) => {
+              console.warn(\`[\${violation.impact}] \${violation.help}\`);
+              console.log('Description:', violation.description);
+              console.log('Nodes:', violation.nodes);
+              console.log('Help URL:', violation.helpUrl);
+            });
+            console.groupEnd();
+          }
+        });
+      });
+    }
+  }, [config]);
+}
+
+/**
+ * Higher-order component to add axe testing to a component
+ * 
+ * @example
+ * export default WithAxe(MyComponent);
+ */
+export function WithAxe<P extends object>(
+  Component: React.ComponentType<P>
+): React.ComponentType<P> {
+  return function AxeWrapper(props: P) {
+    useAxe();
+    return <Component {...props} />;
+  };
+}
+
+/**
+ * Run axe-core manually on an element
+ * 
+ * @param element - The element to test (defaults to document)
+ * @param options - Axe run options
+ */
+export async function runA11yCheck(
+  element: Element = document.body,
+  options?: any
+): Promise<void> {
+  if (process.env.NODE_ENV !== 'production') {
+    const axe = await import('axe-core');
+    const results = await axe.default.run(element, options);
+
+    if (results.violations.length > 0) {
+      console.group('♿ Accessibility Violations');
+      results.violations.forEach((violation) => {
+        console.warn(\`[\${violation.impact}] \${violation.help}\`);
+        console.log('Description:', violation.description);
+        console.log('Help URL:', violation.helpUrl);
+      });
+      console.groupEnd();
+    } else {
+      console.log('✅ No accessibility violations found!');
+    }
+
+    return results as any;
+  }
+}
+
+/**
+ * Axe configuration presets
+ */
+export const axeConfigs = {
+  // WCAG 2.0 Level A & AA
+  wcag2a: {
+    runOnly: {
+      type: 'tag',
+      values: ['wcag2a', 'wcag2aa'],
+    },
+  },
+  // WCAG 2.1 Level AA
+  wcag21aa: {
+    runOnly: {
+      type: 'tag',
+      values: ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'],
+    },
+  },
+  // Section 508
+  section508: {
+    runOnly: {
+      type: 'tag',
+      values: ['section508'],
+    },
+  },
+  // Best practices
+  bestPractice: {
+    runOnly: {
+      type: 'tag',
+      values: ['best-practice'],
+    },
+  },
+};
+`;
+    createFileWithErrorHandling(
+      path.join(a11yUtilsPath, 'axe-helper.ts'),
+      axeHelperContent,
+      'Axe-core helper'
+    );
+
+    // Create accessibility guide
+    const a11yGuideContent = `# Accessibility Guide
+
+This application includes comprehensive accessibility tools and components to help you build WCAG 2.1 AA compliant web applications.
+
+## Included Tools
+
+1. **axe-core** - Automated accessibility testing engine
+2. **@axe-core/react** - React integration for axe-core
+3. **eslint-plugin-jsx-a11y** - ESLint rules for accessibility
+4. **Accessible Components** - Pre-built accessible UI components
+5. **Utility Functions** - Helper functions for common a11y patterns
+
+## Quick Start
+
+### 1. Initialize Axe-core (Development Only)
+
+Add this to your \`src/main.tsx\`:
+
+\`\`\`typescript
+import React from 'react';
+import ReactDOM from 'react-dom/client';
+import { initializeAxe } from './app/accessibility/utils/axe-helper';
+
+// Initialize axe-core for accessibility testing (dev only)
+if (process.env.NODE_ENV !== 'production') {
+  initializeAxe(React, ReactDOM, 1000);
+}
+
+// Rest of your main.tsx code...
+\`\`\`
+
+### 2. Use Accessible Components
+
+\`\`\`typescript
+import { SkipLink, LiveRegion, VisuallyHidden } from './app/accessibility/components/A11yComponents';
+
+function App() {
+  return (
+    <>
+      <SkipLink targetId="main-content" />
+      <nav>Navigation</nav>
+      <main id="main-content" tabIndex={-1}>
+        <h1>Welcome</h1>
+        <LiveRegion ariaLive="polite">
+          Dynamic content announcements
+        </LiveRegion>
+        <VisuallyHidden>Screen reader only content</VisuallyHidden>
+      </main>
+    </>
+  );
+}
+\`\`\`
+
+### 3. Use Utility Functions
+
+\`\`\`typescript
+import { announceToScreenReader, prefersReducedMotion } from './app/accessibility/utils/a11y-utils';
+
+function handleSave() {
+  // Save data...
+  announceToScreenReader('Data saved successfully', 'polite');
+}
+
+function MyComponent() {
+  const reduceMotion = prefersReducedMotion();
+  return <div className={reduceMotion ? 'no-motion' : 'with-motion'}>...</div>;
+}
+\`\`\`
+
+## Best Practices
+
+1. **Semantic HTML**: Use appropriate HTML elements
+2. **ARIA Labels**: Add aria-label when text is not visible
+3. **Form Labels**: Always associate labels with inputs
+4. **Keyboard Navigation**: Ensure all interactive elements are keyboard accessible
+5. **Alt Text**: Provide meaningful alt text for images
+6. **Color Contrast**: Maintain 4.5:1 contrast ratio for text
+7. **Focus Indicators**: Keep visible focus indicators
+
+## Testing
+
+### Automated Testing with Axe
+Axe-core runs automatically in development mode and reports violations in the console.
+
+### Manual Testing Checklist
+- [ ] Keyboard navigation works (Tab, Shift+Tab, Enter, Space)
+- [ ] Screen reader announces content correctly
+- [ ] Focus indicators are visible
+- [ ] Color contrast meets WCAG requirements
+- [ ] Forms have proper labels
+- [ ] Images have alt text
+- [ ] Skip links work
+- [ ] Dynamic content is announced
+
+## Resources
+
+- [WCAG 2.1 Guidelines](https://www.w3.org/WAI/WCAG21/quickref/)
+- [axe-core Documentation](https://github.com/dequelabs/axe-core)
+- [WebAIM Resources](https://webaim.org/)
+- [A11y Project](https://www.a11yproject.com/)
+`;
+    createFileWithErrorHandling(
+      path.join(a11yPath, 'ACCESSIBILITY_GUIDE.md'),
+      a11yGuideContent,
+      'Accessibility guide'
+    );
+
+    console.log('✅ Accessibility tools setup completed!');
+    console.log('   - Accessible components created');
+    console.log('   - Utility functions added');
+    console.log('   - Axe-core helper configured');
+    console.log('   - Documentation created');
+    console.log('   📝 Initialize axe-core in src/main.tsx (see ACCESSIBILITY_GUIDE.md)');
+    console.log('   📝 ESLint jsx-a11y rules will be added automatically');
+
+  } catch (error) {
+    console.warn('⚠️  Could not setup accessibility tools:', error.message);
+  }
+}
+
 function applyPTGCustomizations(workspacePath: string, a: any) {
   try {
     console.log("🔧 Applying framework-specific customizations...");
@@ -7051,6 +7703,9 @@ function applyPTGCustomizations(workspacePath: string, a: any) {
 
     // Setup authentication if MSAL or Okta selected
     setupAuthentication(workspacePath, a);
+
+    // Setup accessibility tools if enabled
+    setupAccessibility(workspacePath, a);
 
     // Fix lint issues after all customizations
     fixLintIssues(workspacePath, a);
