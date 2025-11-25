@@ -1,0 +1,179 @@
+<div class="crud-demo">
+  <div class="crud-header">
+    <h2>🔧 CRUD Operations Demo</h2>
+    <p>Complete Create, Read, Update, Delete operations with HttpClient</p>
+  </div>
+
+  <!-- Tabs -->
+  <div class="crud-tabs">
+    <button
+      class="tab-button"
+      [class.active]="activeTab === 'users'"
+      (click)="switchTab('users')">
+      👥 Users
+    </button>
+    <button
+      class="tab-button"
+      [class.active]="activeTab === 'posts'"
+      (click)="switchTab('posts')">
+      📝 Posts
+    </button>
+  </div>
+
+  <!-- Error Message -->
+  <div *ngIf="error" class="error-message">
+    ❌ {{ error }}
+  </div>
+
+  <!-- Users Tab -->
+  <div *ngIf="activeTab === 'users'" class="crud-content">
+    <!-- User Form -->
+    <div class="crud-form">
+      <h3>{{ editingUser ? 'Edit User' : 'Create New User' }}</h3>
+      <div class="form-group">
+        <input
+          type="text"
+          placeholder="Name"
+          [(ngModel)]="userName"
+          class="form-input"
+        />
+      </div>
+      <div class="form-group">
+        <input
+          type="email"
+          placeholder="Email"
+          [(ngModel)]="userEmail"
+          class="form-input"
+        />
+      </div>
+      <div class="form-actions">
+        <button
+          *ngIf="editingUser"
+          (click)="updateUser()"
+          [disabled]="loading"
+          class="btn btn-primary">
+          Update User
+        </button>
+        <button
+          *ngIf="editingUser"
+          (click)="cancelEditUser()"
+          class="btn btn-secondary">
+          Cancel
+        </button>
+        <button
+          *ngIf="!editingUser"
+          (click)="createUser()"
+          [disabled]="loading"
+          class="btn btn-primary">
+          Create User
+        </button>
+      </div>
+    </div>
+
+    <!-- Users List -->
+    <div class="crud-list">
+      <h3>Users List</h3>
+      <div *ngIf="loading" class="loading">Loading...</div>
+      <p *ngIf="!loading && users.length === 0">No users found</p>
+      <div class="items-grid">
+        <div *ngFor="let user of users" class="item-card">
+          <div class="item-header">
+            <h4>{{ user.name }}</h4>
+            <span class="item-id">ID: {{ user.id }}</span>
+          </div>
+          <p class="item-email">{{ user.email }}</p>
+          <div class="item-actions">
+            <button (click)="startEditUser(user)" class="btn-edit">
+              ✏️ Edit
+            </button>
+            <button (click)="deleteUser(user.id)" class="btn-delete">
+              🗑️ Delete
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Posts Tab -->
+  <div *ngIf="activeTab === 'posts'" class="crud-content">
+    <!-- Post Form -->
+    <div class="crud-form">
+      <h3>{{ editingPost ? 'Edit Post' : 'Create New Post' }}</h3>
+      <div class="form-group">
+        <input
+          type="text"
+          placeholder="Title"
+          [(ngModel)]="postTitle"
+          class="form-input"
+        />
+      </div>
+      <div class="form-group">
+        <textarea
+          placeholder="Body"
+          [(ngModel)]="postBody"
+          class="form-textarea"
+          rows="4">
+        </textarea>
+      </div>
+      <div class="form-actions">
+        <button
+          *ngIf="editingPost"
+          (click)="updatePost()"
+          [disabled]="loading"
+          class="btn btn-primary">
+          Update Post
+        </button>
+        <button
+          *ngIf="editingPost"
+          (click)="cancelEditPost()"
+          class="btn btn-secondary">
+          Cancel
+        </button>
+        <button
+          *ngIf="!editingPost"
+          (click)="createPost()"
+          [disabled]="loading"
+          class="btn btn-primary">
+          Create Post
+        </button>
+      </div>
+    </div>
+
+    <!-- Posts List -->
+    <div class="crud-list">
+      <h3>Posts List</h3>
+      <div *ngIf="loading" class="loading">Loading...</div>
+      <p *ngIf="!loading && posts.length === 0">No posts found</p>
+      <div class="items-grid">
+        <div *ngFor="let post of posts" class="item-card">
+          <div class="item-header">
+            <h4>{{ post.title }}</h4>
+            <span class="item-id">ID: {{ post.id }}</span>
+          </div>
+          <p class="item-body">{{ post.body }}</p>
+          <div class="item-actions">
+            <button (click)="startEditPost(post)" class="btn-edit">
+              ✏️ Edit
+            </button>
+            <button (click)="deletePost(post.id)" class="btn-delete">
+              🗑️ Delete
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Info Section -->
+  <div class="crud-info">
+    <h3>ℹ️ About This Demo</h3>
+    <ul>
+      <li><strong>API:</strong> JSONPlaceholder (mock REST API)</li>
+      <li><strong>HTTP Client:</strong> Angular HttpClient with interceptors</li>
+      <li><strong>Operations:</strong> Create, Read, Update, Delete</li>
+      <li><strong>Features:</strong> Error handling, loading states, validation</li>
+      <li><strong>Customizable:</strong> Modify services in <code>src/app/core/services/</code></li>
+    </ul>
+  </div>
+</div>

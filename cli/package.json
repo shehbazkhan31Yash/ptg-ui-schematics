@@ -7,8 +7,9 @@
   "registry": "https://pkgs.dev.azure.com/YASHTech-UIUX/YASH-UIUX-Library/_packaging/UI-packages/npm/registry/"
  },
  "scripts": {
-  "build": "tsc -p tsconfig.json",
-  "build:watch": "tsc -p tsconfig.json -w"
+  "build": "tsc -p tsconfig.json && npm run copy:templates",
+  "build:watch": "tsc -p tsconfig.json -w",
+  "copy:templates": "node -e \"const fs=require('fs');const path=require('path');function copyDir(src,dest){if(!fs.existsSync(dest))fs.mkdirSync(dest,{recursive:true});const entries=fs.readdirSync(src,{withFileTypes:true});for(const entry of entries){const srcPath=path.join(src,entry.name);const destPath=path.join(dest,entry.name);if(entry.isDirectory())copyDir(srcPath,destPath);else fs.copyFileSync(srcPath,destPath);}}copyDir('generators/templates','dist/generators/templates');\""
  },
  "keywords": [
   "schematics"

@@ -11,6 +11,7 @@ export interface ApplicationOptions {
  husky?: boolean;
  ci?: boolean;
  formBuilder?: 'none' | 'reactive';
+ crud?: boolean;
  style?: 'css' | 'scss' | 'sass' | 'less';
  appDir?: string;
  [key: string]: any;

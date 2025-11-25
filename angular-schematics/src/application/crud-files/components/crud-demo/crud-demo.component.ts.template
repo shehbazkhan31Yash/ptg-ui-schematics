@@ -1,0 +1,272 @@
+import { Component, OnInit } from '@angular/core';
+import { UserService, User, PostService, Post } from '../../../core/services/crud.service';
+
+@Component({
+  selector: 'app-crud-demo',
+  templateUrl: './crud-demo.component.html',
+  styleUrls: ['./crud-demo.component.<%= style %>']
+})
+export class CrudDemoComponent implements OnInit {
+  // State
+  users: User[] = [];
+  posts: Post[] = [];
+  loading = false;
+  error: string | null = null;
+  activeTab: 'users' | 'posts' = 'users';
+
+  // User form state
+  editingUser: User | null = null;
+  userName = '';
+  userEmail = '';
+
+  // Post form state
+  editingPost: Post | null = null;
+  postTitle = '';
+  postBody = '';
+
+  constructor(
+    private userService: UserService,
+    private postService: PostService
+  ) {}
+
+  ngOnInit(): void {
+    this.loadUsers();
+  }
+
+  /**
+   * Switch between tabs
+   */
+  switchTab(tab: 'users' | 'posts'): void {
+    this.activeTab = tab;
+    if (tab === 'users') {
+      this.loadUsers();
+    } else {
+      this.loadPosts();
+    }
+  }
+
+  // ==================== USER CRUD OPERATIONS ====================
+
+  /**
+   * Load all users
+   */
+  loadUsers(): void {
+    this.loading = true;
+    this.error = null;
+    this.userService.getAll().subscribe({
+      next: (data) => {
+        this.users = data.slice(0, 5); // Show first 5 users
+        this.loading = false;
+      },
+      error: (err) => {
+        this.error = err.message || 'Failed to load users';
+        this.loading = false;
+      }
+    });
+  }
+
+  /**
+   * Create new user
+   */
+  createUser(): void {
+    if (!this.userName || !this.userEmail) {
+      alert('Please fill in all fields');
+      return;
+    }
+
+    this.loading = true;
+    this.userService.create({ name: this.userName, email: this.userEmail }).subscribe({
+      next: (newUser) => {
+        this.users = [newUser, ...this.users];
+        this.userName = '';
+        this.userEmail = '';
+        this.loading = false;
+        alert('User created successfully! (Note: JSONPlaceholder is a mock API, so data won\'t persist)');
+      },
+      error: (err) => {
+        this.error = err.message || 'Failed to create user';
+        this.loading = false;
+      }
+    });
+  }
+
+  /**
+   * Update existing user
+   */
+  updateUser(): void {
+    if (!this.editingUser || !this.userName || !this.userEmail) {
+      alert('Please fill in all fields');
+      return;
+    }
+
+    this.loading = true;
+    this.userService.update(this.editingUser.id, { name: this.userName, email: this.userEmail }).subscribe({
+      next: (updated) => {
+        this.users = this.users.map(u => u.id === updated.id ? updated : u);
+        this.cancelEditUser();
+        this.loading = false;
+        alert('User updated successfully!');
+      },
+      error: (err) => {
+        this.error = err.message || 'Failed to update user';
+        this.loading = false;
+      }
+    });
+  }
+
+  /**
+   * Delete user
+   */
+  deleteUser(id: number): void {
+    if (!confirm('Are you sure you want to delete this user?')) {
+      return;
+    }
+
+    this.loading = true;
+    this.userService.delete(id).subscribe({
+      next: () => {
+        this.users = this.users.filter(u => u.id !== id);
+        this.loading = false;
+        alert('User deleted successfully!');
+      },
+      error: (err) => {
+        this.error = err.message || 'Failed to delete user';
+        this.loading = false;
+      }
+    });
+  }
+
+  /**
+   * Start editing user
+   */
+  startEditUser(user: User): void {
+    this.editingUser = user;
+    this.userName = user.name;
+    this.userEmail = user.email;
+  }
+
+  /**
+   * Cancel editing user
+   */
+  cancelEditUser(): void {
+    this.editingUser = null;
+    this.userName = '';
+    this.userEmail = '';
+  }
+
+  // ==================== POST CRUD OPERATIONS ====================
+
+  /**
+   * Load all posts
+   */
+  loadPosts(): void {
+    this.loading = true;
+    this.error = null;
+    this.postService.getAll().subscribe({
+      next: (data) => {
+        this.posts = data.slice(0, 5); // Show first 5 posts
+        this.loading = false;
+      },
+      error: (err) => {
+        this.error = err.message || 'Failed to load posts';
+        this.loading = false;
+      }
+    });
+  }
+
+  /**
+   * Create new post
+   */
+  createPost(): void {
+    if (!this.postTitle || !this.postBody) {
+      alert('Please fill in all fields');
+      return;
+    }
+
+    this.loading = true;
+    this.postService.create({
+      title: this.postTitle,
+      body: this.postBody,
+      userId: 1
+    }).subscribe({
+      next: (newPost) => {
+        this.posts = [newPost, ...this.posts];
+        this.postTitle = '';
+        this.postBody = '';
+        this.loading = false;
+        alert('Post created successfully!');
+      },
+      error: (err) => {
+        this.error = err.message || 'Failed to create post';
+        this.loading = false;
+      }
+    });
+  }
+
+  /**
+   * Update existing post
+   */
+  updatePost(): void {
+    if (!this.editingPost || !this.postTitle || !this.postBody) {
+      alert('Please fill in all fields');
+      return;
+    }
+
+    this.loading = true;
+    this.postService.update(this.editingPost.id, {
+      title: this.postTitle,
+      body: this.postBody
+    }).subscribe({
+      next: (updated) => {
+        this.posts = this.posts.map(p => p.id === updated.id ? updated : p);
+        this.cancelEditPost();
+        this.loading = false;
+        alert('Post updated successfully!');
+      },
+      error: (err) => {
+        this.error = err.message || 'Failed to update post';
+        this.loading = false;
+      }
+    });
+  }
+
+  /**
+   * Delete post
+   */
+  deletePost(id: number): void {
+    if (!confirm('Are you sure you want to delete this post?')) {
+      return;
+    }
+
+    this.loading = true;
+    this.postService.delete(id).subscribe({
+      next: () => {
+        this.posts = this.posts.filter(p => p.id !== id);
+        this.loading = false;
+        alert('Post deleted successfully!');
+      },
+      error: (err) => {
+        this.error = err.message || 'Failed to delete post';
+        this.loading = false;
+      }
+    });
+  }
+
+  /**
+   * Start editing post
+   */
+  startEditPost(post: Post): void {
+    this.editingPost = post;
+    this.postTitle = post.title;
+    this.postBody = post.body;
+  }
+
+  /**
+   * Cancel editing post
+   */
+  cancelEditPost(): void {
+    this.editingPost = null;
+    this.postTitle = '';
+    this.postBody = '';
+  }
+}

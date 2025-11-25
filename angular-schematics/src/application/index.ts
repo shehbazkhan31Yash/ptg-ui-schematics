@@ -33,6 +33,7 @@ import { addI18n, addI18nFiles } from "./features/i18n";
 import { setSEO } from "./features/seo";
 import { setAuthentication } from "./features/authentication";
 import { setFormBuilder } from "./features/forms";
+import { setCRUD, updateSharedModuleForCrud } from "./features/crud";
 
 // CI/CD Configuration
 function addCIConfigToProject(options: ApplicationOptions): Rule {
@@ -71,7 +72,7 @@ export function application(options: ApplicationOptions): Rule {
   options.seo = options.seoType !== 'none';
   
   const originalOptions = JSON.parse(JSON.stringify(options));
-  const keysToDelete = ["framework", "ngrx", "i18n", "appDir", "enableLinting", "lintingStyle", "husky", "seo", "seoType", "authentication", "ci", "formBuilder"];
+  const keysToDelete = ["framework", "ngrx", "i18n", "appDir", "enableLinting", "lintingStyle", "husky", "seo", "seoType", "authentication", "ci", "formBuilder", "crud"];
   const schemaCompatibleOptions = deleteKeys(options, keysToDelete);
 
   return chain([
@@ -116,6 +117,8 @@ export function application(options: ApplicationOptions): Rule {
    setAuthentication(originalOptions),
    addCIConfigToProject(originalOptions),
    setFormBuilder(originalOptions),
+   setCRUD(originalOptions),
+   originalOptions.crud ? updateSharedModuleForCrud(originalOptions) : noop,
   ]);
  };
 }

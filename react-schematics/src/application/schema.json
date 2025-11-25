@@ -183,6 +183,15 @@
           }
         ]
       }
+    },
+    "crud": {
+      "type": "boolean",
+      "default": false,
+      "description": "Add CRUD operations with Axios interceptors",
+      "x-prompt": {
+        "message": "Add CRUD operations?",
+        "type": "confirmation"
+      }
     }
   },
   "required": [
@@ -195,6 +204,7 @@
     "husky",
     "docker",
     "ci",
-    "formBuilder"
+    "formBuilder",
+    "crud"
   ]
 }

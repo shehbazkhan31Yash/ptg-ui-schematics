@@ -1,0 +1,92 @@
+import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse, AxiosError } from 'axios';
+
+// API Configuration
+const API_CONFIG = {
+  baseURL: process.env.REACT_APP_API_URL || 'https://jsonplaceholder.typicode.com',
+  timeout: 10000,
+  headers: {
+    'Content-Type': 'application/json',
+  },
+};
+
+// Create axios instance
+const apiClient: AxiosInstance = axios.create(API_CONFIG);
+
+// Request Interceptor
+apiClient.interceptors.request.use(
+  (config: AxiosRequestConfig) => {
+    // Add authentication token if available
+    const token = window.localStorage.getItem('authToken');
+    if (token && config.headers) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+
+    // Log request (useful for debugging)
+    console.log('📤 API Request:', {
+      method: config.method?.toUpperCase(),
+      url: config.url,
+      data: config.data,
+    });
+
+    return config;
+  },
+  (error: AxiosError) => {
+    console.error('❌ Request Error:', error);
+    return Promise.reject(error);
+  }
+);
+
+// Response Interceptor
+apiClient.interceptors.response.use(
+  (response: AxiosResponse) => {
+    // Log successful response
+    console.log('📥 API Response:', {
+      status: response.status,
+      url: response.config.url,
+      data: response.data,
+    });
+
+    return response;
+  },
+  (error: AxiosError) => {
+    // Handle errors globally
+    if (error.response) {
+      // Server responded with error status
+      console.error('❌ API Error:', {
+        status: error.response.status,
+        message: error.response.data,
+        url: error.config?.url,
+      });
+
+      // Handle specific error codes
+      switch (error.response.status) {
+        case 401:
+          // Unauthorized - clear token and redirect to login
+          window.localStorage.removeItem('authToken');
+          window.location.href = '/login';
+          break;
+        case 403:
+          console.error('Access forbidden');
+          break;
+        case 404:
+          console.error('Resource not found');
+          break;
+        case 500:
+          console.error('Internal server error');
+          break;
+        default:
+          console.error('An error occurred');
+      }
+    } else if (error.request) {
+      // Request made but no response received
+      console.error('❌ Network Error: No response received', error.request);
+    } else {
+      // Error in request configuration
+      console.error('❌ Request Configuration Error:', error.message);
+    }
+
+    return Promise.reject(error);
+  }
+);
+
+export default apiClient;
