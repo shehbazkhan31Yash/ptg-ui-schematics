@@ -1,0 +1,95 @@
+import { Injectable } from '@angular/core';
+
+/**
+ * Accessibility Service
+ * Provides utility functions for accessibility features
+ */
+@Injectable({
+  providedIn: 'root'
+})
+export class AccessibilityService {
+
+  /**
+   * Announce message to screen readers
+   * @param message - The message to announce
+   * @param priority - How urgently the message should be announced
+   */
+  announceToScreenReader(
+    message: string,
+    priority: 'polite' | 'assertive' = 'polite'
+  ): void {
+    const announcer = document.createElement('div');
+    announcer.setAttribute('role', 'status');
+    announcer.setAttribute('aria-live', priority);
+    announcer.setAttribute('aria-atomic', 'true');
+    announcer.style.position = 'absolute';
+    announcer.style.left = '-10000px';
+    announcer.style.width = '1px';
+    announcer.style.height = '1px';
+    announcer.style.overflow = 'hidden';
+
+    document.body.appendChild(announcer);
+    announcer.textContent = message;
+
+    setTimeout(() => {
+      document.body.removeChild(announcer);
+    }, 1000);
+  }
+
+  /**
+   * Generate unique ID for accessibility labels
+   * @param prefix - Optional prefix for the ID
+   */
+  generateA11yId(prefix: string = 'a11y'): string {
+    return `${prefix}-${Math.random().toString(36).substr(2, 9)}`;
+  }
+
+  /**
+   * Check if user prefers reduced motion
+   */
+  prefersReducedMotion(): boolean {
+    return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  }
+
+  /**
+   * Skip to main content helper
+   * @param mainContentId - ID of the main content element
+   */
+  skipToMainContent(mainContentId: string): void {
+    const mainContent = document.getElementById(mainContentId);
+    if (mainContent) {
+      mainContent.setAttribute('tabindex', '-1');
+      mainContent.focus();
+      mainContent.scrollIntoView({ behavior: 'smooth' });
+    }
+  }
+
+  /**
+   * Set focus to an element by ID
+   * @param elementId - ID of the element to focus
+   */
+  setFocus(elementId: string): void {
+    const element = document.getElementById(elementId);
+    if (element) {
+      element.focus();
+    }
+  }
+
+  /**
+   * Check if an element is focusable
+   * @param element - The element to check
+   */
+  isFocusable(element: HTMLElement): boolean {
+    const focusableSelectors = 'a[href], button:not([disabled]), textarea:not([disabled]), input:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])';
+    return element.matches(focusableSelectors);
+  }
+
+  /**
+   * Get all focusable elements within a container
+   * @param container - The container element
+   */
+  getFocusableElements(container: HTMLElement): HTMLElement[] {
+    const focusableSelectors = 'a[href], button:not([disabled]), textarea:not([disabled]), input:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])';
+    return Array.from(container.querySelectorAll<HTMLElement>(focusableSelectors));
+  }
+}

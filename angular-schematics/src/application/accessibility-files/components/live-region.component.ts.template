@@ -1,0 +1,33 @@
+import { Component, Input, OnInit } from '@angular/core';
+
+/**
+ * LiveRegion Component
+ * Announces dynamic content changes to screen readers
+ * 
+ * Usage:
+ * <app-live-region [message]="statusMessage" ariaLive="polite"></app-live-region>
+ */
+@Component({
+  selector: 'app-live-region',
+  template: `
+    <div 
+      [attr.aria-live]="ariaLive"
+      [attr.aria-atomic]="ariaAtomic"
+      [attr.aria-relevant]="ariaRelevant"
+      role="status"
+      [class]="className">
+      {{ message }}
+    </div>
+  `
+})
+export class LiveRegionComponent implements OnInit {
+  @Input() message = '';
+  @Input() ariaLive: 'polite' | 'assertive' | 'off' = 'polite';
+  @Input() ariaAtomic = true;
+  @Input() ariaRelevant: 'additions' | 'removals' | 'text' | 'all' = 'additions';
+  @Input() className = '';
+
+  ngOnInit(): void {
+    // Component initialization if needed
+  }
+}

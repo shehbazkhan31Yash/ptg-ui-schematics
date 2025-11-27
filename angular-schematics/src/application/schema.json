@@ -281,6 +281,12 @@
       "description": "Add CRUD operations with HttpClient and interceptors",
       "default": false,
       "x-prompt": "Would you like to add CRUD operations with HttpClient?"
+    },
+    "accessibility": {
+      "type": "boolean",
+      "description": "Add accessibility tools (axe-core, eslint-plugin-a11y, accessible templates)",
+      "default": false,
+      "x-prompt": "Enable accessibility tools? (axe-core, aria-lint, accessible templates)"
     }
   },
   "required": ["name"]
