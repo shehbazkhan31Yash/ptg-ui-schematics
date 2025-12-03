@@ -1,10 +1,12 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 
 // Components
 import { SkipLinkComponent } from './components/skip-link.component';
 import { LiveRegionComponent } from './components/live-region.component';
 import { FocusTrapDirective } from './components/focus-trap.directive';
+import { AccessibilityDemoComponent } from './demo/accessibility-demo.component';
 
 // Services
 import { AccessibilityService } from './services/accessibility.service';
@@ -20,15 +22,18 @@ import { AxeService } from './services/axe.service';
   declarations: [
     SkipLinkComponent,
     LiveRegionComponent,
-    FocusTrapDirective
+    FocusTrapDirective,
+    AccessibilityDemoComponent
   ],
   imports: [
-    CommonModule
+    CommonModule,
+    FormsModule
   ],
   exports: [
     SkipLinkComponent,
     LiveRegionComponent,
-    FocusTrapDirective
+    FocusTrapDirective,
+    AccessibilityDemoComponent
   ],
   providers: [
     AccessibilityService,

@@ -5,6 +5,30 @@
   </header>
   
   <main class="demo-content">
+<% if (accessibility) { %>    <section class="demo-section">
+      <h2>♿ Accessibility Demo</h2>
+      <div class="demo-examples">
+        <div class="accessibility-demo">
+          <p>Interactive accessibility features with screen reader support:</p>
+          <button routerLink="/accessibility-demo" class="demo-link-btn">
+            Open Full Accessibility Demo →
+          </button>
+          <div class="a11y-info">
+            <p><strong>Features:</strong></p>
+            <ul>
+              <li>Screen reader announcements (live regions)</li>
+              <li>Focus trap for modals</li>
+              <li>Accessible form validation</li>
+              <li>Keyboard navigation</li>
+              <li>Skip navigation links</li>
+              <li>WCAG 2.1 AA compliance</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+<% } %>
+
 <% if (i18n) { %>    <section class="demo-section">
       <h2>Internationalization Demo</h2>
       <div class="demo-examples">

@@ -546,6 +546,30 @@ const DemoPage = () => {
           </div>
         </section>` : ''}
 
+        ${a.accessibility ? `
+        <section className="demo-section">
+          <h2>♿ Accessibility Demo</h2>
+          <div className="demo-examples">
+            <div className="accessibility-demo">
+              <p>Interactive accessibility features with screen reader support:</p>
+              <Link to="/accessibility-demo">
+                <button className="demo-link-btn">Open Full Accessibility Demo →</button>
+              </Link>
+              <div className="a11y-info">
+                <p><strong>Features:</strong></p>
+                <ul>
+                  <li>Screen reader announcements (live regions)</li>
+                  <li>Focus trap for modals</li>
+                  <li>Accessible form validation</li>
+                  <li>Keyboard navigation</li>
+                  <li>Skip navigation links</li>
+                  <li>WCAG 2.1 AA compliance</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </section>` : ''}
+
         <section className="demo-section">
           <h2>HTTP Client Demo</h2>
           <div className="demo-examples">
@@ -595,6 +619,186 @@ const DemoPage = () => {
   );
 };
 
+${a.accessibility ? `
+// Accessibility Demo Page Component
+const AccessibilityDemoPage = () => {
+  const [liveMessage, setLiveMessage] = React.useState('');
+  const [isModalOpen, setIsModalOpen] = React.useState(false);
+  const [email, setEmail] = React.useState('');
+  const [emailError, setEmailError] = React.useState('');
+  const [lastAnnouncement, setLastAnnouncement] = React.useState('');
+
+  const announcePolite = () => {
+    const msg = 'This is a polite announcement. It will be read after current speech.';
+    setLiveMessage(msg);
+    setLastAnnouncement(msg);
+  };
+
+  const announceAssertive = () => {
+    const msg = 'This is an assertive announcement. It interrupts current speech!';
+    setLiveMessage(msg);
+    setLastAnnouncement(msg);
+  };
+
+  const openModal = () => setIsModalOpen(true);
+  const closeModal = () => setIsModalOpen(false);
+
+  const validateEmail = () => {
+    if (!email) {
+      setEmailError('Email is required');
+      return false;
+    }
+    const emailRegex = /^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/;
+    if (!emailRegex.test(email)) {
+      setEmailError('Please enter a valid email address');
+      return false;
+    }
+    setEmailError('');
+    setLiveMessage('Email is valid!');
+    return true;
+  };
+
+  return (
+    <div className="accessibility-demo-container">
+      <header className="demo-header">
+        <h1>♿ Accessibility Demo</h1>
+        <p>Interactive demonstrations of accessibility features</p>
+      </header>
+
+      <main className="demo-main">
+        <section className="demo-section">
+          <h2>1. Skip Navigation Link</h2>
+          <p>Press <kbd>Tab</kbd> key to reveal the skip link:</p>
+          <div className="demo-box">
+            <a href="#main-content" className="skip-link">Skip to main content</a>
+            <p id="main-content">This is the main content area.</p>
+          </div>
+        </section>
+
+        <section className="demo-section">
+          <h2>2. Live Regions (Screen Reader Announcements)</h2>
+          <p>Click these buttons to trigger screen reader announcements:</p>
+          <div className="demo-box">
+            <button onClick={announcePolite} className="btn-primary">
+              Announce (Polite)
+            </button>
+            <button onClick={announceAssertive} className="btn-warning">
+              Announce (Assertive)
+            </button>
+            <div
+              role="status"
+              aria-live="polite"
+              aria-atomic="true"
+              className="live-region"
+            >
+              {liveMessage}
+            </div>
+            {lastAnnouncement && (
+              <p className="last-announcement">Last: {lastAnnouncement}</p>
+            )}
+          </div>
+        </section>
+
+        <section className="demo-section">
+          <h2>3. Focus Trap (Modal Dialog)</h2>
+          <p>Open modal to see keyboard navigation and focus management:</p>
+          <div className="demo-box">
+            <button onClick={openModal} className="btn-primary">
+              Open Modal Dialog
+            </button>
+          </div>
+        </section>
+
+        <section className="demo-section">
+          <h2>4. Accessible Form with Error Handling</h2>
+          <p>Test form validation with screen reader support:</p>
+          <div className="demo-box">
+            <div className="form-group">
+              <label htmlFor="email-input">Email Address:</label>
+              <input
+                type="email"
+                id="email-input"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                aria-invalid={!!emailError}
+                aria-describedby={emailError ? 'email-error' : undefined}
+                className={emailError ? 'input-error' : ''}
+              />
+              {emailError && (
+                <div id="email-error" role="alert" className="error-message">
+                  {emailError}
+                </div>
+              )}
+            </div>
+            <button onClick={validateEmail} className="btn-primary">
+              Validate Email
+            </button>
+          </div>
+        </section>
+
+        <section className="demo-section">
+          <h2>5. Keyboard Navigation</h2>
+          <p>All interactive elements are keyboard accessible:</p>
+          <div className="demo-box keyboard-nav">
+            <div className="keyboard-guide">
+              <p><kbd>Tab</kbd> - Navigate forward</p>
+              <p><kbd>Shift + Tab</kbd> - Navigate backward</p>
+              <p><kbd>Enter</kbd> or <kbd>Space</kbd> - Activate button</p>
+              <p><kbd>Esc</kbd> - Close modal</p>
+            </div>
+          </div>
+        </section>
+
+        <section className="demo-section">
+          <h2>6. Testing Information</h2>
+          <div className="testing-info">
+            <div className="info-card">
+              <h3>🔍 Automated Testing</h3>
+              <p>This project uses axe-core for automated accessibility testing.</p>
+              <code>npm run test:a11y</code>
+            </div>
+            <div className="info-card">
+              <h3>🎧 Screen Readers</h3>
+              <p>Test with:</p>
+              <ul>
+                <li>NVDA (Windows - Free)</li>
+                <li>JAWS (Windows)</li>
+                <li>VoiceOver (Mac/iOS)</li>
+              </ul>
+            </div>
+            <div className="info-card">
+              <h3>🛠️ Browser Tools</h3>
+              <p>Use browser DevTools accessibility panel to inspect ARIA attributes and contrast ratios.</p>
+            </div>
+          </div>
+        </section>
+      </main>
+
+      {isModalOpen && (
+        <div className="modal-backdrop" onClick={closeModal}>
+          <div
+            className="modal-content"
+            onClick={(e) => e.stopPropagation()}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="modal-title"
+          >
+            <h2 id="modal-title">Accessible Modal Dialog</h2>
+            <p>This modal traps focus. Try pressing Tab to navigate.</p>
+            <p>Press Escape or click Close to exit.</p>
+            <div className="modal-actions">
+              <button onClick={closeModal} className="btn-primary">
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+` : ''}
+
 // Main App Component with Navigation
 const AppContent = () => {
   const location = useLocation();
@@ -634,6 +838,7 @@ const AppContent = () => {
             <Route path="/about" element={<AboutPage />} />
             <Route path="/features" element={<FeaturesPage />} />
             <Route path="/demo" element={<DemoPage />} />
+            ${a.accessibility ? '<Route path="/accessibility-demo" element={<AccessibilityDemoPage />} />' : ''}
           </Routes>
         </main>
       </div>
@@ -1383,7 +1588,356 @@ body {
   .demo-examples {
     padding: 1rem;
   }
-}`;
+}
+
+/* Accessibility Demo Styles */
+.accessibility-demo {
+  text-align: center;
+}
+
+.accessibility-demo p {
+  font-size: 1.1rem;
+  margin: 1rem 0 1.5rem 0;
+}
+
+.demo-link-btn {
+  padding: 0.75rem 1.5rem;
+  font-size: 1rem;
+  border: 2px solid #667eea;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 6px rgba(102, 126, 234, 0.3);
+  text-decoration: none;
+  display: inline-block;
+}
+
+.demo-link-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(102, 126, 234, 0.4);
+}
+
+.demo-link-btn:focus {
+  outline: 3px solid #667eea;
+  outline-offset: 2px;
+}
+
+.a11y-info {
+  margin-top: 2rem;
+  text-align: left;
+  background: #f8f9fa;
+  padding: 1.5rem;
+  border-radius: 8px;
+  border-left: 4px solid #667eea;
+}
+
+.a11y-info p {
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  font-size: 1rem;
+}
+
+.a11y-info ul {
+  list-style: none;
+  padding: 0;
+}
+
+.a11y-info ul li {
+  padding: 0.5rem 0;
+  padding-left: 1.5rem;
+  position: relative;
+}
+
+.a11y-info ul li::before {
+  content: "✓";
+  position: absolute;
+  left: 0;
+  color: #667eea;
+  font-weight: bold;
+}
+
+/* Accessibility Demo Page Styles */
+.accessibility-demo-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+  margin-top: 70px;
+  min-height: calc(100vh - 70px);
+  background-color: #f8f9fa;
+}
+
+.accessibility-demo-container .demo-header {
+  text-align: center;
+  margin-bottom: 3rem;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 2rem;
+  border-radius: 8px;
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+}
+
+.accessibility-demo-container .demo-header h1 {
+  color: white;
+  font-size: 2.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.accessibility-demo-container .demo-main {
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.accessibility-demo-container .demo-section {
+  background: white;
+  margin: 2rem 0;
+  padding: 2rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.accessibility-demo-container .demo-section h2 {
+  color: #667eea;
+  margin-bottom: 1rem;
+  font-size: 1.8rem;
+}
+
+.accessibility-demo-container .demo-box {
+  margin-top: 1.5rem;
+  padding: 1.5rem;
+  background: #f8f9fa;
+  border-radius: 8px;
+  border: 2px dashed #dee2e6;
+}
+
+.accessibility-demo-container .btn-primary {
+  padding: 0.75rem 1.5rem;
+  margin: 0.5rem;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+}
+
+.accessibility-demo-container .btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+}
+
+.accessibility-demo-container .btn-primary:focus {
+  outline: 3px solid #667eea;
+  outline-offset: 2px;
+}
+
+.accessibility-demo-container .btn-warning {
+  padding: 0.75rem 1.5rem;
+  margin: 0.5rem;
+  background: linear-gradient(135deg, #f59e0b 0%, #dc2626 100%);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+}
+
+.accessibility-demo-container .btn-warning:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(245, 158, 11, 0.4);
+}
+
+.accessibility-demo-container .live-region {
+  margin-top: 1.5rem;
+  padding: 1rem;
+  background: white;
+  border-radius: 6px;
+  min-height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 500;
+  color: #333;
+  border: 2px solid #667eea;
+}
+
+.accessibility-demo-container .last-announcement {
+  margin-top: 1rem;
+  font-size: 0.9rem;
+  color: #666;
+  font-style: italic;
+}
+
+.accessibility-demo-container .skip-link {
+  position: absolute;
+  left: -9999px;
+  z-index: 999;
+  padding: 1em;
+  background-color: #000;
+  color: #fff;
+  text-decoration: none;
+}
+
+.accessibility-demo-container .skip-link:focus {
+  left: 0;
+  outline: 3px solid #667eea;
+}
+
+.accessibility-demo-container .form-group {
+  margin: 1.5rem 0;
+  text-align: left;
+}
+
+.accessibility-demo-container .form-group label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+  color: #333;
+}
+
+.accessibility-demo-container .form-group input {
+  width: 100%;
+  padding: 0.75rem;
+  border: 2px solid #dee2e6;
+  border-radius: 6px;
+  font-size: 1rem;
+  transition: border-color 0.3s ease;
+}
+
+.accessibility-demo-container .form-group input:focus {
+  outline: none;
+  border-color: #667eea;
+}
+
+.accessibility-demo-container .input-error {
+  border-color: #dc2626 !important;
+}
+
+.accessibility-demo-container .error-message {
+  margin-top: 0.5rem;
+  padding: 0.5rem;
+  background: #fee2e2;
+  color: #dc2626;
+  border-radius: 4px;
+  font-size: 0.9rem;
+}
+
+.accessibility-demo-container .keyboard-nav {
+  text-align: left;
+}
+
+.accessibility-demo-container .keyboard-guide {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+}
+
+.accessibility-demo-container .keyboard-guide p {
+  margin: 0.5rem 0;
+  font-size: 1rem;
+}
+
+.accessibility-demo-container kbd {
+  display: inline-block;
+  padding: 0.2rem 0.5rem;
+  font-size: 0.875rem;
+  color: #333;
+  background: white;
+  border: 2px solid #dee2e6;
+  border-radius: 4px;
+  box-shadow: 0 2px 0 #dee2e6;
+  font-family: monospace;
+  margin: 0 0.2rem;
+}
+
+.accessibility-demo-container .testing-info {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1.5rem;
+}
+
+.accessibility-demo-container .info-card {
+  background: white;
+  padding: 1.5rem;
+  border-radius: 8px;
+  border: 2px solid #dee2e6;
+}
+
+.accessibility-demo-container .info-card h3 {
+  color: #667eea;
+  margin-bottom: 1rem;
+  font-size: 1.3rem;
+}
+
+.accessibility-demo-container .info-card ul {
+  list-style: none;
+  padding: 0;
+}
+
+.accessibility-demo-container .info-card ul li {
+  padding: 0.3rem 0;
+  padding-left: 1.2rem;
+  position: relative;
+}
+
+.accessibility-demo-container .info-card ul li::before {
+  content: "•";
+  position: absolute;
+  left: 0;
+  color: #667eea;
+}
+
+.accessibility-demo-container .info-card code {
+  display: block;
+  margin-top: 0.5rem;
+  padding: 0.5rem;
+  background: #f8f9fa;
+  border-radius: 4px;
+  font-size: 0.9rem;
+}
+
+.modal-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  background: white;
+  padding: 2rem;
+  border-radius: 12px;
+  max-width: 500px;
+  width: 90%;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+}
+
+.modal-content h2 {
+  color: #667eea;
+  margin-bottom: 1rem;
+  font-size: 1.8rem;
+}
+
+.modal-content p {
+  margin: 1rem 0;
+  color: #333;
+}
+
+.modal-actions {
+  margin-top: 2rem;
+  display: flex;
+  justify-content: flex-end;
+}
+`;
 
     // Add framework-specific styles
     if (a.framework === "bootstrap") {

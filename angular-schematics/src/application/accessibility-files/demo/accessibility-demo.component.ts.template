@@ -1,0 +1,111 @@
+import { Component } from '@angular/core';
+import { AccessibilityService } from '../services/accessibility.service';
+
+@Component({
+  selector: 'app-accessibility-demo',
+  templateUrl: './accessibility-demo.component.html',
+  styleUrls: ['./accessibility-demo.component.<%= style %>']
+})
+export class AccessibilityDemoComponent {
+  // Live Region Demo
+  liveMessage = '';
+  
+  // Modal Demo
+  isModalOpen = false;
+  
+  // Form Demo
+  formMessage = '';
+  email = '';
+  emailError = '';
+  
+  // Announcement Demo
+  lastAnnouncement = '';
+
+  constructor(private a11yService: AccessibilityService) {}
+
+  /**
+   * Live Region Demo - Polite Announcement
+   */
+  announcePolite(): void {
+    this.liveMessage = `Polite announcement at ${new Date().toLocaleTimeString()}`;
+    setTimeout(() => this.liveMessage = '', 5000);
+  }
+
+  /**
+   * Live Region Demo - Assertive Announcement
+   */
+  announceAssertive(): void {
+    this.liveMessage = `⚠️ Assertive announcement at ${new Date().toLocaleTimeString()}`;
+    setTimeout(() => this.liveMessage = '', 5000);
+  }
+
+  /**
+   * Service Method Demo - Screen Reader Announcement
+   */
+  announceViaService(priority: 'polite' | 'assertive'): void {
+    const message = `Service announcement (${priority}) at ${new Date().toLocaleTimeString()}`;
+    this.lastAnnouncement = message;
+    this.a11yService.announceToScreenReader(message, priority);
+  }
+
+  /**
+   * Modal Demo - Open
+   */
+  openModal(): void {
+    this.isModalOpen = true;
+    // Announce modal opening
+    this.a11yService.announceToScreenReader('Modal dialog opened', 'polite');
+  }
+
+  /**
+   * Modal Demo - Close
+   */
+  closeModal(): void {
+    this.isModalOpen = false;
+    // Announce modal closing
+    this.a11yService.announceToScreenReader('Modal dialog closed', 'polite');
+  }
+
+  /**
+   * Form Demo - Validate Email
+   */
+  validateEmail(): void {
+    this.emailError = '';
+    
+    if (!this.email) {
+      this.emailError = 'Email is required';
+      return;
+    }
+    
+    const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailPattern.test(this.email)) {
+      this.emailError = 'Please enter a valid email address';
+      return;
+    }
+    
+    this.formMessage = 'Email is valid!';
+    this.a11yService.announceToScreenReader('Email validated successfully', 'polite');
+    setTimeout(() => this.formMessage = '', 3000);
+  }
+
+  /**
+   * Skip to Main Content Demo
+   */
+  skipToContent(): void {
+    this.a11yService.skipToMainContent('demo-main-content');
+  }
+
+  /**
+   * Generate Accessible ID Demo
+   */
+  generateId(): string {
+    return this.a11yService.generateA11yId('demo-element');
+  }
+
+  /**
+   * Check if user prefers reduced motion
+   */
+  checkReducedMotion(): boolean {
+    return this.a11yService.prefersReducedMotion();
+  }
+}

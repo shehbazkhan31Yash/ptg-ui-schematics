@@ -50,6 +50,11 @@ ptg-ui-cli
 - **NgRx** - State management with Redux pattern
 - **Internationalization (i18n)** - Multi-language support
 - **SEO Optimization** - Meta tags, structured data, analytics
+- **Accessibility (a11y) Tools** - WCAG 2.1 AA compliance
+  - Accessible components (SkipLink, LiveRegion, FocusTrap directive)
+  - Accessibility and Axe services for automated testing
+  - Angular ESLint template accessibility rules
+  - Complete documentation with usage examples
 - **ESLint** - Code quality and consistency
 - **Husky** - Git hooks for code quality
 
@@ -82,6 +87,7 @@ $ ptg-ui-cli
 ? Which ESLint configuration would you like to use? › Standard
 ? Would you like to add Husky for Git hooks? › Yes
 ? Would you like to add internationalization (i18n) support? › Yes
+? Enable accessibility tools? (axe-core, aria-lint, accessible templates) › Yes
 ```
 
 ## 📱 Generated Application Structure
@@ -125,12 +131,47 @@ Generated applications include interactive demo pages:
 ### Demo Features Include:
 - **Language Switching** - i18n demonstration (if enabled)
 - **SEO & Analytics** - Meta tags and Google Analytics (if enabled)
+- **Accessibility** - WCAG 2.1 AA compliant components (if enabled)
+  - Skip navigation links
+  - Screen reader announcements
+  - Keyboard navigation
+  - Focus management
 - **Framework Components** - Material/Bootstrap examples
 - **State Management** - NgRx examples (if enabled)
 - **HTTP Client** - API interaction examples
 - **Routing** - Navigation demonstrations
 
 ## 🔧 Setup Instructions
+
+### Accessibility (if enabled)
+1. Initialize axe-core in `src/app/app.component.ts`:
+```typescript
+import { AxeService } from './accessibility/services/axe.service';
+
+export class AppComponent implements OnInit {
+  constructor(private axeService: AxeService) {}
+  
+  ngOnInit() {
+    this.axeService.initializeAxe(1000); // Automated testing in dev mode
+  }
+}
+```
+
+2. Use components throughout your app:
+```html
+<!-- Skip navigation link -->
+<app-skip-link targetId="main-content"></app-skip-link>
+
+<!-- Announce dynamic changes -->
+<app-live-region [message]="statusMessage" ariaLive="polite"></app-live-region>
+
+<!-- Trap focus in modals -->
+<div appFocusTrap [isActive]="isModalOpen" role="dialog">
+  <!-- Modal content -->
+</div>
+```
+
+3. Check console for accessibility violations during development
 
 ### Google Analytics (if SEO enabled)
 1. Add your Measurement ID in `src/environments/environment.ts`:
@@ -234,6 +275,8 @@ For complete documentation, visit the [PTG UI Schematics Documentation](../docum
 
 - [Authentication Implementation](../documentations/ANGULAR_AUTHENTICATION.md)
 - [SEO Complete Guide](../documentations/ANGULAR_SEO_COMPLETE_GUIDE.md)
+- [Accessibility Complete Guide](../documentations/ANGULAR_ACCESSIBILITY_GUIDE.md)
+- [Accessibility Integration](../documentations/ANGULAR_ACCESSIBILITY_INTEGRATION.md)
 - [ESLint Fixes](../documentations/ANGULAR_ESLINT_FIXES.md)
 - [Google Analytics Integration](../documentations/ANGULAR_GOOGLE_ANALYTICS.md)
 
