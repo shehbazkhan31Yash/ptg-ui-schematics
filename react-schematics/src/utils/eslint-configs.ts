@@ -328,26 +328,51 @@ export default [
 /**
  * Get ESLint configuration based on linter type
  * @param linterType - The type of linter configuration to return
+ * @param accessibility - Whether accessibility (jsx-a11y) plugin should be included
  * @returns ESLint configuration string
  */
-export function getEslintConfig(linterType: string): string {
+export function getEslintConfig(linterType: string, accessibility?: boolean): string {
+  let config: string;
+  
   switch (linterType) {
     case "custom":
-      return ESLintConfigs.getCustomConfig();
+      config = ESLintConfigs.getCustomConfig();
+      break;
     case "airbnb":
-      return ESLintConfigs.getAirbnbConfig();
+      config = ESLintConfigs.getAirbnbConfig();
+      break;
     case "eslint":
     default:
-      return ESLintConfigs.getStandardConfig();
+      config = ESLintConfigs.getStandardConfig();
+      break;
   }
+  
+  // Add jsx-a11y plugin for custom and standard configs if accessibility is enabled
+  if (accessibility && (linterType === "custom" || linterType === "eslint")) {
+    config = config.replace(
+      /import prettier from 'eslint-plugin-prettier';/,
+      "import prettier from 'eslint-plugin-prettier';\nimport jsxA11y from 'eslint-plugin-jsx-a11y';"
+    );
+    config = config.replace(
+      /prettier: prettier,\n    },/,
+      "prettier: prettier,\n      'jsx-a11y': jsxA11y,\n    },"
+    );
+    config = config.replace(
+      /\.\.\.reactHooks\.configs\.recommended\.rules,/,
+      "...reactHooks.configs.recommended.rules,\n      ...jsxA11y.configs.recommended.rules,"
+    );
+  }
+  
+  return config;
 }
 
 /**
  * Get dependencies for ESLint configurations
  * @param linterType - The type of linter configuration
+ * @param accessibility - Whether accessibility (jsx-a11y) plugin should be included
  * @returns Object with package names and versions
  */
-export function getEslintDependencies(linterType: string): { [key: string]: string } {
+export function getEslintDependencies(linterType: string, accessibility?: boolean): { [key: string]: string } {
   const baseDeps = {
     "eslint": "^9.0.0",
     "@eslint/js": "^9.0.0",
@@ -358,25 +383,37 @@ export function getEslintDependencies(linterType: string): { [key: string]: stri
     "eslint-import-resolver-typescript": "^3.6.1"
   };
 
+  let deps: { [key: string]: string };
+
   switch (linterType) {
     case "airbnb":
-      return {
+      deps = {
         ...baseDeps,
         "eslint-config-airbnb": "^19.0.4",
         "eslint-config-airbnb-typescript": "^18.0.0",
         "eslint-plugin-import": "^2.29.0",
         "eslint-plugin-jsx-a11y": "^6.8.0"
       };
+      break;
     case "custom":
-      return {
+      deps = {
         ...baseDeps,
         "eslint-plugin-import": "^2.29.0",
         "eslint-config-react-app": "^7.0.1"
       };
+      break;
     case "eslint":
     default:
-      return baseDeps;
+      deps = baseDeps;
+      break;
   }
+  
+  // Add jsx-a11y for custom and standard if accessibility is enabled (airbnb already has it)
+  if (accessibility && (linterType === "custom" || linterType === "eslint")) {
+    deps["eslint-plugin-jsx-a11y"] = "^6.8.0";
+  }
+  
+  return deps;
 }
 
 /**

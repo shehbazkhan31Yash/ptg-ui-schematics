@@ -1,0 +1,445 @@
+# Accessibility Guide
+
+This application includes comprehensive accessibility (a11y) tools and utilities to ensure your app is usable by everyone.
+
+## 🛠️ Included Tools
+
+### 1. **Axe-core** - Automated Accessibility Testing
+- Automatically tests your app for WCAG violations in development
+- Reports issues directly in the browser console
+- Supports WCAG 2.0, 2.1, and Section 508 standards
+
+### 2. **ESLint Plugin JSX A11y** - Static Analysis
+- Lints your JSX for accessibility issues
+- Catches common mistakes during development
+- Integrated with your existing ESLint setup
+
+### 3. **Accessible Components** - Pre-built Helpers
+- SkipLink - Skip to main content
+- LiveRegion - Screen reader announcements
+- VisuallyHidden - Hide visually, keep accessible
+- FocusTrap - Trap focus for modals/dialogs
+
+### 4. **Utility Functions** - A11y Helpers
+- announceToScreenReader()
+- trapFocus()
+- generateA11yId()
+- prefersReducedMotion()
+
+## 🚀 Quick Start
+
+### Using Axe-core
+
+In your `main.tsx` or `index.tsx`:
+
+```typescript
+import React from 'react';
+import ReactDOM from 'react-dom/client';
+import App from './app/app';
+import { initializeAxe } from './utils/axe-helper';
+
+// Initialize axe for development
+if (process.env.NODE_ENV !== 'production') {
+  initializeAxe(React, ReactDOM, 1000);
+}
+
+const root = ReactDOM.createRoot(document.getElementById('root')!);
+root.render(
+  <React.StrictMode>
+    <App />
+  </React.StrictMode>
+);
+```
+
+### Using Accessible Components
+
+```tsx
+import { 
+  SkipLink, 
+  LiveRegion, 
+  VisuallyHidden, 
+  FocusTrap 
+} from './components/A11yComponents';
+
+function App() {
+  return (
+    <>
+      <SkipLink targetId="main-content" />
+      
+      <nav>
+        {/* Navigation */}
+      </nav>
+      
+      <main id="main-content">
+        <h1>
+          Page Title
+          <VisuallyHidden> - Accessible subtitle</VisuallyHidden>
+        </h1>
+        
+        <LiveRegion message="Data loaded successfully" />
+      </main>
+    </>
+  );
+}
+```
+
+### Using Focus Trap (for Modals)
+
+```tsx
+import { FocusTrap } from './components/A11yComponents';
+
+function Modal({ isOpen, onClose }) {
+  if (!isOpen) return null;
+  
+  return (
+    <div className="modal-overlay">
+      <FocusTrap active={isOpen}>
+        <div 
+          role="dialog" 
+          aria-modal="true"
+          aria-labelledby="modal-title"
+        >
+          <h2 id="modal-title">Modal Title</h2>
+          <p>Modal content</p>
+          <button onClick={onClose}>Close</button>
+        </div>
+      </FocusTrap>
+    </div>
+  );
+}
+```
+
+## 📋 Best Practices
+
+### 1. Semantic HTML
+
+```tsx
+// ✅ Good - Semantic
+<nav>
+  <ul>
+    <li><a href="/home">Home</a></li>
+  </ul>
+</nav>
+
+// ❌ Bad - Not semantic
+<div className="nav">
+  <div onClick={goHome}>Home</div>
+</div>
+```
+
+### 2. ARIA Labels
+
+```tsx
+// ✅ Good - Descriptive label
+<button aria-label="Close dialog">
+  <Icon name="close" />
+</button>
+
+// ❌ Bad - No label for icon-only button
+<button>
+  <Icon name="close" />
+</button>
+```
+
+### 3. Form Labels
+
+```tsx
+// ✅ Good - Label associated with input
+<label htmlFor="email">Email Address</label>
+<input id="email" type="email" name="email" />
+
+// ❌ Bad - No label
+<input type="email" placeholder="Email" />
+```
+
+### 4. Keyboard Navigation
+
+```tsx
+// ✅ Good - Keyboard accessible
+<button onClick={handleClick}>Click Me</button>
+
+// ❌ Bad - Not keyboard accessible
+<div onClick={handleClick}>Click Me</div>
+```
+
+### 5. Alt Text for Images
+
+```tsx
+// ✅ Good - Descriptive alt text
+<img src="logo.png" alt="Company Name Logo" />
+
+// ✅ Good - Decorative image
+<img src="decoration.png" alt="" role="presentation" />
+
+// ❌ Bad - Missing alt text
+<img src="logo.png" />
+```
+
+## 🔍 Testing Accessibility
+
+### Automated Testing with Axe
+
+```typescript
+import { runA11yCheck, axeConfigs } from './utils/axe-helper';
+
+// Test entire page
+const results = await runA11yCheck();
+
+// Test specific element
+const element = document.getElementById('my-component');
+const results = await runA11yCheck(element);
+
+// Test with WCAG 2.1 AA standard
+const results = await runA11yCheck(null, axeConfigs.wcag21aa);
+```
+
+### Manual Testing Checklist
+
+- [ ] Can you navigate the entire site using only keyboard?
+- [ ] Does Tab key move focus in logical order?
+- [ ] Are focus indicators clearly visible?
+- [ ] Can you skip to main content?
+- [ ] Do all images have appropriate alt text?
+- [ ] Are form fields properly labeled?
+- [ ] Do buttons and links have descriptive text?
+- [ ] Is color contrast sufficient (4.5:1 for normal text)?
+- [ ] Does the site work with screen readers?
+- [ ] Are error messages announced to screen readers?
+
+## 🎨 Accessible Styling
+
+### Focus Indicators
+
+```css
+/* Ensure visible focus indicators */
+button:focus,
+a:focus,
+input:focus {
+  outline: 2px solid #4A90E2;
+  outline-offset: 2px;
+}
+
+/* Don't remove outline without replacement */
+button:focus {
+  outline: none; /* ❌ Bad */
+}
+
+button:focus-visible {
+  outline: 2px solid #4A90E2; /* ✅ Good */
+}
+```
+
+### Color Contrast
+
+```css
+/* ✅ Good - 4.5:1 contrast ratio */
+.text {
+  color: #333333;
+  background-color: #FFFFFF;
+}
+
+/* ❌ Bad - Insufficient contrast */
+.text {
+  color: #CCCCCC;
+  background-color: #FFFFFF;
+}
+```
+
+### Reduced Motion
+
+```css
+/* Respect user preference for reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+```
+
+## 🛡️ ARIA Roles and Properties
+
+### Common ARIA Roles
+
+```tsx
+// Navigation
+<nav role="navigation" aria-label="Main navigation">
+
+// Main content
+<main role="main" id="main-content">
+
+// Search
+<form role="search">
+
+// Alert
+<div role="alert" aria-live="assertive">
+
+// Dialog
+<div role="dialog" aria-modal="true" aria-labelledby="dialog-title">
+
+// Button (when not using <button>)
+<div role="button" tabIndex={0} onClick={handleClick} onKeyDown={handleKeyDown}>
+```
+
+### ARIA States and Properties
+
+```tsx
+// Expanded/Collapsed
+<button aria-expanded={isOpen}>Toggle Menu</button>
+
+// Current page
+<a href="/home" aria-current="page">Home</a>
+
+// Required field
+<input required aria-required="true" />
+
+// Invalid field
+<input aria-invalid="true" aria-describedby="error-message" />
+<span id="error-message">Please enter a valid email</span>
+
+// Disabled state
+<button disabled aria-disabled="true">Submit</button>
+
+// Loading state
+<button aria-busy="true">Loading...</button>
+
+// Hidden content
+<div aria-hidden="true">Decorative content</div>
+```
+
+## 📊 Axe Configuration
+
+### WCAG Levels
+
+```typescript
+import { runA11yCheck, axeConfigs } from './utils/axe-helper';
+
+// WCAG 2.0 Level A (minimum)
+runA11yCheck(null, axeConfigs.wcag2a);
+
+// WCAG 2.0 Level AA (recommended)
+runA11yCheck(null, axeConfigs.wcag2aa);
+
+// WCAG 2.1 Level AA (modern standard)
+runA11yCheck(null, axeConfigs.wcag21aa);
+
+// Section 508 (US government)
+runA11yCheck(null, axeConfigs.section508);
+
+// Best practices
+runA11yCheck(null, axeConfigs.bestPractice);
+```
+
+### Custom Configuration
+
+```typescript
+const customConfig = {
+  runOnly: {
+    type: 'tag',
+    values: ['wcag2a', 'wcag2aa', 'best-practice']
+  },
+  rules: {
+    'color-contrast': { enabled: true },
+    'image-alt': { enabled: true },
+    'label': { enabled: true }
+  }
+};
+
+runA11yCheck(null, customConfig);
+```
+
+## 🔧 Utility Functions
+
+### Announce to Screen Reader
+
+```typescript
+import { announceToScreenReader } from './utils/a11y-utils';
+
+// Polite announcement (doesn't interrupt)
+announceToScreenReader('Data loaded successfully', 'polite');
+
+// Assertive announcement (interrupts current reading)
+announceToScreenReader('Error: Please try again', 'assertive');
+```
+
+### Check for Reduced Motion
+
+```typescript
+import { prefersReducedMotion } from './utils/a11y-utils';
+
+if (!prefersReducedMotion()) {
+  // Play animations
+  element.classList.add('animate');
+}
+```
+
+### Generate Unique IDs
+
+```typescript
+import { generateA11yId } from './utils/a11y-utils';
+
+const labelId = generateA11yId('label');
+const descriptionId = generateA11yId('description');
+
+<label id={labelId}>Email</label>
+<input aria-labelledby={labelId} aria-describedby={descriptionId} />
+<span id={descriptionId}>We'll never share your email</span>
+```
+
+## 📚 Resources
+
+- [WCAG Guidelines](https://www.w3.org/WAI/WCAG21/quickref/)
+- [Axe-core Documentation](https://github.com/dequelabs/axe-core)
+- [ARIA Authoring Practices](https://www.w3.org/WAI/ARIA/apg/)
+- [WebAIM](https://webaim.org/)
+- [A11y Project](https://www.a11yproject.com/)
+
+## 🎯 Common Violations and Fixes
+
+### Missing Alt Text
+
+```tsx
+// ❌ Violation
+<img src="photo.jpg" />
+
+// ✅ Fix
+<img src="photo.jpg" alt="Description of photo" />
+```
+
+### Missing Form Labels
+
+```tsx
+// ❌ Violation
+<input type="text" />
+
+// ✅ Fix
+<label htmlFor="name">Name</label>
+<input id="name" type="text" />
+```
+
+### Insufficient Color Contrast
+
+```tsx
+// ❌ Violation
+<p style={{ color: '#ccc', background: '#fff' }}>Text</p>
+
+// ✅ Fix
+<p style={{ color: '#333', background: '#fff' }}>Text</p>
+```
+
+### Non-Keyboard Accessible Elements
+
+```tsx
+// ❌ Violation
+<div onClick={handleClick}>Click me</div>
+
+// ✅ Fix
+<button onClick={handleClick}>Click me</button>
+```
+
+---
+
+**Remember**: Accessibility is not optional. It's a fundamental requirement for building inclusive web applications that everyone can use.
+
+For questions or issues, consult the [WCAG Guidelines](https://www.w3.org/WAI/WCAG21/quickref/) or run axe tests to identify specific problems.

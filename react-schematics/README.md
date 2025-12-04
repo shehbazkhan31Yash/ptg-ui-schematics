@@ -57,6 +57,11 @@ The CLI will guide you through the setup process with interactive prompts for al
 - React Router for navigation
 - Redux Toolkit or Zustand for state management
 - i18n support for internationalization
+- **Accessibility (a11y) Tools** - WCAG 2.1 AA compliance
+  - Pre-built accessible components (SkipLink, LiveRegion, FocusTrap, etc.)
+  - Automated testing with axe-core
+  - ESLint accessibility rules (jsx-a11y)
+  - Comprehensive documentation and examples
 - Authentication integrations (MSAL, Okta)
 - Husky for Git hooks (pre-commit linting)
 - Docker configuration for containerization
@@ -107,6 +112,7 @@ $ ptg-ui-cli
 ? Would you like to add React Router to this application? › Yes
 ? Would you like to add Redux to this application? › Yes
 ? Would you like to add i18n to this project? › Yes
+? Enable accessibility tools? (axe-core, aria-lint, accessible templates) › Yes
 ? Which bundler would you like to use? › Vite (Recommended)
 ? Which unit test runner would you like to use? › Vitest (Recommended)
 ? Which test runner would you like to use for end to end tests? › Cypress
@@ -115,6 +121,55 @@ $ ptg-ui-cli
 ? Would you like to add Husky for Git hooks (pre-commit)? › No
 ? Would you like to add Docker configuration? › Yes
 ```
+
+## ♿ Accessibility Setup
+
+When accessibility is enabled, your application includes:
+
+### Components Generated
+- **SkipLink** - Keyboard navigation shortcuts
+- **LiveRegion** - Screen reader announcements
+- **VisuallyHidden** - Screen reader-only content
+- **FocusTrap** - Modal focus management
+- **A11yAnnouncer** - Global announcement system
+
+### Setup Steps
+1. Initialize axe-core in `App.jsx`:
+```jsx
+import { initializeAxe } from './utils/axe-helper';
+
+function App() {
+  useEffect(() => {
+    initializeAxe(); // Automated testing in dev mode
+  }, []);
+  
+  return (
+    <>
+      <SkipLink targetId="main-content" />
+      <A11yAnnouncer />
+      {/* Your app content */}
+    </>
+  );
+}
+```
+
+2. Use components in your application:
+```jsx
+// Announce dynamic changes
+<LiveRegion message={statusMessage} ariaLive="polite" />
+
+// Trap focus in modals
+<FocusTrap isActive={isOpen}>
+  <div role="dialog" aria-modal="true">
+    {/* Modal content */}
+  </div>
+</FocusTrap>
+```
+
+3. Check console for accessibility violations during development
+
+### Documentation
+See `src/accessibility/ACCESSIBILITY_GUIDE.md` for complete documentation with examples and best practices.
 
 ## 🔐 Authentication Setup
 

@@ -1,0 +1,80 @@
+import { Directive, ElementRef, Input, OnInit, AfterViewInit, OnDestroy } from '@angular/core';
+
+/**
+ * FocusTrap Directive
+ * Traps keyboard focus within a container (useful for modals/dialogs)
+ * 
+ * Usage:
+ * <div appFocusTrap [isActive]="isModalOpen">
+ *   <!-- Modal content -->
+ * </div>
+ */
+@Directive({
+  selector: '[appFocusTrap]'
+})
+export class FocusTrapDirective implements AfterViewInit, OnDestroy {
+  @Input() isActive = true;
+  @Input() returnFocusOnDeactivate = true;
+
+  private previousActiveElement: HTMLElement | null = null;
+  private focusableElements: HTMLElement[] = [];
+
+  constructor(private elementRef: ElementRef) {}
+
+  ngAfterViewInit(): void {
+    if (this.isActive) {
+      this.activate();
+    }
+  }
+
+  ngOnDestroy(): void {
+    this.deactivate();
+  }
+
+  private activate(): void {
+    this.previousActiveElement = document.activeElement as HTMLElement;
+    
+    const container = this.elementRef.nativeElement;
+    const focusableElements = Array.from(
+      container.querySelectorAll(
+        'a[href], button:not([disabled]), textarea:not([disabled]), input:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])'
+      )
+    ) as HTMLElement[];
+
+    if (this.focusableElements.length > 0) {
+      this.focusableElements[0].focus();
+    }
+
+    container.addEventListener('keydown', this.handleTabKey);
+  }
+
+  private deactivate(): void {
+    const container = this.elementRef.nativeElement;
+    container.removeEventListener('keydown', this.handleTabKey);
+
+    if (this.returnFocusOnDeactivate && this.previousActiveElement) {
+      this.previousActiveElement.focus();
+    }
+  }
+
+  private handleTabKey = (event: KeyboardEvent): void => {
+    if (event.key !== 'Tab' || this.focusableElements.length === 0) {
+      return;
+    }
+
+    const firstElement = this.focusableElements[0];
+    const lastElement = this.focusableElements[this.focusableElements.length - 1];
+
+    if (event.shiftKey) {
+      if (document.activeElement === firstElement) {
+        lastElement?.focus();
+        event.preventDefault();
+      }
+    } else {
+      if (document.activeElement === lastElement) {
+        firstElement?.focus();
+        event.preventDefault();
+      }
+    }
+  };
+}

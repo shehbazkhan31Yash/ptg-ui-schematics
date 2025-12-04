@@ -12,6 +12,7 @@ export interface ApplicationOptions {
  ci?: boolean;
  formBuilder?: 'none' | 'reactive';
  crud?: boolean;
+ accessibility?: boolean;
  style?: 'css' | 'scss' | 'sass' | 'less';
  appDir?: string;
  [key: string]: any;

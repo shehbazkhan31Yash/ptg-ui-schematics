@@ -4,12 +4,14 @@ import { AboutComponent } from './about/about.component';
 import { HomeComponent } from './home/home.component';
 import { FeaturesComponent } from './features/features.component';
 import { DemoComponent } from './demo/demo.component';
-
+<% if (accessibility) { %>import { AccessibilityDemoComponent } from './accessibility/demo/accessibility-demo.component';
+<% } %>
 const routes: Routes = [
   { path: '', component: HomeComponent },
   { path: 'about', component: AboutComponent },
   { path: 'features', component: FeaturesComponent },
-  { path: 'demo', component: DemoComponent }
+  { path: 'demo', component: DemoComponent }<% if (accessibility) { %>,
+  { path: 'accessibility-demo', component: AccessibilityDemoComponent }<% } %>
 ];
 
 @NgModule({

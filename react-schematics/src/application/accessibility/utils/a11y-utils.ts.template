@@ -1,0 +1,111 @@
+/**
+ * Accessibility Utilities
+ * Helper functions for accessibility features
+ */
+
+/**
+ * Announces text to screen readers
+ * @param message - Message to announce
+ * @param priority - 'polite' or 'assertive'
+ */
+export const announceToScreenReader = (
+  message: string,
+  priority: 'polite' | 'assertive' = 'polite'
+): void => {
+  const announcement = document.createElement('div');
+  announcement.setAttribute('role', 'status');
+  announcement.setAttribute('aria-live', priority);
+  announcement.setAttribute('aria-atomic', 'true');
+  announcement.style.position = 'absolute';
+  announcement.style.left = '-10000px';
+  announcement.style.width = '1px';
+  announcement.style.height = '1px';
+  announcement.style.overflow = 'hidden';
+  announcement.textContent = message;
+  
+  document.body.appendChild(announcement);
+  
+  // Remove after announcement
+  setTimeout(() => {
+    document.body.removeChild(announcement);
+  }, 1000);
+};
+
+/**
+ * Trap focus within an element (useful for modals)
+ * @param element - Container element
+ * @returns Cleanup function
+ */
+export const trapFocus = (element: HTMLElement): (() => void) => {
+  const focusableElements = element.querySelectorAll<HTMLElement>(
+    'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+  );
+  const firstFocusable = focusableElements[0];
+  const lastFocusable = focusableElements[focusableElements.length - 1];
+
+  const handleTabKey = (e: KeyboardEvent) => {
+    if (e.key !== 'Tab') return;
+
+    if (e.shiftKey) {
+      if (document.activeElement === firstFocusable) {
+        lastFocusable.focus();
+        e.preventDefault();
+      }
+    } else {
+      if (document.activeElement === lastFocusable) {
+        firstFocusable.focus();
+        e.preventDefault();
+      }
+    }
+  };
+
+  element.addEventListener('keydown', handleTabKey);
+  firstFocusable?.focus();
+
+  return () => {
+    element.removeEventListener('keydown', handleTabKey);
+  };
+};
+
+/**
+ * Generate unique ID for accessibility labels
+ * @param prefix - ID prefix
+ * @returns Unique ID string
+ */
+let idCounter = 0;
+export const generateA11yId = (prefix: string = 'a11y'): string => {
+  idCounter += 1;
+  return `${prefix}-${idCounter}-${Date.now()}`;
+};
+
+/**
+ * Check if reduced motion is preferred
+ * @returns boolean
+ */
+export const prefersReducedMotion = (): boolean => {
+  return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+};
+
+/**
+ * Get appropriate focus outline style
+ * @returns CSS outline style
+ */
+export const getFocusOutlineStyle = (): string => {
+  return '2px solid #4A90E2';
+};
+
+/**
+ * Skip to main content functionality
+ * @param mainContentId - ID of main content element
+ */
+export const skipToMainContent = (mainContentId: string = 'main-content'): void => {
+  const mainContent = document.getElementById(mainContentId);
+  if (mainContent) {
+    mainContent.setAttribute('tabindex', '-1');
+    mainContent.focus();
+    // Remove tabindex after focus to restore normal tab flow
+    mainContent.addEventListener('blur', () => {
+      mainContent.removeAttribute('tabindex');
+    }, { once: true });
+  }
+};

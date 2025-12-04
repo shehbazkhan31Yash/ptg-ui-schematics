@@ -1,0 +1,61 @@
+import { Component, Input } from '@angular/core';
+
+/**
+ * SkipLink Component
+ * Provides keyboard users ability to skip navigation and jump to main content
+ * 
+ * Usage:
+ * <app-skip-link targetId="main-content"></app-skip-link>
+ */
+@Component({
+  selector: 'app-skip-link',
+  template: `
+    <a 
+      [href]="'#' + targetId"
+      class="skip-link"
+      (click)="skipToContent($event)"
+      (focus)="onFocus($event)"
+      (blur)="onBlur($event)">
+      {{ linkText }}
+    </a>
+  `,
+  styles: [`
+    .skip-link {
+      position: absolute;
+      left: -9999px;
+      z-index: 999;
+      padding: 1em;
+      background-color: #000;
+      color: #fff;
+      text-decoration: none;
+      outline: none;
+    }
+    
+    .skip-link:focus {
+      left: 0;
+      top: 0;
+    }
+  `]
+})
+export class SkipLinkComponent {
+  @Input() targetId = 'main-content';
+  @Input() linkText = 'Skip to main content';
+
+  skipToContent(event: Event): void {
+    event.preventDefault();
+    const target = document.getElementById(this.targetId);
+    if (target) {
+      target.setAttribute('tabindex', '-1');
+      target.focus();
+      target.scrollIntoView({ behavior: 'smooth' });
+    }
+  }
+
+  onFocus(event: Event): void {
+    (event.target as HTMLElement).style.left = '0';
+  }
+
+  onBlur(event: Event): void {
+    (event.target as HTMLElement).style.left = '-9999px';
+  }
+}

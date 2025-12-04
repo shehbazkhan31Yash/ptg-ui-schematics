@@ -11,3 +11,8 @@ export const emotionReactVersion = "^11.7.0";
 export const emotionStyledVersion = "^11.6.0";
 export const bootstrapVersion = "^5.1.3";
 export const reactBootstrapVersion = "^2.0.3";
+
+// Accessibility
+export const axeCoreVersion = "^4.8.3";
+export const reactAxeVersion = "^4.8.3";
+export const eslintPluginJsxA11yVersion = "^6.8.0";

@@ -1,0 +1,310 @@
+# Angular Accessibility Guide
+
+This application includes comprehensive accessibility tools and components to help you build WCAG 2.1 AA compliant Angular applications.
+
+## Included Tools
+
+1. **axe-core** - Automated accessibility testing engine
+2. **eslint-plugin-angular-a11y** - ESLint rules for Angular accessibility
+3. **Accessible Components** - Pre-built accessible Angular components
+4. **Services** - Angular services for accessibility features
+
+## Quick Start
+
+### 1. Import AccessibilityModule
+
+Add the `AccessibilityModule` to your `app.module.ts`:
+
+\`\`\`typescript
+import { AccessibilityModule } from './accessibility/accessibility.module';
+
+@NgModule({
+  imports: [
+    // other imports...
+    AccessibilityModule
+  ]
+})
+export class AppModule { }
+\`\`\`
+
+### 2. Initialize Axe-core (Development Only)
+
+Add this to your `app.component.ts`:
+
+\`\`\`typescript
+import { Component, OnInit } from '@angular/core';
+import { AxeService } from './accessibility/services/axe.service';
+
+@Component({
+  selector: 'app-root',
+  templateUrl: './app.component.html'
+})
+export class AppComponent implements OnInit {
+  constructor(private axeService: AxeService) {}
+
+  ngOnInit(): void {
+    // Initialize axe-core for accessibility testing (dev only)
+    this.axeService.initializeAxe(1000);
+  }
+}
+\`\`\`
+
+### 3. Use Accessible Components
+
+\`\`\`html
+<!-- Skip Link -->
+<app-skip-link targetId="main-content" linkText="Skip to main content"></app-skip-link>
+
+<!-- Navigation -->
+<nav>
+  <!-- Navigation content -->
+</nav>
+
+<!-- Main Content -->
+<main id="main-content" tabindex="-1">
+  <h1>Welcome</h1>
+  
+  <!-- Live Region for announcements -->
+  <app-live-region 
+    [message]="statusMessage" 
+    ariaLive="polite">
+  </app-live-region>
+  
+  <!-- Focus Trap for modals -->
+  <div appFocusTrap [isActive]="isModalOpen">
+    <!-- Modal content -->
+  </div>
+</main>
+\`\`\`
+
+### 4. Use Accessibility Service
+
+\`\`\`typescript
+import { Component } from '@angular/core';
+import { AccessibilityService } from './accessibility/services/accessibility.service';
+
+@Component({
+  selector: 'app-example',
+  template: \`
+    <button (click)="handleSave()">Save</button>
+  \`
+})
+export class ExampleComponent {
+  constructor(private a11yService: AccessibilityService) {}
+
+  handleSave(): void {
+    // Save data...
+    this.a11yService.announceToScreenReader('Data saved successfully', 'polite');
+  }
+
+  checkMotionPreference(): void {
+    const reduceMotion = this.a11yService.prefersReducedMotion();
+    // Adjust animations based on user preference
+  }
+}
+\`\`\`
+
+## Components
+
+### SkipLink Component
+Allows keyboard users to skip navigation and jump directly to main content.
+
+**Inputs:**
+- `targetId: string` - ID of the element to skip to (default: 'main-content')
+- `linkText: string` - Text to display (default: 'Skip to main content')
+
+### LiveRegion Component
+Announces dynamic content changes to screen readers.
+
+**Inputs:**
+- `message: string` - Message to announce
+- `ariaLive: 'polite' | 'assertive' | 'off'` - Priority level (default: 'polite')
+- `ariaAtomic: boolean` - Whether to read entire region (default: true)
+- `ariaRelevant: string` - What changes to announce (default: 'additions text')
+
+### FocusTrap Directive
+Traps keyboard focus within a container (useful for modals/dialogs).
+
+**Inputs:**
+- `isActive: boolean` - Whether trap is active (default: true)
+- `returnFocusOnDeactivate: boolean` - Return focus to previous element (default: true)
+
+## Services
+
+### AccessibilityService
+
+Methods:
+- `announceToScreenReader(message, priority)` - Announce to screen readers
+- `generateA11yId(prefix)` - Generate unique accessible IDs
+- `prefersReducedMotion()` - Check user's motion preference
+- `skipToMainContent(elementId)` - Skip to main content programmatically
+- `setFocus(elementId)` - Set focus to element
+- `isFocusable(element)` - Check if element is focusable
+- `getFocusableElements(container)` - Get all focusable elements
+
+### AxeService
+
+Methods:
+- `initializeAxe(timeout, config)` - Initialize axe-core
+- `runAxe(options)` - Run accessibility tests
+- `runAxeOnElement(elementId, options)` - Test specific element
+- `getAxeConfig(preset)` - Get preset configurations (wcag2a, wcag21aa, section508, bestPractice)
+
+## Best Practices
+
+1. **Semantic HTML**: Use appropriate HTML elements (\`<nav>\`, \`<main>\`, \`<article>\`, etc.)
+2. **ARIA Labels**: Add \`aria-label\` when text is not visible
+3. **Form Labels**: Always associate labels with inputs using \`for\` attribute
+4. **Keyboard Navigation**: Ensure all interactive elements are keyboard accessible
+5. **Alt Text**: Provide meaningful \`alt\` attributes for images
+6. **Color Contrast**: Maintain 4.5:1 contrast ratio for text
+7. **Focus Indicators**: Keep visible focus indicators (don't remove outline)
+8. **Heading Hierarchy**: Use proper heading structure (h1 -> h2 -> h3)
+
+## Testing
+
+### Automated Testing with Axe
+Axe-core runs automatically in development mode and reports violations in the console.
+
+You can also run tests manually:
+\`\`\`typescript
+// In your component
+constructor(private axeService: AxeService) {}
+
+runAccessibilityTest(): void {
+  this.axeService.runAxe();
+}
+\`\`\`
+
+### Manual Testing Checklist
+- [ ] Keyboard navigation works (Tab, Shift+Tab, Enter, Space, Arrow keys)
+- [ ] Screen reader announces content correctly
+- [ ] Focus indicators are visible
+- [ ] Color contrast meets WCAG requirements
+- [ ] Forms have proper labels and error messages
+- [ ] Images have descriptive alt text
+- [ ] Skip links work
+- [ ] Dynamic content is announced
+- [ ] Modals trap focus correctly
+- [ ] Headings are in logical order
+
+## Common ARIA Attributes
+
+### Roles
+- \`role="navigation"\` - Navigation landmark
+- \`role="main"\` - Main content landmark
+- \`role="banner"\` - Header landmark
+- \`role="contentinfo"\` - Footer landmark
+- \`role="search"\` - Search landmark
+- \`role="alert"\` - Important message
+- \`role="status"\` - Status update
+- \`role="dialog"\` - Modal dialog
+
+### Properties
+- \`aria-label="..."\` - Accessible name
+- \`aria-labelledby="..."\` - ID of labeling element
+- \`aria-describedby="..."\` - ID of describing element
+- \`aria-hidden="true|false"\` - Hide from screen readers
+- \`aria-live="polite|assertive"\` - Announce changes
+- \`aria-expanded="true|false"\` - Expanded state
+- \`aria-controls="..."\` - ID of controlled element
+- \`aria-required="true"\` - Required field
+
+## ESLint Rules
+
+The following accessibility rules are enabled:
+- Alt text for images
+- Form labels
+- Valid ARIA attributes
+- Tabindex values
+- Interactive elements
+- Heading hierarchy
+- Focus management
+
+## Resources
+
+- [WCAG 2.1 Guidelines](https://www.w3.org/WAI/WCAG21/quickref/)
+- [Angular Accessibility Guide](https://angular.io/guide/accessibility)
+- [axe-core Documentation](https://github.com/dequelabs/axe-core)
+- [WebAIM Resources](https://webaim.org/)
+- [A11y Project](https://www.a11yproject.com/)
+- [MDN Accessibility](https://developer.mozilla.org/en-US/docs/Web/Accessibility)
+
+## Common Issues and Fixes
+
+### Issue: Axe not running
+**Cause:** Not initialized or not in dev mode  
+**Fix:** Call `axeService.initializeAxe()` in AppComponent ngOnInit
+
+### Issue: Components not found
+**Cause:** AccessibilityModule not imported  
+**Fix:** Import AccessibilityModule in your module
+
+### Issue: ESLint a11y rules not working
+**Cause:** Plugin not installed or configured  
+**Fix:** Check that eslint-plugin-angular-a11y is in package.json and .eslintrc.json
+
+### Issue: Skip link not working
+**Cause:** Target element doesn't have ID or tabindex  
+**Fix:** Add \`id\` and \`tabindex="-1"\` to target element
+
+## Examples
+
+### Modal with Focus Trap
+\`\`\`html
+<div class="modal-backdrop" *ngIf="isModalOpen" (click)="closeModal()">
+  <div class="modal-content" appFocusTrap [isActive]="isModalOpen" (click)="$event.stopPropagation()">
+    <h2 id="modal-title">Modal Title</h2>
+    <p>Modal content...</p>
+    <button (click)="closeModal()">Close</button>
+  </div>
+</div>
+\`\`\`
+
+### Form with Live Validation
+\`\`\`html
+<form>
+  <label for="email">Email:</label>
+  <input 
+    id="email" 
+    type="email" 
+    [(ngModel)]="email" 
+    name="email"
+    (blur)="validateEmail()"
+    [attr.aria-invalid]="emailError ? 'true' : null"
+    [attr.aria-describedby]="emailError ? 'email-error' : null">
+  
+  <app-live-region 
+    *ngIf="emailError"
+    id="email-error"
+    [message]="emailError" 
+    ariaLive="assertive"
+    class="error">
+  </app-live-region>
+</form>
+\`\`\`
+
+### Data Table with Screen Reader Support
+\`\`\`html
+<table>
+  <caption>User List</caption>
+  <thead>
+    <tr>
+      <th scope="col">Name</th>
+      <th scope="col">Email</th>
+      <th scope="col">Role</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr *ngFor="let user of users">
+      <td>{{ user.name }}</td>
+      <td>{{ user.email }}</td>
+      <td>{{ user.role }}</td>
+    </tr>
+  </tbody>
+</table>
+\`\`\`
+
+---
+
+**Built with PTG UI Schematics** - For more information, visit the documentation.

@@ -21,6 +21,8 @@ import { FeaturesComponent } from './features/features.component';
 import { DemoComponent } from './demo/demo.component';
 import { CoreModule } from './core/core.module';
 import { SharedModule } from './shared/shared.module';
+<% if (accessibility) { %>import { AccessibilityModule } from './accessibility/accessibility.module';
+<% } %>
 
 <% if (i18n) { %>
 // AoT requires an exported function for factories
@@ -43,7 +45,8 @@ export function HttpLoaderFactory(http: HttpClient) {
     AppRoutingModule,
     HttpClientModule,
     CoreModule,
-    SharedModule<% if (ngrx) { %>,
+    SharedModule<% if (accessibility) { %>,
+    AccessibilityModule<% } %><% if (ngrx) { %>,
     StoreModule.forRoot({}),
     EffectsModule.forRoot([]),
     StoreDevtoolsModule.instrument({

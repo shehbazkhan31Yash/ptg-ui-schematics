@@ -1,0 +1,230 @@
+<div class="a11y-demo">
+  <!-- Skip Link Demo -->
+  <app-skip-link targetId="demo-main-content"></app-skip-link>
+
+  <div class="demo-header">
+    <h1>♿ Accessibility Demo</h1>
+    <p>Interactive demonstrations of accessibility features</p>
+  </div>
+
+  <main id="demo-main-content" tabindex="-1">
+    <!-- Demo Sections -->
+    <div class="demo-sections">
+      
+      <!-- Section 1: Skip Link -->
+      <section class="demo-section">
+        <h2>1. Skip Navigation Link</h2>
+        <p>Press <kbd>Tab</kbd> key to see the "Skip to main content" link appear at the top. This allows keyboard users to bypass navigation.</p>
+        <div class="demo-action">
+          <button (click)="skipToContent()" class="btn btn-primary">
+            Test Skip Link Programmatically
+          </button>
+          <p class="demo-note">
+            <strong>Try it:</strong> Press Tab key when page loads, or click the button above
+          </p>
+        </div>
+      </section>
+
+      <!-- Section 2: Live Regions -->
+      <section class="demo-section">
+        <h2>2. Live Regions (Screen Reader Announcements)</h2>
+        <p>Live regions announce dynamic content changes to screen readers without moving focus.</p>
+        
+        <div class="demo-action">
+          <h3>Polite Announcement</h3>
+          <p>Waits for screen reader to finish current announcement</p>
+          <button (click)="announcePolite()" class="btn btn-primary">
+            Announce (Polite)
+          </button>
+          
+          <h3 style="margin-top: 1.5rem;">Assertive Announcement</h3>
+          <p>Interrupts screen reader immediately</p>
+          <button (click)="announceAssertive()" class="btn btn-warning">
+            Announce (Assertive)
+          </button>
+
+          <app-live-region 
+            [message]="liveMessage" 
+            ariaLive="polite"
+            className="live-region-display">
+          </app-live-region>
+
+          <div *ngIf="liveMessage" class="announcement-display">
+            <strong>Current Message:</strong> {{ liveMessage }}
+          </div>
+        </div>
+      </section>
+
+      <!-- Section 3: Service Methods -->
+      <section class="demo-section">
+        <h2>3. Accessibility Service Methods</h2>
+        <p>Use AccessibilityService methods for programmatic announcements</p>
+        
+        <div class="demo-action">
+          <button (click)="announceViaService('polite')" class="btn btn-primary">
+            Service Announce (Polite)
+          </button>
+          <button (click)="announceViaService('assertive')" class="btn btn-warning">
+            Service Announce (Assertive)
+          </button>
+
+          <div *ngIf="lastAnnouncement" class="announcement-display">
+            <strong>Last Announcement:</strong> {{ lastAnnouncement }}
+          </div>
+
+          <div class="demo-info">
+            <h4>Other Service Methods:</h4>
+            <ul>
+              <li><code>generateA11yId()</code> - Generate unique IDs</li>
+              <li><code>prefersReducedMotion()</code> - Check user preference: 
+                <strong>{{ checkReducedMotion() ? 'Yes' : 'No' }}</strong>
+              </li>
+              <li><code>setFocus(elementId)</code> - Set focus programmatically</li>
+              <li><code>getFocusableElements()</code> - Get all focusable elements</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <!-- Section 4: Focus Trap (Modal) -->
+      <section class="demo-section">
+        <h2>4. Focus Trap (Modal Dialog)</h2>
+        <p>Focus trap keeps keyboard focus within modal dialogs, preventing users from tabbing outside.</p>
+        
+        <div class="demo-action">
+          <button (click)="openModal()" class="btn btn-primary">
+            Open Modal with Focus Trap
+          </button>
+          
+          <p class="demo-note">
+            <strong>Try it:</strong> Press Tab/Shift+Tab inside the modal - focus stays trapped
+          </p>
+        </div>
+      </section>
+
+      <!-- Section 5: Form Accessibility -->
+      <section class="demo-section">
+        <h2>5. Accessible Form with Error Handling</h2>
+        <p>Properly labeled forms with ARIA attributes and error announcements</p>
+        
+        <div class="demo-action">
+          <form (ngSubmit)="validateEmail()" #emailForm="ngForm">
+            <div class="form-group">
+              <label for="demo-email">Email Address *</label>
+              <input 
+                id="demo-email"
+                type="email"
+                name="email"
+                [(ngModel)]="email"
+                class="form-control"
+                [attr.aria-invalid]="!!emailError"
+                [attr.aria-describedby]="emailError ? 'email-error' : null"
+                required>
+              
+              <app-live-region 
+                *ngIf="emailError"
+                id="email-error"
+                [message]="emailError"
+                ariaLive="assertive"
+                className="error-message">
+              </app-live-region>
+
+              <div *ngIf="formMessage" class="success-message">
+                {{ formMessage }}
+              </div>
+            </div>
+            
+            <button type="submit" class="btn btn-primary">
+              Validate Email
+            </button>
+          </form>
+        </div>
+      </section>
+
+      <!-- Section 6: Keyboard Navigation -->
+      <section class="demo-section">
+        <h2>6. Keyboard Navigation</h2>
+        <p>All interactive elements are keyboard accessible</p>
+        
+        <div class="demo-action">
+          <div class="keyboard-guide">
+            <h4>Keyboard Shortcuts:</h4>
+            <ul>
+              <li><kbd>Tab</kbd> - Navigate forward</li>
+              <li><kbd>Shift</kbd> + <kbd>Tab</kbd> - Navigate backward</li>
+              <li><kbd>Enter</kbd> or <kbd>Space</kbd> - Activate buttons</li>
+              <li><kbd>Esc</kbd> - Close modal dialogs</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+    </div>
+
+    <!-- Testing Info -->
+    <div class="demo-testing-info">
+      <h2>🧪 Testing Your Implementation</h2>
+      <div class="testing-grid">
+        <div class="testing-card">
+          <h3>Automated Testing</h3>
+          <p>Open browser console to see axe-core violations automatically logged during development.</p>
+          <code>AxeService.initializeAxe()</code>
+        </div>
+        <div class="testing-card">
+          <h3>Screen Readers</h3>
+          <ul>
+            <li><strong>Windows:</strong> NVDA (free)</li>
+            <li><strong>Mac:</strong> VoiceOver (built-in)</li>
+            <li><strong>Windows:</strong> JAWS (commercial)</li>
+          </ul>
+        </div>
+        <div class="testing-card">
+          <h3>Browser Tools</h3>
+          <ul>
+            <li>Chrome Lighthouse (Accessibility audit)</li>
+            <li>axe DevTools extension</li>
+            <li>WAVE browser extension</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- Modal Dialog with Focus Trap -->
+  <div *ngIf="isModalOpen" 
+       class="modal-backdrop"
+       (click)="closeModal()"
+       (keydown.escape)="closeModal()">
+    <div class="modal-dialog"
+         appFocusTrap
+         [isActive]="isModalOpen"
+         role="dialog"
+         aria-modal="true"
+         aria-labelledby="modal-title"
+         (click)="$event.stopPropagation()">
+      <div class="modal-content">
+        <h2 id="modal-title">Accessible Modal Dialog</h2>
+        <p>
+          Try pressing <kbd>Tab</kbd> and <kbd>Shift+Tab</kbd> to navigate. 
+          Focus will stay trapped within this modal.
+        </p>
+        <p>
+          Press <kbd>Esc</kbd> or click "Close" to exit.
+        </p>
+        <div class="modal-actions">
+          <button (click)="closeModal()" class="btn btn-primary" autoFocus>
+            Close Modal
+          </button>
+          <button class="btn btn-secondary">
+            Another Button
+          </button>
+          <a href="#" (click)="$event.preventDefault()" class="btn-link">
+            A Link
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>

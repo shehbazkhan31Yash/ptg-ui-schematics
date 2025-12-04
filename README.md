@@ -75,6 +75,7 @@ ptg-ui-schematics/
 - Multiple authentication options (MSAL, Okta, Custom)
 - Internationalization (i18n) support
 - SEO optimization features (Basic, SSG, SSR)
+- **Accessibility (a11y) tools** - WCAG 2.1 AA compliant components
 - Material Design integration
 - PWA capabilities
 - Comprehensive testing setup
@@ -87,6 +88,7 @@ ptg-ui-schematics/
 - React Router for navigation
 - Material-UI or Bootstrap integration
 - Internationalization (i18next) support
+- **Accessibility (a11y) tools** - WCAG 2.1 AA compliant components
 - Vite/Webpack bundling options
 - Comprehensive testing (Vitest/Jest, Cypress/Playwright)
 
@@ -101,6 +103,22 @@ ptg-ui-schematics/
 - Less
 - Stylus
 - Tailwind CSS (Angular)
+
+### Accessibility Features
+When enabled, both React and Angular applications include:
+- **WCAG 2.1 AA Compliant** components and utilities
+- **Automated Testing** with axe-core (finds 57% of issues automatically)
+- **Pre-built Components**: SkipLink, LiveRegion, FocusTrap, and more
+- **ESLint Rules** for catching accessibility issues during development
+- **Comprehensive Documentation** with examples and best practices
+- **Zero Production Impact** - Testing only runs in development mode
+
+**Benefits:**
+- ✅ Legal compliance (ADA, Section 508, WCAG)
+- ✅ Expanded market reach (1 billion+ users with disabilities)
+- ✅ Improved SEO and search rankings
+- ✅ Better UX for all users (mobile, elderly, temporary disabilities)
+- ✅ Reduced legal risk (avoid $50K-$500K+ settlements)
 
 ## 🛠️ Local Development
 
